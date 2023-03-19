@@ -8,7 +8,7 @@ import io
 from datetime import time
 
 class Astropix(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.guild = bot.get_guild(int(guild))
         self.channel = self.guild.get_channel(int(channel))
@@ -35,6 +35,6 @@ class Astropix(commands.Cog):
     async def schedule_send(self):
         await self.scrape_and_send()
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: commands.Bot):
   await bot.add_cog(Astropix(bot))
   print("Cog - Astropix Loaded!")

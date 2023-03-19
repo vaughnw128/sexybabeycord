@@ -1,1 +1,5 @@
 config.py
+.vscode
+__pycache__
+cogs/__pycache__
+data
