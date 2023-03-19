@@ -37,4 +37,4 @@ class Astropix(commands.Cog):
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(Astropix(bot))
-  print("Cog - Astropix Loaded!")
+  print("Astropix: I'm loaded 😎")

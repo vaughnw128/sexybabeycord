@@ -5,6 +5,7 @@ from discord import app_commands
 from config import token, guild
 import os
 from discord.ext.commands import Greedy, Context
+import logging
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix='$', intents=intents)
@@ -54,7 +55,7 @@ async def load_extensions():
 
 @client.event
 async def on_ready():
-    print('Bot online!')
+    print("Sexybabeycord: Now I'm all spooled up!")
     await load_extensions()
 
 client.run(token)
