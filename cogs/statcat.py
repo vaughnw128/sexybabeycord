@@ -6,6 +6,14 @@ import datetime
 import json
 import os
 
+
+
+
+
+
+
+""" TODO: CREATE A SCRIPT THAT GRABS ALL DISCORD HISTORY BETWEEN DATES AND THEN CACHES IT"""
+
 class Statcat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -47,6 +55,16 @@ class Statcat(commands.Cog):
             json.dump(dump, messages_json, indent=4)
             messages_json.close()
         self.batch = []
+    
+    @app_commands.command(name="scrapemessages")
+    async def scrape_messages(self, interaction: discord.Interaction):
+        messages = [message async for message in interaction.channel.history(limit=None)]
+        print(messages)
+    
+    @app_commands.command(name="ping")
+    async def ping(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Pong!")
+
 
 async def setup(bot: commands.Bot):
   await bot.add_cog(Statcat(bot))
