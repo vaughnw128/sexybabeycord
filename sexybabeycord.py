@@ -1,3 +1,26 @@
+""" Sexybabeycord (A Sexybabeycord Production)
+
+    The is the main runner file for the Sexybabeycord discord bot.
+    The bot itself is a collection of multiple pieces, each with vastly
+    different functionalities. There certainly will be more to come as our
+    server never has enough bots (lie).
+
+    What the hell is Sexybabeycord?: Sexybabeycord is the current iteration of the Discord server that I share
+    with my close friends (we accidentally nuked the last one with homemade spambots). It's more of a 
+    chaotic groupchat than a high-functioning Discord 'community,' as we all have Administrator 
+    permissions, and we don't particularly care for rules. I love making bots for our server, and my
+    friends seem to as well.
+
+    The current components (cogs) of the bot are as follows:
+        Astropix: Scrapes and sends the NASA picture of the day every day at noon.
+        Statcat: Message statistics generator.
+    
+    Components that I plan on adding in the future:
+        Distort: One of the oldest bots that I've written, but is now rusty and in disrepair. It needs to be revived!
+
+    Made with love and care by Vaughn Woerpel
+"""
+
 import discord
 from discord.ext import commands
 from typing import Literal, Optional

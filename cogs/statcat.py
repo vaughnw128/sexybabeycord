@@ -3,6 +3,8 @@
     This cog is an isolated portion of the main Sexybabeycord bot.
     It's primary function is to generate statistics based on cached messages
     from a discord server, then display those stats to users in an easy-to-read manner.
+
+    Made with love and care by Vaughn Woerpel
 """
 
 import discord
