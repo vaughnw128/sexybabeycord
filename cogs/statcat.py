@@ -7,6 +7,7 @@
     Made with love and care by Vaughn Woerpel
 """
 
+from typing import Literal, Optional
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -19,16 +20,16 @@ from typing import Optional
 class Statcat(commands.Cog):
     """ A Discord Cog to handle all of the statistic-generating functionalities of the Sexybabeycord bot.
 
-        ...
+        ---
 
         Attributes
         ----------
-        bot: commands.Bot
+        bot: `commands.Bot`
             The bot object from the main cog runner
 
         Methods
         -------
-        loadmessages(interaction, startdate, enddate)
+        loadmessages(`interaction`, `startdate`, `enddate`)
             Loads messages within the date range to json data files.
     """
 
@@ -43,7 +44,7 @@ class Statcat(commands.Cog):
         self.bot = bot
     
     @app_commands.command(name="loadmessages")
-    async def loadmessages(self, interaction: discord.Interaction, startdate: str=None, enddate: str=None):
+    async def loadmessages(self, interaction: discord.Interaction, startdate: Optional[str]=None, enddate: Optional[str]=None):
         """ Loads messages into json files based on user-supplied dates
         
             Takes in either a date range, a date, or nothing (current date), and then caches all messages
@@ -60,25 +61,7 @@ class Statcat(commands.Cog):
                 The end date of the date range
         """
         
-        # Changes the specified dates to datetime
-        startdate = to_datetime(startdate)
-        enddate = to_datetime(enddate)
-
-        # Horrendous if statement that decides how the dates should be arranged for the upcoming message history query
-        if startdate is None and enddate is None:
-            startdate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            enddate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-        elif startdate is not None and enddate is None:
-            enddate = startdate
-        elif startdate is None and enddate is not None:
-            startdate = enddate
-
-        #Creates a list of dates between the inputs provided. If it's empty, set it to the startdate. If not, add the end date to cap it off
-        dates = [startdate+datetime.timedelta(days=x) for x in range((enddate-startdate).days)]
-        if len(dates) == 0:
-            dates.append(startdate)
-        else:
-            dates.append(enddate)
+        dates = date_handler(startdate, enddate)
 
         #Lets the user know what's going on
         await interaction.response.send_message(f"Processing... This may take a moment!")
@@ -105,7 +88,56 @@ class Statcat(commands.Cog):
 
         # Ends the timer then outputs the results to the user
         end = time.time()
-        await interaction.channel.send(f"Cached {message_count} from {str(startdate.date())} to {str(enddate.date())} in {round(end-start, 2)} seconds.")
+        await interaction.channel.send(f"Cached {message_count} from {startdate} to {enddate} in {round(end-start, 2)} seconds.")
+
+    @app_commands.command(name="statcat")
+    async def statcat(self, interaction: discord.Interaction, option: Literal['word', 'user'], search: str, startdate: Optional[str]=None, enddate: Optional[str]=None):
+        """ Generates stats from cached messages
+        
+            Takes in either a date range, a date, or nothing (current date), and then generates stats
+            based on cached messages in the /data directory.
+
+            ---
+
+            Parameters
+            -----------
+            option: Literal['word', 'user']
+                The option for what to generate stats for
+            search: str
+                What to search for based on the option command
+            startdate: Optional[str]
+                The start date of the date range
+            enddate: Optional[str]
+                The end date of the date range
+        """
+
+        await interaction.response.send_message(f"Processing... This may take a moment!", ephemeral=True)
+
+        # Gets the list of dates (If none provided it should only be one date, or if one provided only one date)
+        dates = date_handler(startdate, enddate)
+        
+        message_list = []
+        for date in dates:
+            if not os.path.exists(f"data/messages-{date.date()}.json"):
+                print("shitfart")
+                # TODO: Insert code here that caches the files if not already cached. This will end up changing the load_messages command as a helper method rather than a command to streamline the bot.
+                return
+            with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
+                temp_dict = json.load(messages_json)
+                message_list += temp_dict["messages"]
+
+        print(len(message_list))
+
+        if option == 'word':
+            word_count = 0
+            for message in message_list:
+                word_count += message["content"].split(" ").count(search)
+
+            await interaction.channel.send(f"Counted {word_count} occurances of the word \"{search}\" from {startdate} to {enddate}")
+        else:
+            await interaction.channel.send(f"I think I just shit my pants")
+
+        
 
 
 def to_datetime(date) -> Optional[datetime.datetime]:
@@ -126,7 +158,6 @@ def to_datetime(date) -> Optional[datetime.datetime]:
         date = datetime.datetime.strptime(date, "%m-%d-%Y")
 
     return date
-
 
 def messages_to_json(messages, date):
     """ Formats messages into dictionary/json format and writes them to a file.
@@ -166,9 +197,34 @@ def messages_to_json(messages, date):
     # Checks if the file exists, and if it does not, dumps the data to the file
     if not os.path.exists(f"data/messages-{date.date()}.json"):
         with open(f"data/messages-{date.date()}.json", 'w') as messages_json:
+            print(f"data/messages-{date.date()}.json")
             json.dump(dict_to_json, messages_json, indent=4)
     else:
         return
+
+def date_handler(startdate, enddate):
+    # Changes the specified dates to datetime
+    startdate = to_datetime(startdate)
+    enddate = to_datetime(enddate)
+
+    # Horrendous if statement that decides how the dates should be arranged for the upcoming message history query
+    if startdate is None and enddate is None:
+        startdate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        enddate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    elif startdate is not None and enddate is None:
+        enddate = startdate
+    elif startdate is None and enddate is not None:
+        startdate = enddate
+
+    #Creates a list of dates between the inputs provided. If it's empty, set it to the startdate. If not, add the end date to cap it off
+    dates = [startdate+datetime.timedelta(days=x) for x in range((enddate-startdate).days)]
+    if len(dates) == 0:
+        dates.append(startdate)
+    else:
+        dates.append(enddate)
+    
+    return dates
+
 
 async def setup(bot: commands.Bot):
   """ Sets up the cog
