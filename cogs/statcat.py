@@ -16,8 +16,21 @@ import json
 import os
 import time
 from typing import Optional
+import re
 
-date_choices = []
+
+class DateTransformer(app_commands.Transformer):
+    async def transform(self, interaction: discord.Interaction, date: str) -> Optional[datetime.datetime]:
+        try:
+            if len(re.findall(r"^(0[1-9]|1[012])[- \/.](0[1-9]|[12][0-9]|3[01])[- \/.](19|20)\d\d$", date)) > 0:
+                if '-' in date:
+                    return datetime.strptime(date, '%m-%d-%y')
+                elif '/' in date:
+                    return datetime.strptime(date, '%m-%d-%y')
+            return None
+        except:
+            await interaction.channel.send(content="Failed parse date. Please format dd-MM-YYYY")
+            
 
 class Statcat(commands.Cog):
     """ A Discord Cog to handle all of the statistic-generating functionalities of the Sexybabeycord bot.
@@ -44,11 +57,6 @@ class Statcat(commands.Cog):
                 The bot object from the main cog runner.
         """
         self.bot = bot
-        
-        dates = [datetime.datetime(2019,11,14,0,0,0)+datetime.timedelta(days=x) for x in range((datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)-datetime.datetime(2019,11,14,0,0,0)).days)]
-        for date in dates:
-            # print(type(date))
-            date_choices.append(app_commands.Choice(name=str(date.date()), value=str(date.date())))
 
     @app_commands.command(name="loadmessages")
     async def loadmessages(self, interaction: discord.Interaction, startdate: Optional[str]=None, enddate: Optional[str]=None):
@@ -98,16 +106,16 @@ class Statcat(commands.Cog):
         await interaction.channel.send(f"Cached {message_count} from {startdate} to {enddate} in {round(end-start, 2)} seconds.")
 
     @app_commands.command(name="statcat")
-    @app_commands.rename(date1="date")
-    @app_commands.rename(date2="date")
+    @app_commands.rename(date1="start-date")
+    @app_commands.rename(date2="end-date")
     async def statcat(
         self, 
         interaction: 
         discord.Interaction, 
         option: Literal['word', 'user'], 
         search: str, 
-        date1: app_commands.Transform[datetime.datetime, DateTransformer], 
-        date2: app_commands.Transform[datetime.datetime, DateTransformer]
+        date1: Optional[app_commands.Transform[datetime.datetime, DateTransformer]], 
+        date2: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]
     ) -> None:
         """ Generates stats from cached messages
         
@@ -128,31 +136,11 @@ class Statcat(commands.Cog):
                 The end date of the date range
         """
         
-        interaction.response.send(content="Wait just a meowment :3", ephemeral=True)
+        await interaction.response.send_message(content="Wait just a meowment :3", ephemeral=True)
 
         print(date1)
         print(date2)
 
-class DateTransformer()
-
-def to_datetime(date) -> Optional[datetime.datetime]:
-    """ Formats the date string to a datetime object
-
-        Parameters
-        -----------
-        date: str
-            Date formatted as a string
-        
-        Returns
-        -----------
-        Optional[datetime.datetime]
-            A formatted datetime.datetime object derived from the input string
-    
-    """
-    if date is not None:
-        date = datetime.datetime.strptime(date, "%m-%d-%Y")
-
-    return date
 
 def messages_to_json(messages, date):
     """ Formats messages into dictionary/json format and writes them to a file.
