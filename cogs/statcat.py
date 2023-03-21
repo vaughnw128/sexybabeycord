@@ -17,6 +17,8 @@ import os
 import time
 from typing import Optional
 
+date_choices = []
+
 class Statcat(commands.Cog):
     """ A Discord Cog to handle all of the statistic-generating functionalities of the Sexybabeycord bot.
 
@@ -42,7 +44,12 @@ class Statcat(commands.Cog):
                 The bot object from the main cog runner.
         """
         self.bot = bot
-    
+        
+        dates = [datetime.datetime(2019,11,14,0,0,0)+datetime.timedelta(days=x) for x in range((datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)-datetime.datetime(2019,11,14,0,0,0)).days)]
+        for date in dates:
+            # print(type(date))
+            date_choices.append(app_commands.Choice(name=str(date.date()), value=str(date.date())))
+
     @app_commands.command(name="loadmessages")
     async def loadmessages(self, interaction: discord.Interaction, startdate: Optional[str]=None, enddate: Optional[str]=None):
         """ Loads messages into json files based on user-supplied dates
@@ -91,7 +98,17 @@ class Statcat(commands.Cog):
         await interaction.channel.send(f"Cached {message_count} from {startdate} to {enddate} in {round(end-start, 2)} seconds.")
 
     @app_commands.command(name="statcat")
-    async def statcat(self, interaction: discord.Interaction, option: Literal['word', 'user'], search: str, startdate: Optional[str]=None, enddate: Optional[str]=None):
+    @app_commands.rename(date1="date")
+    @app_commands.rename(date2="date")
+    async def statcat(
+        self, 
+        interaction: 
+        discord.Interaction, 
+        option: Literal['word', 'user'], 
+        search: str, 
+        date1: app_commands.Transform[datetime.datetime, DateTransformer], 
+        date2: app_commands.Transform[datetime.datetime, DateTransformer]
+    ) -> None:
         """ Generates stats from cached messages
         
             Takes in either a date range, a date, or nothing (current date), and then generates stats
@@ -105,40 +122,18 @@ class Statcat(commands.Cog):
                 The option for what to generate stats for
             search: str
                 What to search for based on the option command
-            startdate: Optional[str]
+            date1: Optional[str]
                 The start date of the date range
-            enddate: Optional[str]
+            date2: Optional[str]
                 The end date of the date range
         """
-
-        await interaction.response.send_message(f"Processing... This may take a moment!", ephemeral=True)
-
-        # Gets the list of dates (If none provided it should only be one date, or if one provided only one date)
-        dates = date_handler(startdate, enddate)
         
-        message_list = []
-        for date in dates:
-            if not os.path.exists(f"data/messages-{date.date()}.json"):
-                print("shitfart")
-                # TODO: Insert code here that caches the files if not already cached. This will end up changing the load_messages command as a helper method rather than a command to streamline the bot.
-                return
-            with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
-                temp_dict = json.load(messages_json)
-                message_list += temp_dict["messages"]
+        interaction.response.send(content="Wait just a meowment :3", ephemeral=True)
 
-        print(len(message_list))
+        print(date1)
+        print(date2)
 
-        if option == 'word':
-            word_count = 0
-            for message in message_list:
-                word_count += message["content"].split(" ").count(search)
-
-            await interaction.channel.send(f"Counted {word_count} occurances of the word \"{search}\" from {startdate} to {enddate}")
-        else:
-            await interaction.channel.send(f"I think I just shit my pants")
-
-        
-
+class DateTransformer()
 
 def to_datetime(date) -> Optional[datetime.datetime]:
     """ Formats the date string to a datetime object
