@@ -10,13 +10,14 @@
 from typing import Literal, Optional
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 import datetime
 import json
 import os
 import time
 from typing import Optional
 import re
+from config import guild
 
 date_choices = []
 
@@ -57,53 +58,25 @@ class Statcat(commands.Cog):
                 The bot object from the main cog runner.
         """
         self.bot = bot
+        self.guild = self.bot.get_guild(int(guild))
+        self.cache_previous_day.start()
 
-    @app_commands.command(name="loadmessages")
-    async def loadmessages(self, interaction: discord.Interaction, startdate: Optional[str]=None, enddate: Optional[str]=None):
-        """ Loads messages into json files based on user-supplied dates
+    @tasks.loop(time=datetime.time(hour=0, minute=1))
+    async def cache_previous_day(self):
+        date = (datetime.datetime.today()-datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
         
-            Takes in either a date range, a date, or nothing (current date), and then caches all messages
-            from that date range to the /data directory. It skips over dates that have already been done,
-            and saves specific attributes of the message for further analysis.
-
-            ...
-
-            Parameters
-            -----------
-            startdate: Optional[str]
-                The start date of the date range
-            enddate: Optional[str]
-                The end date of the date range
-        """
+        # If the file exists already, remove the file and redo it
+        if os.path.exists(f"data/messages-{date.date()}.json"):
+            os.remove(f"data/messages-{date.date()}.json")
         
-        dates = date_handler(startdate, enddate)
+        messages = []
+        # Gets the message history for all text channels on the specified date
+        for channel in self.guild.channels:
+            if type(channel) is discord.TextChannel: 
+                messages += [message async for message in channel.history(limit=None, after=date, before=date+datetime.timedelta(days=1), oldest_first=True)]
 
-        #Lets the user know what's going on
-        await interaction.response.send_message(f"Processing... This may take a moment!")
-        
-        # Starts a timer and a message count for later output
-        start = time.time()
-        message_count = 0
-        
-        # Loops along the date range and runs the message history
-        for date in dates:
-            # If the file exists already, skip over that date. This saves time for future operations if the date doesn't need to be indexed
-            if os.path.exists(f"data/messages-{date.date()}.json"):
-                continue
-            messages = []
-
-            # Gets the message history for all text channels on the specified date
-            for channel in interaction.guild.channels:
-                if type(channel) is discord.TextChannel: 
-                    messages += [message async for message in channel.history(limit=None, after=date, before=date+datetime.timedelta(days=1), oldest_first=True)]
-            message_count += len(messages)
-
-            # Translates the messages to a dict, then puts it into a json file for that date
-            messages_to_json(messages, date)
-
-        # Ends the timer then outputs the results to the user
-        end = time.time()
-        await interaction.channel.send(f"Cached {message_count} from {startdate} to {enddate} in {round(end-start, 2)} seconds.")
+        # Translates the messages to a dict, then puts it into a json file for that date
+        messages_to_json(messages, date)
 
     @app_commands.command(name="statcat")
     @app_commands.rename(date1="start-date")
@@ -155,9 +128,29 @@ class Statcat(commands.Cog):
         
         await interaction.response.send_message(content="Wait just a meowment :3", ephemeral=True)
             
-        print(date1)
-        print(date2)
-        print(dates)
+        message_list = []
+        for date in dates:
+            if not os.path.exists(f"data/messages-{date.date()}.json"):
+                # Gets the message history for all text channels on the specified date
+                messages = []
+                for channel in interaction.guild.channels:
+                    if type(channel) is discord.TextChannel: 
+                        messages += [message async for message in channel.history(limit=None, after=date, before=date+datetime.timedelta(days=1), oldest_first=True)]
+
+                # Translates the messages to a dict, then puts it into a json file for that date
+                messages_to_json(messages, date)
+            with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
+                temp_dict = json.load(messages_json)
+                message_list += temp_dict["messages"]
+
+        if option == 'word':
+            word_count = 0
+            for message in message_list:
+                word_count += message["content"].split(" ").count(search)
+
+            await interaction.channel.send(f"Counted {word_count} occurances of the word \"{search}\" from {dates[0].date()} to {dates[len(dates)-1].date()}")
+        else:
+            await interaction.channel.send(f"I think I just shit my pants")
 
 
 def messages_to_json(messages, date):
