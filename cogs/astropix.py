@@ -80,7 +80,7 @@ class Astropix(commands.Cog):
                 with io.BytesIO(img) as file:
                     await self.channel.send(content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html", file=discord.File(file, "astropic.jpg"))
 
-    @tasks.loop(time=time(hour = 12))
+    @tasks.loop(time=time(hour = 16))
     async def schedule_send(self):
         """ Handles the looping of the scrape_and_send() function. """
         await self.scrape_and_send()

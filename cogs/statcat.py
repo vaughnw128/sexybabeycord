@@ -18,6 +18,7 @@ import time
 from typing import Optional
 import re
 from config import guild
+from dateutil import tz
 
 date_choices = []
 
@@ -143,14 +144,56 @@ class Statcat(commands.Cog):
                 temp_dict = json.load(messages_json)
                 message_list += temp_dict["messages"]
 
+
+        message_authors = {}
+        message_dates = {}
         if option == 'word':
             word_count = 0
             for message in message_list:
-                word_count += message["content"].split(" ").count(search)
+                count = len(re.findall(r"\b"+re.escape(search)+r"\b", message["content"].lower()))
+                word_count += count
 
+                if count > 0:
+
+                    timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
+                    from_zone = tz.gettz('UTC')
+                    to_zone = tz.gettz('America/New_York')
+                    utc = timestamp.replace(tzinfo=from_zone)
+                    local_timestamp = str(utc.astimezone(to_zone).date())
+
+                    if message["author"] not in message_authors.keys():
+                        message_authors[message["author"]] = count
+                    else:
+                        message_authors[message["author"]] += count
+
+                    if local_timestamp not in message_dates.keys():
+                        message_dates[local_timestamp] = count
+                    else:
+                        message_dates[local_timestamp] += count
+                
+            message_authors = dict(sorted(message_authors.items(), key=lambda x:x[1], reverse=True))
+            message_dates = dict(sorted(message_dates.items(), key=lambda x:x[1], reverse=True))
+            
             await interaction.channel.send(f"Counted {word_count} occurances of the word \"{search}\" from {dates[0].date()} to {dates[len(dates)-1].date()}")
-        else:
-            await interaction.channel.send(f"I think I just shit my pants")
+        elif option == "user":
+            tag = search[2:len(search)-1]
+            message_count = 0
+            for message in message_list:
+                if str(message["author"]) == tag:
+                    message_count += 1
+                    timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
+                    from_zone = tz.gettz('UTC')
+                    to_zone = tz.gettz('America/New_York')
+                    utc = timestamp.replace(tzinfo=from_zone)
+                    local_timestamp = str(utc.astimezone(to_zone).date())
+
+                    if local_timestamp not in message_dates.keys():
+                        message_dates[local_timestamp] = 1
+                    else:
+                        message_dates[local_timestamp] += 1
+                
+            message_dates = sorted(message_dates.items(), key=lambda x:x[1], reverse=True)
+            await interaction.channel.send(f"User {search} sent {message_count} messages from {dates[0].date()} to {dates[len(dates)-1].date()} with the most messages occuring on {message_dates[0][0]} at {message_dates[0][1]} messages.")
 
 
 def messages_to_json(messages, date):
