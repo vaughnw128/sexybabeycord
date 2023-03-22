@@ -18,19 +18,19 @@ import time
 from typing import Optional
 import re
 
+date_choices = []
 
 class DateTransformer(app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, date: str) -> Optional[datetime.datetime]:
-        try:
-            if len(re.findall(r"^(0[1-9]|1[012])[- \/.](0[1-9]|[12][0-9]|3[01])[- \/.](19|20)\d\d$", date)) > 0:
-                if '-' in date:
-                    return datetime.strptime(date, '%m-%d-%y')
-                elif '/' in date:
-                    return datetime.strptime(date, '%m-%d-%y')
-            return None
-        except:
-            await interaction.channel.send(content="Failed parse date. Please format dd-MM-YYYY")
-            
+        redate = re.compile("^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$")
+        if redate.match(date):
+            if "-" in date:
+                return datetime.datetime.strptime(date, "%m-%d-%Y")
+            elif "/" in date:
+                return datetime.datetime.strptime(date, "%m/%d/%Y")
+            else:
+                return datetime.datetime.strptime(date, "%m.%d.%Y")
+        return None
 
 class Statcat(commands.Cog):
     """ A Discord Cog to handle all of the statistic-generating functionalities of the Sexybabeycord bot.
@@ -114,8 +114,8 @@ class Statcat(commands.Cog):
         discord.Interaction, 
         option: Literal['word', 'user'], 
         search: str, 
-        date1: Optional[app_commands.Transform[datetime.datetime, DateTransformer]], 
-        date2: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]
+        date1: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All", 
+        date2: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All"
     ) -> None:
         """ Generates stats from cached messages
         
@@ -135,11 +135,29 @@ class Statcat(commands.Cog):
             date2: Optional[str]
                 The end date of the date range
         """
+
+
+        if date1 is None or date2 is None:
+            await interaction.response.send_message(content="It seems you've entered the date in the wrong format. Try MM-dd-YYYY or MM/dd/YYYY", ephemeral=True)
+            return
+        elif date1 == "All" and date2 == "All":
+            dates = [datetime.datetime(2019,11,14,0,0,0)+datetime.timedelta(days=x) for x in range((datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)-datetime.datetime(2019,11,14,0,0,0)).days)]
+        elif date1 == "All":
+            dates = [date2]
+        elif date2 == "All":
+            dates = [date1]
+        else:
+            dates = [date1+datetime.timedelta(days=x) for x in range((date2+datetime.timedelta(days=1)-date1).days)]
+        
+        if len(dates) == 0:
+            await interaction.response.send_message(content="You flipped your start-date and end-date! Fix that, why don't you!?", ephemeral=True)
+            return
         
         await interaction.response.send_message(content="Wait just a meowment :3", ephemeral=True)
-
+            
         print(date1)
         print(date2)
+        print(dates)
 
 
 def messages_to_json(messages, date):
@@ -184,29 +202,6 @@ def messages_to_json(messages, date):
             json.dump(dict_to_json, messages_json, indent=4)
     else:
         return
-
-def date_handler(startdate, enddate):
-    # Changes the specified dates to datetime
-    startdate = to_datetime(startdate)
-    enddate = to_datetime(enddate)
-
-    # Horrendous if statement that decides how the dates should be arranged for the upcoming message history query
-    if startdate is None and enddate is None:
-        startdate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-        enddate = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-    elif startdate is not None and enddate is None:
-        enddate = startdate
-    elif startdate is None and enddate is not None:
-        startdate = enddate
-
-    #Creates a list of dates between the inputs provided. If it's empty, set it to the startdate. If not, add the end date to cap it off
-    dates = [startdate+datetime.timedelta(days=x) for x in range((enddate-startdate).days)]
-    if len(dates) == 0:
-        dates.append(startdate)
-    else:
-        dates.append(enddate)
-    
-    return dates
 
 
 async def setup(bot: commands.Bot):
