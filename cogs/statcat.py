@@ -20,7 +20,8 @@ import re
 from config import guild
 from dateutil import tz
 
-date_choices = []
+from_zone = tz.gettz('UTC')
+to_zone = tz.gettz('America/New_York')
 
 class DateTransformer(app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, date: str) -> Optional[datetime.datetime]:
@@ -112,72 +113,80 @@ class Statcat(commands.Cog):
         """
 
         # Tells the user to wait a sec
-        await interaction.response.send_message(content="Wait just a meowment :3", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
 
         # Gets the dates
+        start = time.time()
         dates = await date_handler(interaction, date1, date2)
         if dates is None:
             return
+        end = time.time()
+        print(f"date_handler: {end-start}")
+
+        start = time.time()
+        messages = await load_messages(interaction, dates)
+        end = time.time()
+        print(f"load_messages: {end-start}")
+
+        start = time.time()
+        stats = generate_stats(search, messages, user)
+        end = time.time()
+        print(f"generate_stats: {end-start}")
+
+        await interaction.followup.send(stats)
         
-        message_list = await load_messages(interaction, dates)
+def generate_stats(search, messages, user):
+    stats = {
+        "messages": 0,
+        "words": 0,
+        "images": 0,
+        "gifs": 0,
+        "mentions": {},
+        "authors": {},
+        "dates": {}
+    }
 
-        stats = generate_stats(option, search, message_list, user)
+    for date in messages:
+        for message in messages[date]:
+            inc = 1
+            if search is not None:
+                wc = len(re.findall(r"\b"+re.escape(search)+r"\b", message["content"].lower()))
+                stats["words"] += wc
+                if wc == 0:
+                    inc = 0
 
-        print(stats)
-        
-def generate_stats(option, search, messages, user):
-    stat_count = 0
-    authors, dates, mentions = {}, {}, {}
-    for message in messages:
-        count = 0
-        if option == "word":
-            count = len(re.findall(r"\b"+re.escape(search)+r"\b", message["content"].lower()))
-        elif option == "image":
-                count = message["num_attachments"]
-        elif option == "gif":
-            count = (lambda x : 1 if x else 0)(message["gif"])
-        elif option == "message":
-            count+=1
-        # elif option == "mention":
-        #     for mention in message["mentions"]:
-        #         if mention not in authors.keys():
-        #             mentions[mention] = 1
-        #         else:
-        #             mentions[mention] += 1
+            stats["messages"] += inc
+            stats["images"] += message["num_attachments"]*inc
+            stats["gifs"] += (lambda x : inc if x else 0)(message["gif"])
+            # if inc == 1 and message["gif"]:
+            #     print(message["content"])
 
-        if user is not None and str(message["author"]) == user[2:len(user)-1]:
-            stat_count += count
-        elif user is None:
-            stat_count += count
-        else:
-            count = 0
+            for mention in message["mentions"]:
+                if mention not in stats["mentions"]:
+                    stats["mentions"][mention] = inc
+                else:
+                    stats["mentions"][mention] += inc
             
-        if count != 0:
-            if message["author"] not in authors.keys():
-                authors[message["author"]] = count
+            if message["author"] not in stats["authors"]:
+                stats["authors"][message["author"]] = inc
             else:
-                authors[message["author"]] += count
+                stats["authors"][message["author"]] += inc
 
-            timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
-            local_timestamp = utc_to_est(timestamp)
-
-            if local_timestamp not in dates.keys():
-                dates[local_timestamp] = count
+            if date.date() not in stats["dates"]:
+                stats["dates"][date.date()] = inc
             else:
-                dates[local_timestamp] += count
+                stats["dates"][date.date()] += inc
 
-    authors = sorted(authors.items(), key=lambda x:x[1], reverse=True)
-    dates = sorted(dates.items(), key=lambda x:x[1], reverse=True)
+    stats["mentions"] = sorted(stats["mentions"].items(), key=lambda x:x[1], reverse=True)[0]
+    stats["authors"] = sorted(stats["authors"].items(), key=lambda x:x[1], reverse=True)[0]
+    stats["dates"] = sorted(stats["dates"].items(), key=lambda x:x[1], reverse=True)[0]
 
-    if stat_count > 0:
-        return {option: stat_count, dates[0][0]: dates[0][1], authors[0][0]: authors[0][1]}
-    else:
-        return None
+    return stats
 
 
 def utc_to_est(date):
-    from_zone = tz.gettz('UTC')
-    to_zone = tz.gettz('America/New_York')
+    global from_zone
+    global to_zone
     utc = date.replace(tzinfo=from_zone)
     est_date = str(utc.astimezone(to_zone).date())
     return est_date
@@ -200,7 +209,7 @@ async def date_handler(interaction: discord.Interaction, date1, date2):
     return dates
 
 async def load_messages(interaction, dates):
-    message_list = []
+    message_dict = {}
 
     # TODO: potentially implement this? it adds a lot of time
     # today = (datetime.datetime.today()).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -208,7 +217,6 @@ async def load_messages(interaction, dates):
     # # Remove current day so that it can be replaced
     # if os.path.exists(f"data/messages-{today.date()}.json"):
     #     os.remove(f"data/messages-{today.date()}.json")
-
     for date in dates:
         if not os.path.exists(f"data/messages-{date.date()}.json"):
             # Gets the message history for all text channels on the specified date
@@ -219,10 +227,11 @@ async def load_messages(interaction, dates):
 
             # Translates the messages to a dict, then puts it into a json file for that date
             messages_to_json(messages, date)
+        
         with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
             temp_dict = json.load(messages_json)
-            message_list += temp_dict["messages"]
-    return message_list
+            message_dict[date] = temp_dict["messages"]
+    return message_dict
 
 def messages_to_json(messages, date):
     """ Formats messages into dictionary/json format and writes them to a file.
