@@ -86,8 +86,9 @@ class Statcat(commands.Cog):
         self, 
         interaction: 
         discord.Interaction, 
-        option: Literal['word', 'user'], 
-        search: str, 
+        option: Literal['message', 'word', 'image', 'gif', 'mention'], 
+        search: Optional[str]=None,
+        user: Optional[str]=None, 
         date1: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All", 
         date2: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All"
     ) -> None:
@@ -110,91 +111,118 @@ class Statcat(commands.Cog):
                 The end date of the date range
         """
 
-
-        if date1 is None or date2 is None:
-            await interaction.response.send_message(content="It seems you've entered the date in the wrong format. Try MM-dd-YYYY or MM/dd/YYYY", ephemeral=True)
-            return
-        elif date1 == "All" and date2 == "All":
-            dates = [datetime.datetime(2019,11,14,0,0,0)+datetime.timedelta(days=x) for x in range((datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)-datetime.datetime(2019,11,14,0,0,0)).days)]
-        elif date1 == "All":
-            dates = [date2]
-        elif date2 == "All":
-            dates = [date1]
-        else:
-            dates = [date1+datetime.timedelta(days=x) for x in range((date2+datetime.timedelta(days=1)-date1).days)]
-        
-        if len(dates) == 0:
-            await interaction.response.send_message(content="You flipped your start-date and end-date! Fix that, why don't you!?", ephemeral=True)
-            return
-        
+        # Tells the user to wait a sec
         await interaction.response.send_message(content="Wait just a meowment :3", ephemeral=True)
+
+        # Gets the dates
+        dates = await date_handler(interaction, date1, date2)
+        if dates is None:
+            return
+        
+        message_list = await load_messages(interaction, dates)
+
+        stats = generate_stats(option, search, message_list, user)
+
+        print(stats)
+        
+def generate_stats(option, search, messages, user):
+    stat_count = 0
+    authors, dates, mentions = {}, {}, {}
+    for message in messages:
+        count = 0
+        if option == "word":
+            count = len(re.findall(r"\b"+re.escape(search)+r"\b", message["content"].lower()))
+        elif option == "image":
+                count = message["num_attachments"]
+        elif option == "gif":
+            count = (lambda x : 1 if x else 0)(message["gif"])
+        elif option == "message":
+            count+=1
+        # elif option == "mention":
+        #     for mention in message["mentions"]:
+        #         if mention not in authors.keys():
+        #             mentions[mention] = 1
+        #         else:
+        #             mentions[mention] += 1
+
+        if user is not None and str(message["author"]) == user[2:len(user)-1]:
+            stat_count += count
+        elif user is None:
+            stat_count += count
+        else:
+            count = 0
             
-        message_list = []
-        for date in dates:
-            if not os.path.exists(f"data/messages-{date.date()}.json"):
-                # Gets the message history for all text channels on the specified date
-                messages = []
-                for channel in interaction.guild.channels:
-                    if type(channel) is discord.TextChannel: 
-                        messages += [message async for message in channel.history(limit=None, after=date, before=date+datetime.timedelta(days=1), oldest_first=True)]
+        if count != 0:
+            if message["author"] not in authors.keys():
+                authors[message["author"]] = count
+            else:
+                authors[message["author"]] += count
 
-                # Translates the messages to a dict, then puts it into a json file for that date
-                messages_to_json(messages, date)
-            with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
-                temp_dict = json.load(messages_json)
-                message_list += temp_dict["messages"]
+            timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
+            local_timestamp = utc_to_est(timestamp)
+
+            if local_timestamp not in dates.keys():
+                dates[local_timestamp] = count
+            else:
+                dates[local_timestamp] += count
+
+    authors = sorted(authors.items(), key=lambda x:x[1], reverse=True)
+    dates = sorted(dates.items(), key=lambda x:x[1], reverse=True)
+
+    if stat_count > 0:
+        return {option: stat_count, dates[0][0]: dates[0][1], authors[0][0]: authors[0][1]}
+    else:
+        return None
 
 
-        message_authors = {}
-        message_dates = {}
-        if option == 'word':
-            word_count = 0
-            for message in message_list:
-                count = len(re.findall(r"\b"+re.escape(search)+r"\b", message["content"].lower()))
-                word_count += count
+def utc_to_est(date):
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/New_York')
+    utc = date.replace(tzinfo=from_zone)
+    est_date = str(utc.astimezone(to_zone).date())
+    return est_date
 
-                if count > 0:
+async def date_handler(interaction: discord.Interaction, date1, date2):
+    if date1 is None or date2 is None:
+        await interaction.response.send_message(content="It seems you've entered the date in the wrong format. Try MM-dd-YYYY or MM/dd/YYYY", ephemeral=True)
+        return None
+    elif date1 == "All" and date2 == "All":
+        dates = [datetime.datetime(2019,11,14,0,0,0)+datetime.timedelta(days=x) for x in range((datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)-datetime.datetime(2019,11,14,0,0,0)).days)]
+    elif date1 == "All":
+        dates = [date2]
+    elif date2 == "All":
+        dates = [date1]
+    else:
+        dates = [date1+datetime.timedelta(days=x) for x in range((date2+datetime.timedelta(days=1)-date1).days)]
+    if len(dates) == 0:
+        await interaction.response.send_message(content="You flipped your start-date and end-date! Fix that, why don't you!?", ephemeral=True)
+        return None
+    return dates
 
-                    timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
-                    from_zone = tz.gettz('UTC')
-                    to_zone = tz.gettz('America/New_York')
-                    utc = timestamp.replace(tzinfo=from_zone)
-                    local_timestamp = str(utc.astimezone(to_zone).date())
+async def load_messages(interaction, dates):
+    message_list = []
 
-                    if message["author"] not in message_authors.keys():
-                        message_authors[message["author"]] = count
-                    else:
-                        message_authors[message["author"]] += count
+    # TODO: potentially implement this? it adds a lot of time
+    # today = (datetime.datetime.today()).replace(hour=0, minute=0, second=0, microsecond=0)
+        
+    # # Remove current day so that it can be replaced
+    # if os.path.exists(f"data/messages-{today.date()}.json"):
+    #     os.remove(f"data/messages-{today.date()}.json")
 
-                    if local_timestamp not in message_dates.keys():
-                        message_dates[local_timestamp] = count
-                    else:
-                        message_dates[local_timestamp] += count
-                
-            message_authors = dict(sorted(message_authors.items(), key=lambda x:x[1], reverse=True))
-            message_dates = dict(sorted(message_dates.items(), key=lambda x:x[1], reverse=True))
-            
-            await interaction.channel.send(f"Counted {word_count} occurances of the word \"{search}\" from {dates[0].date()} to {dates[len(dates)-1].date()}")
-        elif option == "user":
-            tag = search[2:len(search)-1]
-            message_count = 0
-            for message in message_list:
-                if str(message["author"]) == tag:
-                    message_count += 1
-                    timestamp = datetime.datetime.strptime(message["timestamp"][0:18], "%Y-%m-%d %H:%M:%S")
-                    from_zone = tz.gettz('UTC')
-                    to_zone = tz.gettz('America/New_York')
-                    utc = timestamp.replace(tzinfo=from_zone)
-                    local_timestamp = str(utc.astimezone(to_zone).date())
+    for date in dates:
+        if not os.path.exists(f"data/messages-{date.date()}.json"):
+            # Gets the message history for all text channels on the specified date
+            messages = []
+            for channel in interaction.guild.channels:
+                if type(channel) is discord.TextChannel: 
+                    messages += [message async for message in channel.history(limit=None, after=date, before=date+datetime.timedelta(days=1), oldest_first=True)]
 
-                    if local_timestamp not in message_dates.keys():
-                        message_dates[local_timestamp] = 1
-                    else:
-                        message_dates[local_timestamp] += 1
-                
-            message_dates = sorted(message_dates.items(), key=lambda x:x[1], reverse=True)
-            await interaction.channel.send(f"User {search} sent {message_count} messages from {dates[0].date()} to {dates[len(dates)-1].date()} with the most messages occuring on {message_dates[0][0]} at {message_dates[0][1]} messages.")
-
+            # Translates the messages to a dict, then puts it into a json file for that date
+            messages_to_json(messages, date)
+        with open(f"data/messages-{date.date()}.json", 'r') as messages_json:
+            temp_dict = json.load(messages_json)
+            message_list += temp_dict["messages"]
+    return message_list
 
 def messages_to_json(messages, date):
     """ Formats messages into dictionary/json format and writes them to a file.
@@ -238,7 +266,6 @@ def messages_to_json(messages, date):
             json.dump(dict_to_json, messages_json, indent=4)
     else:
         return
-
 
 async def setup(bot: commands.Bot):
   """ Sets up the cog
