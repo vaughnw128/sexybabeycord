@@ -3,3 +3,4 @@ config.py
 __pycache__
 cogs/__pycache__
 data
+.DS_STORE
