@@ -19,6 +19,11 @@ from typing import Optional
 import re
 from config import guild
 from dateutil import tz
+import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator, MaxNLocator)
+import matplotlib.dates as mdates
+import math
 
 from_zone = tz.gettz('UTC')
 to_zone = tz.gettz('America/New_York')
@@ -122,30 +127,105 @@ class Statcat(commands.Cog):
 
         messages = await load_messages(interaction, dates)
         
-        stats = generate_stats(search, messages, user)
+        stats = generate_stats(search, messages, user, option)
         
         end = time.time()
         runtime = round(end-start, 2)
-        embed = generate_embed(interaction, stats, search, user, dates, runtime)
+        embed = generate_embed(self, interaction, stats, search, user, dates, runtime, option)
         await interaction.channel.send(embed=embed)
         await interaction.followup.send("Done!")
+    
+    @app_commands.command(name="statgraph")
+    @app_commands.rename(date1="start-date")
+    @app_commands.rename(date2="end-date")
+    async def statgraph(
+        self, 
+        interaction: discord.Interaction, 
+        option: Literal['message', 'word', 'image', 'gif', 'mention'], 
+        search: Optional[str]=None,
+        user: Optional[str]=None, 
+        date1: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All", 
+        date2: Optional[app_commands.Transform[datetime.datetime, DateTransformer]]="All"
+    ) -> None:
+        # Tells the user to wait a sec
+        await interaction.response.defer(ephemeral=True)
+
+        # Gets the dates
+        start = time.time()
+        dates = await date_handler(interaction, date1, date2)
+        if dates is None:
+            return
+
+        messages = await load_messages(interaction, dates)
+        stats = generate_stats(search, messages, user, option)
+
+        sorted_dates = sorted(dict(stats["dates"]).items(), key=lambda x: x[0])
+        date_list = [[elem1, elem2] for elem1, elem2 in sorted_dates]
         
-def generate_embed(interaction, stats, search, user, dates, runtime):
+        stat_dates = []
+        if len(date_list) > 28:
+            for i,date in enumerate(date_list):
+                if i % 7 == 0:
+                    stat_dates.append(date)
+                else:
+                    stat_dates[i//7][1] += date[1] 
+        else:
+            stat_dates = date_list
+
+        plt.close('all')
+
+        if len(date_list) > 28:
+            dtFmt = mdates.DateFormatter('%Y-%b') # define the formatting
+            plt.gca().xaxis.set_major_formatter(dtFmt) 
+            plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+        else:
+            dtFmt = mdates.DateFormatter('%Y-%b-%d') # define the formatting
+            plt.gca().xaxis.set_major_formatter(dtFmt) 
+        
+        plt.xticks(rotation=45, fontsize='x-small')
+        
+        ticklist = [x[1] for x in stat_dates]
+        ticklist = range(math.floor(min(ticklist)), math.ceil(max(ticklist))+1)
+        plt.yticks(ticklist)
+        plt.locator_params(axis='y', nbins=10)
+        plt.plot(*zip(*stat_dates))
+
+        title = f"{option}s between {dates[0].date()} and {dates[len(dates)-1].date()}"
+        if search is not None:
+            title += f"\nSearch: {search}"
+        if user is not None:
+            title += f", User: {self.bot.get_user(int(user[2:len(user)-1]))}"
+        plt.title(title)
+        plt.xlabel("Dates")
+        plt.savefig('stats.png')
+
+        await interaction.followup.send("Done!")
+        await interaction.channel.send(file=discord.File("stats.png"))
+
+
+def generate_embed(self, interaction, stats, search, user, dates, runtime, option):
     embed=discord.Embed(title="Statistics", description=f"Message statistics for {interaction.guild} between {dates[0].date()} and {dates[len(dates)-1].date()}", color=0x6de0bd)
+    embed.add_field(name="Option", value=f"`{option}`", inline=False)
     if user is not None:
-        embed.add_field(name="User", value=user, inline=True)
-    embed.add_field(name="Messages", value=stats["message_count"], inline=True)
+        embed.add_field(name="Searched User", value=f"`{self.bot.get_user(int(user[2:len(user)-1]))}`", inline=False)
+    if option != "gif" and option != "image":
+        embed.add_field(name="Message Count", value=f"`{stats['message_count']}`", inline=False)
     if search is not None:
-        embed.add_field(name="String", value=search, inline=True)
-    embed.add_field(name="Images", value=stats["image_count"], inline=True)
-    embed.add_field(name="Gifs", value=stats["gif_count"], inline=True)
-    embed.add_field(name="Author", value=stats["authors"][0], inline=True)
-    embed.add_field(name="Date", value=stats["dates"][0], inline=True)
-    embed.add_field(name="Mentions", value=stats["mentions"][0], inline=True)
+        embed.add_field(name="Searched String", value=f"{search}", inline=False)
+        embed.add_field(name="Occurance Count", value=f"`{stats['word_count']}`", inline=False)
+        option = search
+    if option != "gif":
+        embed.add_field(name="Image Count", value=f"`{stats['image_count']}`", inline=False)
+    if option != "image":
+        embed.add_field(name="Gif Count", value=f"`{stats['gif_count']}`", inline=False)
+    if user is None:
+        embed.add_field(name="Author", value=f"User `{self.bot.get_user(stats['authors'][0][0])}` sent `{stats['authors'][0][1]}` {option}s", inline=False)
+    embed.add_field(name="Date", value=f"`{stats['dates'][0][1]}` {option}s were sent on `{stats['dates'][0][0]}`", inline=False)
+    # embed.add_field(name="Mentions", value=stats["mentions"][0], inline=False)
     embed.set_footer(text=f"Generated in {runtime} seconds.")
     return embed
 
-def generate_stats(search, messages, user):
+def generate_stats(search, messages, user, option):
     stats = {
         "message_count": 0,
         "word_count": 0,
@@ -159,7 +239,7 @@ def generate_stats(search, messages, user):
 
     for date in messages:
         for message in messages[date]:
-            inc, wc = 1, 1
+            inc, wc, gc, ic = 1, 1, 1, 1
 
             if user is not None:
                 if str(message["author"]) != user[2:len(user)-1]:
@@ -173,6 +253,12 @@ def generate_stats(search, messages, user):
 
             stats["message_count"] += inc
             stats["image_count"] += message["num_attachments"]*inc
+
+            if option == "gif" and not message["gif"]:
+                inc = 0
+            
+            if option == "image" and message["num_attachments"] == 0:
+                inc = 0
 
             if message["gif"]:
                 giflink = re.match(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)", message["content"])
@@ -192,9 +278,9 @@ def generate_stats(search, messages, user):
                     stats["mentions"][mention] += inc
             
             if message["author"] not in stats["authors"]:
-                stats["authors"][message["author"]] = inc
+                stats["authors"][message["author"]] = inc*wc
             else:
-                stats["authors"][message["author"]] += inc
+                stats["authors"][message["author"]] += inc*wc
 
             if date.date() not in stats["dates"]:
                 stats["dates"][date.date()] = inc*wc
