@@ -17,10 +17,10 @@ friends seem to as well.
 The current components (cogs) of the bot are as follows:
 - Astropix: Scrapes and sends the NASA picture of the day every day at noon.
 - Statcat: Message statistics generator.
+- Distort: Grabs images from messages then uses liquid rescaling to distort and resend them.
 
 Components that I plan on adding in the future:
-- Distort: One of the oldest bots that I've written, but is now rusty and in disrepair. It needs to be revived!
-    
+- Not sure!
     
     
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>
