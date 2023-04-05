@@ -28,48 +28,60 @@ class Distort(commands.Cog):
     async def distort_ctx(self, interaction: discord.Interaction, message: discord.Message):
 
         await interaction.response.defer(ephemeral=True)
-
-        fname = await grab_file(message) # Grabs the image
+        try:
+            fname = await grab_file(message) # Grabs the image
+        except Exception:
+            await interaction.followup.send("An unexpected error occured while trying to fetch the image.")
+            return
         if fname is None:
             await interaction.followup.send("The message you tried to distort is either not an image, or is of an invalid type.")
             return
 
-        print(fname)
-
-        distort(fname)
+        try:
+            distort(fname)
+        except Exception:
+            await interaction.followup.send("An unexpected error occured while trying to distort the image.")
+            return
+        
         await interaction.followup.send("Done!")
-        await interaction.channel.send(file=discord.File(fname))
+        await interaction.channel.send(file=discord.File(fname), view=DistortView(timeout=None))
+        os.remove(fname)
 
+    
+# View setup for the buttons
+class DistortView(discord.ui.View):
+
+    @discord.ui.button(label="Distort", style=discord.ButtonStyle.green)
+    async def distort_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+        fname = await grab_file(interaction.message)
+        distort(fname)
+        await interaction.message.edit(attachments=[discord.File(fname)])
+        os.remove(fname)
+        await interaction.response.defer()
+    
+    @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
+    async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.message.edit(view=None)
+        await interaction.response.defer(thinking="Fart")
 
 def distort(fname: str):
-    
     with Image(filename=fname) as temp_img:
         if fname.endswith('gif'):
-            # with Image() as new:
-            #     with Image(filename=fname) as source:
-            #         for frame in source.sequence:
-            #             if frame.width > 1 and frame.height > 1:
-            #                 x, y = frame.width, frame.height
-                            
-            #                 frame.resize(x, y)
-            #                 new.sequence.append(frame)
             with Image() as dst_image:
                 with Image(filename=fname) as src_image:
-                    for frame in src_image.sequence:
-                        if frame.width > 1 and frame.height > 1:
-                            x, y = frame.width, frame.height
-                            frame.liquid_rescale(x//2, y//2)
-                            frame.resize(x, y)
-                            dst_image.sequence.append(frame)
+                    src_image.coalesce()
+                    for i,frame in enumerate(src_image.sequence):
+                        frameimage = Image(image=frame)
+                        x, y = frame.width, frame.height
+                        if x > 1 and y > 1:
+                            frameimage.liquid_rescale(round(x*.60), round(y*.60))
+                            dst_image.sequence.append(frameimage)
+                dst_image.optimize_layers()
+                dst_image.optimize_transparency()
                 dst_image.save(filename=fname)
-            with Image(filename=fname) as img:      
-                debug_layers(img, 'layers-expanded.png')
-                # new.type = 'optimize'
-                # new.save(filename=fname)
         else:
             temp_img.liquid_rescale(round(temp_img.width*.60), round(temp_img.height*.60))
             temp_img.save(filename=fname)
-    
 
 async def grab_file(message: discord.Message):
     types = ["png", "jpg", "jpeg", "gif", "mp4"]
@@ -98,7 +110,6 @@ async def grab_file(message: discord.Message):
     url = url.partition("?")[0]
 
     if "tenor" in url:
-        print(url)
         id = url.split("-")[len(url.split("-"))-1]
         resp = requests.get(f"https://tenor.googleapis.com/v2/posts?key={tenorkey}&ids={id}&limit=1")
         data = resp.json()
@@ -116,17 +127,6 @@ async def grab_file(message: discord.Message):
                 f.write(r.read())
     
     return fname
-
-def debug_layers(image, output):
-    print('Debugging to file', output)
-    with Image(image) as img:
-        img.background_color = Color('lime')
-        for index, frame in enumerate(img.sequence):
-            print('Frame {0} size : {1} page: {2}'.format(index,
-                                                          frame.size,
-                                                          frame.page))
-        img.concat(stacked=True)
-        img.save(filename=output)
 
 async def setup(bot: commands.Bot):
     """ Sets up the cog
