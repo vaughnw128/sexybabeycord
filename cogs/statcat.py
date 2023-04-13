@@ -18,15 +18,15 @@ import time
 from typing import Optional
 import re
 from config import guild
-from dateutil import tz
+# from dateutil import tz
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator, MaxNLocator)
 import matplotlib.dates as mdates
 import math
 
-from_zone = tz.gettz('UTC')
-to_zone = tz.gettz('America/New_York')
+# from_zone = tz.gettz('UTC')
+# to_zone = tz.gettz('America/New_York')
 
 class DateTransformer(app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, date: str) -> Optional[datetime.datetime]:
@@ -294,12 +294,12 @@ def generate_stats(search, messages, user, option):
 
     return stats
 
-def utc_to_est(date):
-    global from_zone
-    global to_zone
-    utc = date.replace(tzinfo=from_zone)
-    est_date = str(utc.astimezone(to_zone).date())
-    return est_date
+# def utc_to_est(date):
+#     global from_zone
+#     global to_zone
+#     utc = date.replace(tzinfo=from_zone)
+#     est_date = str(utc.astimezone(to_zone).date())
+#     return est_date
 
 async def date_handler(interaction: discord.Interaction, date1, date2):
     if date1 is None or date2 is None:

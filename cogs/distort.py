@@ -44,25 +44,25 @@ class Distort(commands.Cog):
             return
         
         await interaction.followup.send("Done!")
-        await interaction.channel.send(file=discord.File(fname), view=DistortView(timeout=None))
-        os.remove(fname)
+        await interaction.channel.send(file=discord.File(fname), view=DistortView(fname))
 
     
 # View setup for the buttons
 class DistortView(discord.ui.View):
+    def __init__(self, fname):
+        super().__init__()
+        self.fname = fname
 
     @discord.ui.button(label="Distort", style=discord.ButtonStyle.green)
     async def distort_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-        fname = await grab_file(interaction.message)
-        distort(fname)
-        await interaction.message.edit(attachments=[discord.File(fname)])
-        os.remove(fname)
+        distort(self.fname)
+        await interaction.message.edit(attachments=[discord.File(self.fname)])
         await interaction.response.defer()
     
     @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
     async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.message.edit(view=None)
-        await interaction.response.defer(thinking="Fart")
+        await interaction.response.defer()
+        await interaction.response.edit_message(view=None)
 
 def distort(fname: str):
     with Image(filename=fname) as temp_img:
@@ -75,12 +75,15 @@ def distort(fname: str):
                         x, y = frame.width, frame.height
                         if x > 1 and y > 1:
                             frameimage.liquid_rescale(round(x*.60), round(y*.60))
+                            frameimage.resize(x,y)
                             dst_image.sequence.append(frameimage)
                 dst_image.optimize_layers()
                 dst_image.optimize_transparency()
                 dst_image.save(filename=fname)
         else:
-            temp_img.liquid_rescale(round(temp_img.width*.60), round(temp_img.height*.60))
+            x, y = temp_img.width, temp_img.height
+            temp_img.liquid_rescale(round(x*.60), round(y*.60))
+            temp_img.resize(x,y)
             temp_img.save(filename=fname)
 
 async def grab_file(message: discord.Message):
