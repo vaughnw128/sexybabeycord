@@ -85,6 +85,7 @@ class Statcat(commands.Cog):
         # Translates the messages to a dict, then puts it into a json file for that date
         messages_to_json(messages, date)
 
+
     @app_commands.command(name="statcat")
     @app_commands.rename(date1="start-date")
     @app_commands.rename(date2="end-date")
@@ -202,7 +203,6 @@ class Statcat(commands.Cog):
         await interaction.followup.send("Done!")
         await interaction.channel.send(file=discord.File("stats.png"))
 
-
 def generate_embed(self, interaction, stats, search, user, dates, runtime, option):
     embed=discord.Embed(title="Statistics", description=f"Message statistics for {interaction.guild} between {dates[0].date()} and {dates[len(dates)-1].date()}", color=0x6de0bd)
     embed.add_field(name="Option", value=f"`{option}`", inline=False)
@@ -294,12 +294,6 @@ def generate_stats(search, messages, user, option):
 
     return stats
 
-# def utc_to_est(date):
-#     global from_zone
-#     global to_zone
-#     utc = date.replace(tzinfo=from_zone)
-#     est_date = str(utc.astimezone(to_zone).date())
-#     return est_date
 
 async def date_handler(interaction: discord.Interaction, date1, date2):
     if date1 is None or date2 is None:
