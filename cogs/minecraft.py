@@ -2,8 +2,9 @@ import discord
 from discord.ext import tasks, commands
 from discord import app_commands
 from mcstatus import JavaServer
+from config import mcserver
 
-server = JavaServer.lookup("mc.sbcord.com")
+server = JavaServer.lookup(mcserver)
 
 class Minecraft(commands.Cog):
     def __init__(self, bot: commands.Bot):
