@@ -5,8 +5,8 @@ cogs/__pycache__
 data
 .DS_STORE
 stats.png
-images
-audio
+images/*
+audio/*
 ffmpeg.exe
 ffplay.exe
 ffprobe.exe

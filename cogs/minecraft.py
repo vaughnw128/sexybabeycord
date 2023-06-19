@@ -4,7 +4,7 @@ from discord import app_commands
 from mcstatus import JavaServer
 from config import mcserver
 
-server = JavaServer.lookup(mcserver)
+
 
 class Minecraft(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -12,6 +12,7 @@ class Minecraft(commands.Cog):
 
     @app_commands.command(name="status")
     async def status(self, interaction: discord.Interaction):
+        server = JavaServer.lookup(mcserver)
         status = server.status()
         query = server.query()
         embed=discord.Embed(title="Minecraft Server Status", color=0x86f7a3)
