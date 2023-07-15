@@ -1,7 +1,6 @@
-import discord, logging, json
+import discord
 from discord.ext import commands
 from discord import app_commands
-from discord.ext import commands
 import urllib
 import speech_recognition as sr
 from pydub import AudioSegment

@@ -12,6 +12,10 @@ chaotic groupchat than a high-functioning Discord 'community,' as we all have Ad
 permissions, and we don't particularly care for rules. I love making bots for our server, and my
 friends seem to as well.
 
+## Usage
+
+This bot now uses poetry to manage dependencies, and can therefore be run with `poetry run python sexybabeycord.py`. No dependencies have to be installed, as the virtual environment will handle it. Environment variables will need to be supplied in a .env file.
+
 ## Components
 
 The current components (cogs) of the bot are as follows:

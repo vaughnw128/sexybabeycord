@@ -24,9 +24,10 @@
 import discord
 from discord.ext import commands
 from typing import Literal, Optional
-from config import token
 import os
 from discord.ext.commands import Greedy, Context
+
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Defines the bot intents and the client
 intents = discord.Intents.all()
@@ -100,4 +101,4 @@ async def on_ready():
     print("Sexybabeycord: Now I'm all spooled up!")
     await load_cogs()
 
-client.run(token)
+client.run(DISCORD_TOKEN)

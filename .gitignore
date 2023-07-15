@@ -7,6 +7,7 @@ data
 stats.png
 images/*
 audio/*
-ffmpeg.exe
-ffplay.exe
-ffprobe.exe
+audio
+lib
+images
+.env

@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "sexybabeycord"
+version = "0.1.0"
+description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
+authors = ["Vaughn Woerpel"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Wand = "^0.6.11"
+aiohttp = "^3.8.4"
+beautifulsoup4 = "^4.12.2"
+chromedriver-autoinstaller = "^0.4.1"
+"discord.py" = "^2.3.1"
+ffmpy = "^0.3.0"
+matplotlib = "^3.7.2"
+pydub = "^0.25.1"
+pymongo = "^4.4.1"
+requests = "^2.31.0"
+syllables = "^1.0.7"
+validators = "^0.20.0"
+speechrecognition = "^3.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

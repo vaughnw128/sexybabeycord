@@ -9,7 +9,7 @@ import datetime
 from typing import Literal, Optional
 import re
 import time
-import chromedriver_autoinstaller
+
 
 # Create a new client and connect to the server
 mongo_client = MongoClient(uri, server_api=ServerApi('1'))

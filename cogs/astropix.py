@@ -9,12 +9,15 @@
 
 import discord
 from discord.ext import tasks, commands
-from config import guild, channel
 import bs4 as bs
 import aiohttp
 import urllib
 import io
 from datetime import time
+import os
+
+GUILD = os.getenv('GUILD')
+CHANNEL = os.getenv('CHANNEL')
 
 class Astropix(commands.Cog):
     """ A Discord Cog to handle scraping and sending the NASA picture of the day.
@@ -50,8 +53,8 @@ class Astropix(commands.Cog):
         """
 
         self.bot = bot
-        self.guild = bot.get_guild(int(guild))
-        self.channel = self.guild.get_channel(int(channel))
+        self.guild = bot.get_guild(int(GUILD))
+        self.channel = self.guild.get_channel(int(CHANNEL))
         self.schedule_send.start()
     
     async def scrape_and_send(self):

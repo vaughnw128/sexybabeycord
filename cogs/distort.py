@@ -1,19 +1,15 @@
-import discord, logging, json
-from discord.ext import commands
-from config import tenorkey
+import discord
 from wand.image import Image
 from discord import app_commands
 from discord.ext import commands
 import urllib
 import requests
 import os
-from os import sys
-from wand.color import Color
-import imghdr
 import validators
-import ffmpy
-import urllib 
-import re
+import urllib
+
+
+TENOR_TOKEN = os.getenv('TENOR_TOKEN')
 
 class Distort(commands.Cog):
     
@@ -114,7 +110,7 @@ async def grab_file(message: discord.Message):
 
     if "tenor" in url:
         id = url.split("-")[len(url.split("-"))-1]
-        resp = requests.get(f"https://tenor.googleapis.com/v2/posts?key={tenorkey}&ids={id}&limit=1")
+        resp = requests.get(f"https://tenor.googleapis.com/v2/posts?key={TENOR_TOKEN}&ids={id}&limit=1")
         data = resp.json()
         url = data['results'][0]['media_formats']['mediumgif']['url']
     
