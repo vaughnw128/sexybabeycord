@@ -17,13 +17,12 @@ import os
 import time
 from typing import Optional
 import re
-from config import guild
 # from dateutil import tz
 import matplotlib.pyplot as plt
-from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
-                               AutoMinorLocator, MaxNLocator)
 import matplotlib.dates as mdates
 import math
+
+GUILD = os.getenv("GUILD")
 
 # from_zone = tz.gettz('UTC')
 # to_zone = tz.gettz('America/New_York')

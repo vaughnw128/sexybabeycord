@@ -22,7 +22,6 @@ class SpeechToText(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         
         url = str(message.attachments[0])
-        print(url)
         if 'voice-message.ogg' in url:
             fname = url.split("/")
             fname = "audio/"+fname[len(fname)-1]

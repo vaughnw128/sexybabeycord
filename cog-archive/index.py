@@ -4,12 +4,11 @@ from discord import app_commands
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import pymongo
-from config import uri, guild, channel
 import datetime
 from typing import Literal, Optional
 import re
-import time
 
+uri = ""
 
 # Create a new client and connect to the server
 mongo_client = MongoClient(uri, server_api=ServerApi('1'))

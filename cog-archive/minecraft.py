@@ -2,7 +2,8 @@ import discord
 from discord.ext import tasks, commands
 from discord import app_commands
 from mcstatus import JavaServer
-from config import mcserver
+
+mcserver=""
 
 server = JavaServer.lookup(mcserver)
 
