@@ -11,3 +11,4 @@ audio
 lib
 images
 .env
+fate.py

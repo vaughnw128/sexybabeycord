@@ -59,6 +59,9 @@ async def setup(bot: commands.Bot):
         The main cog runners commands.Bot object
     """
 
+    if not os.path.exists("audio"):
+        os.makedirs("audio")
+
     # Adds the cog and reports that it's loaded
     await bot.add_cog(SpeechToText(bot))
     print("SpeechToText: I'm loaded 🚀")

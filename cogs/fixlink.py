@@ -1,4 +1,3 @@
-import discord
 from discord.ext import tasks, commands
 import re
 
@@ -9,7 +8,7 @@ class FixLink(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         
-        link = re.search(r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram)([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])", message.content)
+        link = re.search(r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])", message.content)
         
         if link is not None:
             link = link.group(0)

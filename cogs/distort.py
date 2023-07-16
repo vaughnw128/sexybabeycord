@@ -136,6 +136,9 @@ async def setup(bot: commands.Bot):
         The main cog runners commands.Bot object
     """
 
+    if not os.path.exists("images"):
+        os.makedirs("images")
+
     # Adds the cog and reports that it's loaded
     await bot.add_cog(Distort(bot))
     print("Distort: I'm loaded 👺")
