@@ -55,10 +55,11 @@ class DistortView(discord.ui.View):
         await interaction.message.edit(attachments=[discord.File(self.fname)])
         await interaction.response.defer()
     
-    @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
-    async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        await interaction.response.edit_message(view=None)
+    # Lock view -- temporarily disabled
+    # @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
+    # async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     await interaction.response.defer()
+    #     await interaction.response.edit_message(view=None)
 
 def distort(fname: str):
     with Image(filename=fname) as temp_img:
