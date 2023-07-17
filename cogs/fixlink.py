@@ -1,3 +1,5 @@
+# fixlink.py
+# Simple cog to fix twitter, tiktok, and instagram links so they can embed properly into discord
 from discord.ext import tasks, commands
 import re
 
@@ -18,7 +20,8 @@ class FixLink(commands.Cog):
                 link = link[0] + "dd" + link[1]
             else:
                 link = link[0] + "vx" + link[1]
-            await message.reply(f"I fixed that one up for you, buddy!\n{link}")
+            await message.delete()
+            await message.channel.send(f"{message.author.mention} I fixed that one up for you, buddy!\n{link}")
 
 async def setup(bot: commands.Bot):
   """ Sets up the cog
