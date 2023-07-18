@@ -49,15 +49,17 @@ class Gabonga(commands.Cog):
         if message.author.id == 873414777064542268:
             return
         
-        # Only executes 4% of the time
-        if random.randint(100) > 96:
-            # Grabs the file using reused distort bot code
-            fname = await grab_file(message)
-            if fname is None:
-                return
-            
-            fname = gabonga(fname)
-            if fname is not None:
+        # Grabs the file using reused distort bot code
+        fname = await grab_file(message)
+        if fname is None:
+            return
+        
+        fname = gabonga(fname)
+
+
+        if fname is not None:
+            # Only executes 4% of the time
+            if random.randint(100) > 96:
                 await message.channel.send(content=f"{message.author.mention} I have two words...", file=discord.File(fname))
 
 # gabonga
