@@ -26,6 +26,7 @@ This bot now uses poetry to manage dependencies, and can therefore be run with `
 
 Installing dependencies with poetry:
 ```
+poetry env use 3.10.6
 poetry self add poetry-dotenv-plugin
 poetry install
 ```
