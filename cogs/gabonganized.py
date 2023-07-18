@@ -20,11 +20,11 @@ class Gabonga(commands.Cog):
                     name = "gabonga",
                     callback=self.gabonga_menu
                 )
-        self.bot.tree.add_command(self.distort_menu)
+        self.bot.tree.add_command(self.gabonga_menu)
 
-    async def gabonga_ctx(self, interaction: discord.Interaction, message: discord.Message):
+    async def gabonga_menu(self, interaction: discord.Interaction, message: discord.Message):
 
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
         try:
             fname = await grab_file(message) # Grabs the image
         except Exception:
@@ -36,12 +36,12 @@ class Gabonga(commands.Cog):
 
         try:
             fname = gabonga(fname)
+            await interaction.followup.send(content="I have two words...", file=discord.File(fname))
         except Exception:
-            await interaction.followup.send("An unexpected error occured while trying to gabonga the image.")
+            await interaction.followup.send("Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:")
             return
         
-        await interaction.followup.send("Get Gabonganized!!")
-        await interaction.channel.send(content="I have two words...", file=discord.File(fname))
+        
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -59,14 +59,16 @@ class Gabonga(commands.Cog):
 
         if fname is not None:
             # Only executes 4% of the time
-            if random.randint(100) > 96:
+            if random.randint(0,100) > 96:
                 await message.channel.send(content=f"{message.author.mention} I have two words...", file=discord.File(fname))
 
 # gabonga
 def gabonga(fname: str):
     # Uses face rec to grab the face and get the location
+    
     image = face_recognition.load_image_file(fname)
     face_locations = face_recognition.face_locations(image)
+    print(face_locations)
     if len(face_locations) == 0:
         return None
 
