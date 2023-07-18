@@ -14,7 +14,21 @@ friends seem to as well.
 
 ## Usage
 
+dlib is now required due to face_recognition in the gabonganizer.
+
+```
+git clone https://github.com/davisking/dlib.git
+cd dlib
+mkdir build; cd build; cmake ..; cmake --build .
+```
+
 This bot now uses poetry to manage dependencies, and can therefore be run with `poetry run python sexybabeycord.py`. No dependencies have to be installed, as the virtual environment will handle it. Environment variables will need to be supplied in a .env file.
+
+Installing dependencies with poetry:
+```
+poetry self add poetry-dotenv-plugin
+poetry install
+```
 
 ## Components
 
