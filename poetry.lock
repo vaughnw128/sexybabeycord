@@ -311,6 +311,20 @@ files = [
 ]
 
 [[package]]
+name = "click"
+version = "8.1.5"
+description = "Composable command line interface toolkit"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "click-8.1.5-py3-none-any.whl", hash = "sha256:e576aa487d679441d7d30abb87e1b43d24fc53bffb8758443b1a9e1cee504548"},
+    {file = "click-8.1.5.tar.gz", hash = "sha256:4be4b1af8d665c6d942909916d31a213a106800c47d0eeba73d34da3cbc11367"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[[package]]
 name = "cmudict"
 version = "1.0.13"
 description = "A versioned python wrapper package for The CMU Pronouncing Dictionary data files."
@@ -437,6 +451,16 @@ test = ["coverage[toml]", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
 
 [[package]]
+name = "dlib"
+version = "19.24.2"
+description = "A toolkit for making real world machine learning and data analysis applications"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dlib-19.24.2.tar.gz", hash = "sha256:2d4f618073bc6b297aa01ce05595a2d32b5b37e69cafd99f796e77346f6dcfb5"},
+]
+
+[[package]]
 name = "dnspython"
 version = "2.3.0"
 description = "DNS toolkit"
@@ -469,6 +493,34 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "face-recognition"
+version = "1.3.0"
+description = "Recognize faces from Python or from the command line"
+optional = false
+python-versions = "*"
+files = [
+    {file = "face_recognition-1.3.0-py2.py3-none-any.whl", hash = "sha256:c543e91c8cfbf24d19db04e511ebbddcb23894bcee510133729ee78e9f4b5e83"},
+    {file = "face_recognition-1.3.0.tar.gz", hash = "sha256:5e5efdd1686aa566af0d3cc1313b131e4b197657a8ffd03669e6d3fad92705ec"},
+]
+
+[package.dependencies]
+Click = ">=6.0"
+dlib = ">=19.7"
+face-recognition-models = ">=0.3.0"
+numpy = "*"
+Pillow = "*"
+
+[[package]]
+name = "face-recognition-models"
+version = "0.3.0"
+description = "Models used by the face_recognition package."
+optional = false
+python-versions = "*"
+files = [
+    {file = "face_recognition_models-0.3.0.tar.gz", hash = "sha256:b79bd200a88c87c9a9d446c990ae71c5a626d1f3730174e6d570157ff1d896cf"},
+]
 
 [[package]]
 name = "fake-useragent"
@@ -1545,4 +1597,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "885be443c78023e86c797ef515661ecb1b492ea9a956eb37522a32e00039b89e"
+content-hash = "eb1061207e745d7f333a00a0819133e40c3568e3a2afd760c35eb9e0aab3d01f"
