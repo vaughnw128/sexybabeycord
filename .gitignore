@@ -12,3 +12,4 @@ lib
 images
 .env
 accounts.db
+accounts.json

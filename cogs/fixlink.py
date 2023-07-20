@@ -1,7 +1,9 @@
 # fixlink.py
 # Simple cog to fix twitter, tiktok, and instagram links so they can embed properly into discord
-from discord.ext import tasks, commands
 import re
+
+from discord.ext import commands, tasks
+
 
 class FixLink(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -9,9 +11,11 @@ class FixLink(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        
-        link = re.search(r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])", message.content)
-        
+        link = re.search(
+            r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
+            message.content,
+        )
+
         if link is not None:
             link = link.group(0)
             link = re.split(r"(https:\/\/www.|https:\/\/)", link)
@@ -21,15 +25,18 @@ class FixLink(commands.Cog):
             else:
                 link = link[0] + "vx" + link[1]
             await message.delete()
-            await message.channel.send(f"{message.author.mention} I fixed that one up for you, buddy!\n{link}")
+            await message.channel.send(
+                f"{message.author.mention} I fixed that one up for you, buddy!\n{link}"
+            )
+
 
 async def setup(bot: commands.Bot):
-  """ Sets up the cog
+    """Sets up the cog
 
-     Parameters
-     -----------
-     bot: commands.Bot
-        The main cog runners commands.Bot object
-  """
-  await bot.add_cog(FixLink(bot))
-  print("fixlink: I'm loaded : 3")
+    Parameters
+    -----------
+    bot: commands.Bot
+       The main cog runners commands.Bot object
+    """
+    await bot.add_cog(FixLink(bot))
+    print("fixlink: I'm loaded : 3")
