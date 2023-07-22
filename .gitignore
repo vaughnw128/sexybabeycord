@@ -8,8 +8,8 @@ stats.png
 images/*
 audio/*
 audio
-lib
 images
 .env
 accounts.db
 accounts.json
+.mypy_cache

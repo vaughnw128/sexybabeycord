@@ -1,8 +1,7 @@
 # fixlink.py
 # Simple cog to fix twitter, tiktok, and instagram links so they can embed properly into discord
 import re
-
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 
 class FixLink(commands.Cog):
@@ -11,8 +10,10 @@ class FixLink(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+
         link = re.search(
-            r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
+            link_regex,
             message.content,
         )
 
@@ -26,7 +27,7 @@ class FixLink(commands.Cog):
                 link = link[0] + "vx" + link[1]
             await message.delete()
             await message.channel.send(
-                f"{message.author.mention} I fixed that one up for you, buddy!\n{link}"
+                f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{link}"
             )
 
 

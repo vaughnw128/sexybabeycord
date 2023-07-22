@@ -1,17 +1,13 @@
 # Gabonganized.py
 # When someone sends a face pic, they get gabonganized. Simple as.
-import os
 import random
-import urllib
 
 import discord
 import face_recognition
-import requests
-import validators
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-
+from lib.sblib import grab_file
 
 class Gabonga(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -36,6 +32,11 @@ class Gabonga(commands.Cog):
         if fname is None:
             await interaction.followup.send(
                 "The message you tried to gabonga is either not an image, or is of an invalid type."
+            )
+            return
+        elif fname.endswith(".gif"):
+            await interaction.followup.send(
+                "Gifs are not allowed!"
             )
             return
 
@@ -75,7 +76,6 @@ class Gabonga(commands.Cog):
 # gabonga
 def gabonga(fname: str):
     # Uses face rec to grab the face and get the location
-
     image = face_recognition.load_image_file(fname)
     face_locations = face_recognition.face_locations(image)
     if len(face_locations) == 0:
@@ -95,45 +95,6 @@ def gabonga(fname: str):
                 face.composite(gabonga, left=centered_x, top=centered_y)
             face.save(filename=fname)
     return fname
-
-
-# Reused code from distort bot but slightly trimmed down
-async def grab_file(message: discord.Message):
-    types = ["png", "jpg", "jpeg"]
-    url = None
-    # Finds the URL that the image is at
-    if message.embeds:
-        # Checks if the embed itself is an image and grabs the url
-        if message.embeds[0].url is not None:
-            url = message.embeds[0].url
-    # Checks to see if the image is a message attachment
-    elif message.attachments:
-        url = message.attachments[0].url
-
-    else:
-        for item in message.content.split(" "):
-            if validators.url(item):
-                url = item
-
-    if url is None:
-        return None
-
-    # Remove the trailing modifiers at the end of the link
-    url = url.partition("?")[0]
-
-    if not url.endswith(tuple(types)):
-        return None
-
-    if validators.url(url):
-        fname = requests.utils.urlparse(url)
-        fname = f"images/{os.path.basename(fname.path)}"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with open(fname, "wb") as f:
-            with urllib.request.urlopen(req) as r:
-                f.write(r.read())
-
-    return fname
-
 
 async def setup(bot: commands.Bot):
     """Sets up the cog

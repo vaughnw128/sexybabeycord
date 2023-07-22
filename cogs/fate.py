@@ -77,7 +77,7 @@ async def setup(bot: commands.Bot):
             account['password'],
             account['email'],
             account['email_password'],
-            cookies=account['cookies'],
+            cookies=account['cookies']
         )
 
     await bot.add_cog(Fate(bot))
