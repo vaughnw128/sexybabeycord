@@ -43,7 +43,7 @@ class Fate(commands.Cog):
     async def fate(self):
         """Handles the looping of the scrape_and_send() function."""
         recents = []
-        async for message in self.channel.history(limit=100):
+        async for message in self.channel.history(limit=300):
             link = re.search(
                 r"https:\/\/(fx|vx|)twitter.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
                 message.content,
