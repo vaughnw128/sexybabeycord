@@ -94,9 +94,9 @@ async def load_cogs():
 
     Cogs allow for a more streamlined process of managing a large bot.
     """
-    for filename in os.listdir("./cogs"):
+    for filename in os.listdir("./bot/exts"):
         if filename.endswith(".py"):
-            await client.load_extension(f"cogs.{filename[:-3]}")
+            await client.load_extension(f"exts.{filename[:-3]}")
 
 
 @client.event

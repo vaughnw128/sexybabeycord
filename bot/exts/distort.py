@@ -7,7 +7,7 @@ import validators
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from lib.sblib import grab_file
+from sblib import grab_file
 
 
 
@@ -48,6 +48,7 @@ class Distort(commands.Cog):
         await interaction.channel.send(
             file=discord.File(fname), view=DistortView(fname)
         )
+        os.remove(fname)
 
 
 # View setup for the buttons
@@ -104,8 +105,8 @@ async def setup(bot: commands.Bot):
     The main cog runners commands.Bot object
     """
 
-    if not os.path.exists("images"):
-        os.makedirs("images")
+    if not os.path.exists("bot/resources/images"):
+        os.makedirs("bot/resources/images")
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(Distort(bot))

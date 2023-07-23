@@ -27,7 +27,7 @@ class SpeechToText(commands.Cog):
         url = str(message.attachments[0])
         if "voice-message.ogg" in url:
             fname = url.split("/")
-            fname = "audio/" + fname[len(fname) - 1]
+            fname = "bot/resources/audio/" + fname[len(fname) - 1]
             fname = fname.split(".")[0] + str(random.randint(0, 10000)) + ".ogg"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with open(fname, "wb") as f:
@@ -63,8 +63,8 @@ async def setup(bot: commands.Bot):
     The main cog runners commands.Bot object
     """
 
-    if not os.path.exists("audio"):
-        os.makedirs("audio")
+    if not os.path.exists("bot/resources/audio"):
+        os.makedirs("bot/resources/audio")
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(SpeechToText(bot))

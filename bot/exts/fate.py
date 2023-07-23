@@ -68,7 +68,8 @@ async def setup(bot: commands.Bot):
 
     # or add account with COOKIES (with cookies login not required)
     
-    with open("accounts.json", "r") as f:
+    print(os.getcwd())
+    with open("bot/resources/accounts.json", "r") as f:
         accounts = json.load(f)
     
     for account in accounts:

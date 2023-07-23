@@ -7,7 +7,8 @@ import face_recognition
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from lib.sblib import grab_file
+from sblib import grab_file
+import os
 
 class Gabonga(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -45,6 +46,7 @@ class Gabonga(commands.Cog):
             await interaction.followup.send(
                 content="I have two words...", file=discord.File(fname)
             )
+            os.remove(fname)
         except Exception:
             await interaction.followup.send(
                 "Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:"
@@ -71,6 +73,7 @@ class Gabonga(commands.Cog):
                     content=f"{message.author.mention} I have two words...",
                     file=discord.File(fname),
                 )
+                os.remove(fname)
 
 
 # gabonga
@@ -86,7 +89,7 @@ def gabonga(fname: str):
         # Print the location of each face in this image
         top, right, bottom, left = face_location
         with Image(filename=fname) as face:
-            with Image(filename="gabonga.png") as gabonga:
+            with Image(filename="bot/resources/gabonga.png") as gabonga:
                 gabonga.resize(round((right - left) * 1.3), round((bottom - top) * 1.3))
                 # Finds the center location of the image for gabonga to be located
                 centered_x = left + (right - left) // 2 - gabonga.width // 2
@@ -104,5 +107,9 @@ async def setup(bot: commands.Bot):
     bot: commands.Bot
        The main cog runners commands.Bot object
     """
+
+    if not os.path.exists("bot/resources/images"):
+        os.makedirs("bot/resources/images")
+
     await bot.add_cog(Gabonga(bot))
     print("gabonga: Get gabonganized")
