@@ -29,7 +29,6 @@ async def grab_file(message: discord.Message):
     
     if url is None:
         return None
-    
     # Remove the trailing modifiers at the end of the link
     url = url.partition("?")[0]
 
@@ -46,7 +45,7 @@ async def grab_file(message: discord.Message):
     
     if validators.url(url):
         fname = requests.utils.urlparse(url)
-        fname = f"images/{os.path.basename(fname.path)}"
+        fname = f"bot/resources/images/{os.path.basename(fname.path)}"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with open(fname, "wb") as f:
             with urllib.request.urlopen(req) as r:

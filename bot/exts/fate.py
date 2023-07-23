@@ -66,9 +66,6 @@ async def setup(bot: commands.Bot):
         The main cog runners commands.Bot object
     """
 
-    # or add account with COOKIES (with cookies login not required)
-    
-    print(os.getcwd())
     with open("bot/resources/accounts.json", "r") as f:
         accounts = json.load(f)
     

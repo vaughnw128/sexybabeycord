@@ -7,7 +7,7 @@ import face_recognition
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from sblib import grab_file
+from bot.sblib import grab_file
 import os
 
 class Gabonga(commands.Cog):
