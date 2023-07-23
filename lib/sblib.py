@@ -12,14 +12,14 @@ async def grab_file(message: discord.Message):
     # Finds the URL that the image is at
     if message.embeds:
         # Checks if the embed itself is an image and grabs the url
-        
-        if message.embeds[0].url is not None:
+        if message.embeds[0].thumbnail.proxy_url is not None:
+            url = message.embeds[0].thumbnail.proxy_url
+        elif message.embeds[0].url is not None:
             url = message.embeds[0].url
-        # Checks if the embed is a video (tenor gif) and grabs the url
         elif message.embeds[0].video.url is not None:
             url = message.embeds[0].video.url
-        elif message.embeds[0].thumbnail.proxy_url is not None:
-            url = message.embeds[0].thumbnail.proxy_url
+
+        
     # Checks to see if the image is a message attachment
     elif message.attachments:
         url = message.attachments[0].url
@@ -44,8 +44,9 @@ async def grab_file(message: discord.Message):
         url = data["results"][0]["media_formats"]["mediumgif"]["url"]
 
     if not url.endswith(tuple(types)):
+        print("not url")
         return None
-
+    
     if validators.url(url):
         fname = requests.utils.urlparse(url)
         fname = f"images/{os.path.basename(fname.path)}"
@@ -53,5 +54,4 @@ async def grab_file(message: discord.Message):
         with open(fname, "wb") as f:
             with urllib.request.urlopen(req) as r:
                 f.write(r.read())
-
     return fname
