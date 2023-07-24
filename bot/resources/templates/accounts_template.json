@@ -1,0 +1,16 @@
+[
+    {
+        "username":"account1",
+        "password":"password1",
+        "email":"account1@outlook.com",
+        "email_password":"password1",
+        "cookies": "ct0=abcde; auth_token=fghij"
+    },
+    {
+        "username":"account2",
+        "password":"password2",
+        "email":"account2@outlook.com",
+        "email_password":"password2",
+        "cookies": "ct0=12345; auth_token=67890"
+    }
+]

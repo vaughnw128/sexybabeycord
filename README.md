@@ -12,6 +12,12 @@ chaotic groupchat than a high-functioning Discord 'community,' as we all have Ad
 permissions, and we don't particularly care for rules. I love making bots for our server, and my
 friends seem to as well.
 
+## Goals
+ - Create a github action deployment pipeline using ssh deploy 
+ - Create unit tests for each of the cogs
+ - Improve the codebase and formatting
+ - Move the project to the Sexybabeycord Github organization
+
 ## Usage
 
 dlib is now required due to face_recognition in the gabonganizer.
