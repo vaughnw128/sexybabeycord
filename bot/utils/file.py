@@ -3,10 +3,10 @@ import discord
 import requests
 import urllib
 import os
+from bot import constants
 
-TENOR_TOKEN = os.getenv("TENOR_TOKEN")
 
-async def grab_file(message: discord.Message):
+async def grab(message: discord.Message):
     types = ["png", "jpg", "jpeg", "gif", "mp4"]
     url = None
     # Finds the URL that the image is at
@@ -35,7 +35,7 @@ async def grab_file(message: discord.Message):
     if "tenor" in url:
         id = url.split("-")[len(url.split("-")) - 1]
         resp = requests.get(
-            f"https://tenor.googleapis.com/v2/posts?key={TENOR_TOKEN}&ids={id}&limit=1"
+            f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1"
         )
         data = resp.json()
         url = data["results"][0]["media_formats"]["mediumgif"]["url"]

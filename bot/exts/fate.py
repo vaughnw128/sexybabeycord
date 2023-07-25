@@ -1,17 +1,17 @@
 # Fate.py
 # Twitter poster for james cage white tweets
 # Very cool very swag, I like it
-import os
 import re
 import json
 
 from discord.ext import commands, tasks
 from twscrape import API, gather
 from twscrape.logger import set_log_level
-
-GUILD = os.getenv("GUILD")
-FATE_CHANNEL = os.getenv("FATE_CHANNEL")
-
+from bot import constants
+import discord
+from discord import app_commands
+from bot.utils.channel import get_or_fetch_channel
+import bot
 
 api = API()
 set_log_level("CRITICAL")
@@ -34,16 +34,22 @@ class Fate(commands.Cog):
         """
 
         self.bot = bot
-        self.guild = bot.get_guild(int(GUILD))
-        self.channel = self.guild.get_channel(int(FATE_CHANNEL))
-
-        self.fate.start()
+        self.fate_task.start()
 
     @tasks.loop(minutes=5)
-    async def fate(self):
+    async def fate_task(self):
+        await self.fate()
+    
+    @app_commands.command(name="fate")
+    async def fate_command(self, interaction: discord.Interaction):
+        await self.fate()
+
+    async def fate(self) -> None:
+        fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
+
         """Handles the looping of the scrape_and_send() function."""
         recents = []
-        async for message in self.channel.history(limit=300):
+        async for message in fate_channel.history(limit=300):
             link = re.search(
                 r"https:\/\/(fx|vx|)twitter.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
                 message.content,
@@ -51,10 +57,9 @@ class Fate(commands.Cog):
             if link is not None:
                 recents.append(int(link.group(0).split("/")[-1]))
         tweets = await gather(api.user_tweets(449700739, limit=20))
-
         for tweet in reversed(tweets):
             if tweet.id not in recents:
-                await self.channel.send(tweet.url.replace("twitter", "vxtwitter"))
+                await fate_channel.send(tweet.url.replace("twitter", "vxtwitter"))
 
 
 async def setup(bot: commands.Bot):
@@ -77,6 +82,8 @@ async def setup(bot: commands.Bot):
             account['email_password'],
             cookies=account['cookies']
         )
+
+    accounts = await api.pool.accounts_info()
 
     await bot.add_cog(Fate(bot))
     print("Fate: Very cool very swag I like it")

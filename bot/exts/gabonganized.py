@@ -4,10 +4,11 @@ import random
 
 import discord
 import face_recognition
+from bot import constants
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from bot.sblib import grab_file
+from bot.utils import file
 import os
 
 class Gabonga(commands.Cog):
@@ -24,7 +25,7 @@ class Gabonga(commands.Cog):
     ):
         await interaction.response.defer()
         try:
-            fname = await grab_file(message)  # Grabs the image
+            fname = await file.grab(message)  # Grabs the image
         except Exception:
             await interaction.followup.send(
                 "An unexpected error occured while trying to fetch the image."
@@ -56,11 +57,11 @@ class Gabonga(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         # Checks for the author being the bot
-        if message.author.id == 873414777064542268:
+        if message.author.id == constants.Bot.id:
             return
 
         # Grabs the file using reused distort bot code
-        fname = await grab_file(message)
+        fname = await file.grab(message)
         if fname is None:
             return
 

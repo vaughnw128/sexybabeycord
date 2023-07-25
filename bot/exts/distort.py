@@ -1,14 +1,10 @@
 import os
-import urllib
 
 import discord
-import requests
-import validators
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from bot.sblib import grab_file
-
+from bot.utils import file
 
 
 class Distort(commands.Cog):
@@ -24,7 +20,7 @@ class Distort(commands.Cog):
     ):
         await interaction.response.defer(ephemeral=True)
         try:
-            fname = await grab_file(message)  # Grabs the image
+            fname = await file.grab(message)  # Grabs the image
         except Exception:
             await interaction.followup.send(
                 "An unexpected error occured while trying to fetch the image."

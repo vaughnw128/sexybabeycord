@@ -16,56 +16,21 @@ import aiohttp
 import bs4 as bs
 import discord
 from discord.ext import commands, tasks
-
-GUILD = os.getenv("GUILD")
-CHANNEL = os.getenv("CHANNEL")
-
+from bot.utils.channel import get_or_fetch_channel
+from bot import constants
 
 class Astropix(commands.Cog):
-    """A Discord Cog to handle scraping and sending the NASA picture of the day.
-
-    ...
-
-    Attributes
-    ----------
-    bot: commands.Bot
-        The bot object from the main cog runner
-
-    Methods
-    -------
-    scrape_and_send()
-        Scrapes and sends the NASA picture of the day.
-    schedule_send()
-        Coordinates the timing of the scrape_and_send() function.
-    """
+    """ A Discord Cog to handle scraping and sending the NASA picture of the day. """
 
     def __init__(self, bot: commands.Bot):
-        """Initializes the cog.
-
-        Parameters
-        -----------
-        bot: commands.Bot
-            The bot object from the main cog runner.
-        guild: discord.Guild
-            The guild as specified in the config file.
-        channel: disord.Channel
-            The channel as specified in the config file.
-        schedule_send: discord.ext.task
-            Used to start the Discord task scheduler
-        """
+        """ Initializes the cog. """
 
         self.bot = bot
-        self.guild = bot.get_guild(int(GUILD))
-        self.channel = self.guild.get_channel(int(CHANNEL))
+        self.channel = self.bot.fetch_channel(constants.Channels.yachts)
         self.schedule_send.start()
 
     async def scrape_and_send(self):
-        """Scrapes and sends the astronomy picture of the day.
-
-        Utilizes beautiful soup to scrape the page for the image and the description,
-        then sends all of it together in a message to the server. It's a rather simple
-        function but it gets the job done.
-        """
+        """ Scrapes and sends the astronomy picture of the day. """
 
         # Grabs the page with a static link (literally has not changed since the 90s)
         html_page = urllib.request.urlopen("https://apod.nasa.gov/apod/astropix.html")
@@ -90,17 +55,11 @@ class Astropix(commands.Cog):
 
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self):
-        """Handles the looping of the scrape_and_send() function."""
+        """ Handles the looping of the scrape_and_send() function. """
         await self.scrape_and_send()
 
 
 async def setup(bot: commands.Bot):
-    """Sets up the cog
-
-    Parameters
-    -----------
-    bot: commands.Bot
-       The main cog runners commands.Bot object
-    """
+    """ Sets up the cog """
     await bot.add_cog(Astropix(bot))
     print("Astropix: I'm loaded 😎")
