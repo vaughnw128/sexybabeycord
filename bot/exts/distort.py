@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
 from bot.utils import file
+import logging
 
 
 class Distort(commands.Cog):
@@ -42,32 +43,9 @@ class Distort(commands.Cog):
 
         await interaction.followup.send("Done!")
         await interaction.channel.send(
-            file=discord.File(fname), view=DistortView(fname)
+            file=discord.File(fname)
         )
         os.remove(fname)
-
-
-# View setup for the buttons
-class DistortView(discord.ui.View):
-    def __init__(self, fname):
-        super().__init__()
-        self.fname = fname
-
-    # Distort view -- temporarily disabled
-    # @discord.ui.button(label="Distort", style=discord.ButtonStyle.green)
-    # async def distort_button_callback(
-    #     self, interaction: discord.Interaction, button: discord.ui.Button
-    # ):
-    #     distort(self.fname)
-    #     await interaction.message.edit(attachments=[discord.File(self.fname)])
-    #     await interaction.response.defer()
-
-    # Lock view -- temporarily disabled
-    # @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
-    # async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     await interaction.response.defer()
-    #     await interaction.response.edit_message(view=None)
-
 
 def distort(fname: str):
     with Image(filename=fname) as temp_img:
@@ -106,4 +84,4 @@ async def setup(bot: commands.Bot):
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(Distort(bot))
-    print("Distort: I'm loaded 👺")
+    logging.info("Distort loaded")

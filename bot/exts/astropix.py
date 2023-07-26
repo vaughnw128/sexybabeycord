@@ -8,15 +8,14 @@
 """
 
 import io
-import os
 import urllib
 from datetime import time
+import logging
 
 import aiohttp
 import bs4 as bs
 import discord
 from discord.ext import commands, tasks
-from bot.utils.channel import get_or_fetch_channel
 from bot import constants
 
 class Astropix(commands.Cog):
@@ -43,7 +42,7 @@ class Astropix(commands.Cog):
             images.append(img.get("src"))
             alt = img.get("alt")
 
-        # Creates an aiohttp session and grabs the image and makes a discord.File object in order to send it properly, then crashes itself
+        # Grabs the image based on the image URL and converts to a Discord file object
         async with aiohttp.ClientSession() as session:
             async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
                 img = await resp.read()
@@ -56,10 +55,12 @@ class Astropix(commands.Cog):
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self):
         """ Handles the looping of the scrape_and_send() function. """
+
         await self.scrape_and_send()
 
 
 async def setup(bot: commands.Bot):
     """ Sets up the cog """
+
     await bot.add_cog(Astropix(bot))
-    print("Astropix: I'm loaded 😎")
+    logging.info("Astropix loaded")

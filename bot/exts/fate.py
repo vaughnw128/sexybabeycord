@@ -10,8 +10,7 @@ from twscrape.logger import set_log_level
 from bot import constants
 import discord
 from discord import app_commands
-from bot.utils.channel import get_or_fetch_channel
-import bot
+import logging
 
 api = API()
 set_log_level("CRITICAL")
@@ -86,4 +85,4 @@ async def setup(bot: commands.Bot):
     accounts = await api.pool.accounts_info()
 
     await bot.add_cog(Fate(bot))
-    print("Fate: Very cool very swag I like it")
+    logging.info("Fate loaded")

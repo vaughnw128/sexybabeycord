@@ -10,6 +10,7 @@ from discord.ext import commands
 from wand.image import Image
 from bot.utils import file
 import os
+import logging
 
 class Gabonga(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -113,4 +114,4 @@ async def setup(bot: commands.Bot):
         os.makedirs("bot/resources/images")
 
     await bot.add_cog(Gabonga(bot))
-    print("gabonga: Get gabonganized")
+    logging.info("Gabonganized loaded")

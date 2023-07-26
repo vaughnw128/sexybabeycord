@@ -7,12 +7,17 @@ import speech_recognition as sr
 from discord import app_commands
 from discord.ext import commands
 from pydub import AudioSegment
+import logging
+
 
 recognizer = sr.Recognizer()
 
-
 class SpeechToText(commands.Cog):
+    """ Speech to text cog for translating voice messages to text """
+    
     def __init__(self, bot: commands.Bot):
+        """ Initializes class with context menu """
+
         self.bot = bot
         self.speech_to_text_menu = app_commands.ContextMenu(
             name="Speech to text", callback=self.speech_to_text
@@ -22,6 +27,8 @@ class SpeechToText(commands.Cog):
     async def speech_to_text(
         self, interaction: discord.Interaction, message: discord.Message
     ):
+        """ Handles action of converting speech to text """
+
         await interaction.response.defer(ephemeral=True)
 
         url = str(message.attachments[0])
@@ -68,4 +75,4 @@ async def setup(bot: commands.Bot):
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(SpeechToText(bot))
-    print("SpeechToText: I'm loaded 🚀")
+    logging.info("SpeechToText loaded")
