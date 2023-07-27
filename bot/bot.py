@@ -10,6 +10,8 @@ import discord
 from bot import constants
 import logging
 
+log = logging.getLogger("bot")
+
 class Sexybabeycord(commands.Bot):
     """ Discord bot sublass for Sexybabeycord """
 
@@ -42,6 +44,7 @@ class Sexybabeycord(commands.Bot):
 
         await self.load_extensions(exts)
         await self.sync_app_commands()
+        log.info("Started")
 
     async def on_error(self, event: str, *args, **kwargs) -> None:
         """ Handles exts errors """

@@ -25,3 +25,9 @@ class _Guild():
     id = 644752766241341460
 
 Guild = _Guild()
+
+class _Logging():
+
+    logfile = "sexybabeycord.log"
+
+Logging = _Logging()

@@ -12,6 +12,8 @@ from bot.utils import file
 import os
 import logging
 
+log = logging.getLogger("gabonganized")
+
 class Gabonga(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -114,4 +116,5 @@ async def setup(bot: commands.Bot):
         os.makedirs("bot/resources/images")
 
     await bot.add_cog(Gabonga(bot))
-    logging.info("Gabonganized loaded")
+    log.info("Loaded")
+    

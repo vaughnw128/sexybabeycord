@@ -1,3 +1,12 @@
+""" 
+    Distort
+
+    Allows for users to right click on images to distort them
+    I like this one a lot.
+
+    Made with love and care by Vaughn Woerpel
+"""
+
 import os
 
 import discord
@@ -7,9 +16,15 @@ from wand.image import Image
 from bot.utils import file
 import logging
 
+log = logging.getLogger("distort")
 
 class Distort(commands.Cog):
+    """ A Discord Cog to handle image distortion """
+
+
     def __init__(self, bot: commands.Bot):
+        """ Initialize the command context menu"""
+
         self.bot = bot
         self.distort_menu = app_commands.ContextMenu(
             name="distort", callback=self.distort_ctx
@@ -19,7 +34,10 @@ class Distort(commands.Cog):
     async def distort_ctx(
         self, interaction: discord.Interaction, message: discord.Message
     ):
+        """ Build the distort context menu """
+
         await interaction.response.defer(ephemeral=True)
+        
         try:
             fname = await file.grab(message)  # Grabs the image
         except Exception:
@@ -84,4 +102,4 @@ async def setup(bot: commands.Bot):
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(Distort(bot))
-    logging.info("Distort loaded")
+    log.info("Loaded")

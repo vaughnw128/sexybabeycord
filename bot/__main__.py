@@ -3,11 +3,6 @@ from bot import constants
 import asyncio
 import discord
 
-import logging
-
-logging.basicConfig(filename='myapp.log', level=logging.INFO)
-logging.info('Started')
-
 async def main() -> None:
     """ Define bot parameters and initialize the client object """
 

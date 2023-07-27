@@ -4,6 +4,8 @@ import re
 from discord.ext import commands
 import logging
 
+log = logging.getLogger("fixlink")
+
 class FixLink(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -40,4 +42,4 @@ async def setup(bot: commands.Bot):
        The main cog runners commands.Bot object
     """
     await bot.add_cog(FixLink(bot))
-    logging.info("Fixlink loaded")
+    log.info("Loaded")

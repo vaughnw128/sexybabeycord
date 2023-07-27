@@ -5,8 +5,9 @@ import urllib
 import os
 from bot import constants
 
-
 async def grab(message: discord.Message):
+    """ Grabs files from various types of discord messages """
+
     types = ["png", "jpg", "jpeg", "gif", "mp4"]
     url = None
     # Finds the URL that the image is at

@@ -14,7 +14,7 @@ import logging
 
 api = API()
 set_log_level("CRITICAL")
-
+log = logging.getLogger("fate")
 
 class Fate(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -85,4 +85,4 @@ async def setup(bot: commands.Bot):
     accounts = await api.pool.accounts_info()
 
     await bot.add_cog(Fate(bot))
-    logging.info("Fate loaded")
+    log.info("Loaded")

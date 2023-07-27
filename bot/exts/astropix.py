@@ -1,8 +1,8 @@
-""" Astropix (A Sexybabeycord Cog)
+""" 
+    Astropix
 
-    This cog is an isolated portion of the main Sexybabeycord bot.
-    It's primary function is to scrape and send the NASA picture of the day
-    to our server's general chat. It's usually quite beautiful :>
+    Scrapes and sends the NASA picture of the day to our 
+    server's #yachts chat. It's usually quite beautiful :>
 
     Made with love and care by Vaughn Woerpel
 """
@@ -17,6 +17,8 @@ import bs4 as bs
 import discord
 from discord.ext import commands, tasks
 from bot import constants
+
+log = logging.getLogger("astropix")
 
 class Astropix(commands.Cog):
     """ A Discord Cog to handle scraping and sending the NASA picture of the day. """
@@ -44,23 +46,27 @@ class Astropix(commands.Cog):
 
         # Grabs the image based on the image URL and converts to a Discord file object
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
-                img = await resp.read()
-                with io.BytesIO(img) as file:
-                    await self.channel.send(
-                        content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-                        file=discord.File(file, "astropic.jpg"),
-                    )
+            try:
+                async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
+                    img = await resp.read()
+                    with io.BytesIO(img) as file:
+                        await self.channel.send(
+                            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
+                            file=discord.File(file, "astropic.jpg"),
+                        )
+            except Exception:
+                log.error("Unable to scrape image")
 
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self):
         """ Handles the looping of the scrape_and_send() function. """
 
         await self.scrape_and_send()
+        log.info("Sent scheduled message")
 
 
 async def setup(bot: commands.Bot):
     """ Sets up the cog """
 
     await bot.add_cog(Astropix(bot))
-    logging.info("Astropix loaded")
+    log.info("Loaded")

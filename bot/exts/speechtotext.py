@@ -9,8 +9,8 @@ from discord.ext import commands
 from pydub import AudioSegment
 import logging
 
-
 recognizer = sr.Recognizer()
+log = logging.getLogger("speech_to_text")
 
 class SpeechToText(commands.Cog):
     """ Speech to text cog for translating voice messages to text """
@@ -75,4 +75,4 @@ async def setup(bot: commands.Bot):
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(SpeechToText(bot))
-    logging.info("SpeechToText loaded")
+    log.info("Loaded")
