@@ -1,22 +1,35 @@
-import os
-import random
-import urllib
+""" 
+    SpeechToText
 
+    Allows users to right click voice messages and 
+    output them to the text channel
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
+import logging
+import os
+
+# external
 import discord
 import speech_recognition as sr
 from discord import app_commands
 from discord.ext import commands
 from pydub import AudioSegment
-import logging
+
+# project modules
+from bot.utils import file_helper
 
 recognizer = sr.Recognizer()
 log = logging.getLogger("speech_to_text")
 
+
 class SpeechToText(commands.Cog):
-    """ Speech to text cog for translating voice messages to text """
-    
+    """Speech to text cog for translating voice messages to text"""
+
     def __init__(self, bot: commands.Bot):
-        """ Initializes class with context menu """
+        """Initializes class with context menu"""
 
         self.bot = bot
         self.speech_to_text_menu = app_commands.ContextMenu(
@@ -26,21 +39,14 @@ class SpeechToText(commands.Cog):
 
     async def speech_to_text(
         self, interaction: discord.Interaction, message: discord.Message
-    ):
-        """ Handles action of converting speech to text """
+    ) -> None:
+        """Handles action of converting speech to text"""
 
         await interaction.response.defer(ephemeral=True)
 
-        url = str(message.attachments[0])
-        if "voice-message.ogg" in url:
-            fname = url.split("/")
-            fname = "bot/resources/audio/" + fname[len(fname) - 1]
-            fname = fname.split(".")[0] + str(random.randint(0, 10000)) + ".ogg"
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with open(fname, "wb") as f:
-                with urllib.request.urlopen(req) as r:
-                    f.write(r.read())
+        fname = file_helper.grab(message)
 
+        if fname.endswith("voice-message.ogg"):
             wav_var = AudioSegment.from_ogg(fname)
             fname = fname.replace("ogg", "wav")
             wav_var.export(fname, format="wav")
@@ -69,9 +75,6 @@ async def setup(bot: commands.Bot):
     bot: commands.Bot
     The main cog runners commands.Bot object
     """
-
-    if not os.path.exists("bot/resources/audio"):
-        os.makedirs("bot/resources/audio")
 
     # Adds the cog and reports that it's loaded
     await bot.add_cog(SpeechToText(bot))

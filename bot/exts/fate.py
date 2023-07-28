@@ -1,52 +1,56 @@
-# Fate.py
-# Twitter poster for james cage white tweets
-# Very cool very swag, I like it
-import re
-import json
+""" 
+    Fate
 
+    Automatically posts @JamesCageWhite's tweets in our
+    #fate channel. Love this guy. Very cool very swag I like it
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
+import json
+import logging
+import re
+
+# external
+import discord
 from discord.ext import commands, tasks
 from twscrape import API, gather
 from twscrape.logger import set_log_level
-from bot import constants
-import discord
-from discord import app_commands
-import logging
 
+# project modules
+from bot import constants
+
+# Setting stuff for twscrape
 api = API()
 set_log_level("CRITICAL")
+
 log = logging.getLogger("fate")
 
-class Fate(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        """Initializes the cog.
 
-        Parameters
-        -----------
-        bot: commands.Bot
-            The bot object from the main cog runner.
-        guild: discord.Guild
-            The guild as specified in the config file.
-        channel: disord.Channel
-            The channel as specified in the config file.
-        schedule_send: discord.ext.task
-            Used to start the Discord task scheduler
-        """
+class Fate(commands.Cog):
+    """Cog for running #fate"""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """Initializes the cog."""
 
         self.bot = bot
         self.fate_task.start()
 
+    # Check James's twitter every 5 minutes
     @tasks.loop(minutes=5)
-    async def fate_task(self):
-        await self.fate()
-    
-    @app_commands.command(name="fate")
-    async def fate_command(self, interaction: discord.Interaction):
+    async def fate_task(self) -> None:
+        """Task loop just calling fate()"""
         await self.fate()
 
     async def fate(self) -> None:
-        fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
+        """Handles grabbing the tweets from twitter using twscrape"""
 
-        """Handles the looping of the scrape_and_send() function."""
+        fate_channel: discord.TextChannel = await self.bot.fetch_channel(
+            constants.Channels.fate
+        )
+
+        # Reads messages in channel history to know what tweets can be sent
         recents = []
         async for message in fate_channel.history(limit=300):
             link = re.search(
@@ -55,31 +59,27 @@ class Fate(commands.Cog):
             )
             if link is not None:
                 recents.append(int(link.group(0).split("/")[-1]))
+        # Gathers tweets and sends them
         tweets = await gather(api.user_tweets(449700739, limit=20))
         for tweet in reversed(tweets):
             if tweet.id not in recents:
                 await fate_channel.send(tweet.url.replace("twitter", "vxtwitter"))
 
 
-async def setup(bot: commands.Bot):
-    """Sets up the cog
+async def setup(bot: commands.Bot) -> None:
+    """Sets up the cog"""
 
-    Parameters
-    -----------
-    bot: commands.Bot
-        The main cog runners commands.Bot object
-    """
-
-    with open("bot/resources/accounts.json", "r") as f:
+    # Loads all accounts from json and adds them to the pool
+    with open(constants.Fate.accounts, "r") as f:
         accounts = json.load(f)
-    
+
     for account in accounts:
         await api.pool.add_account(
-            account['username'],
-            account['password'],
-            account['email'],
-            account['email_password'],
-            cookies=account['cookies']
+            account["username"],
+            account["password"],
+            account["email"],
+            account["email_password"],
+            cookies=account["cookies"],
         )
 
     accounts = await api.pool.accounts_info()

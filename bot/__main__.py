@@ -1,17 +1,32 @@
-from bot.bot import Sexybabeycord
-from bot import constants
+""" 
+    __main__
+
+    Initializes the discord client object and runs the async main function
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
 import asyncio
+
+# external
 import discord
 
+# project modules
+from bot import constants
+from bot.bot import Sexybabeycord
+
+
 async def main() -> None:
-    """ Define bot parameters and initialize the client object """
+    """Define bot parameters and initialize the client object"""
 
     intents = discord.Intents.all()
     client = Sexybabeycord(intents=intents, command_prefix=constants.Bot.prefix)
 
     await client.start(constants.Bot.token)
 
+
 if __name__ == "__main__":
-    """ Run the bot """
+    """Run the bot"""
 
     asyncio.run(main())

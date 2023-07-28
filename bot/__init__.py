@@ -1,12 +1,23 @@
-""" __init__ file, just handles logging """
+""" 
+    __init__
 
-import coloredlogs
+    Just handles some logging stuff, mostly
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
 import logging
 import os
 import sys
+
+# external
+import coloredlogs
+
+# project modules
 from bot import constants
 
-if os.path.exists(constants.Logging.logfile):    
+if os.path.exists(constants.Logging.logfile):
     os.remove(constants.Logging.logfile)
 
 root_log = logging.getLogger()
@@ -21,11 +32,11 @@ root_log.addHandler(file_handler)
 
 # Sets colored logs formatting
 coloredlogs.DEFAULT_LEVEL_STYLES = {
-        **coloredlogs.DEFAULT_LEVEL_STYLES,
-        "trace": {"color": 246},
-        "critical": {"background": "red"},
-        "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"]
-    }
+    **coloredlogs.DEFAULT_LEVEL_STYLES,
+    "trace": {"color": 246},
+    "critical": {"background": "red"},
+    "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"],
+}
 coloredlogs.DEFAULT_LOG_FORMAT = format
 coloredlogs.install(level=5, logger=root_log, stream=sys.stdout)
 

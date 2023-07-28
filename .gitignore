@@ -1,8 +1,7 @@
 # Project specific values
 accounts.json
 accounts.db
-bot/resources/images/*
-bot/resources/audio/*
+bot/resources/file_cache/*
 
 
 # Byte-compiled / optimized / DLL files

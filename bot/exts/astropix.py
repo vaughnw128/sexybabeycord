@@ -7,31 +7,36 @@
     Made with love and care by Vaughn Woerpel
 """
 
+# built-in
 import io
+import logging
 import urllib
 from datetime import time
-import logging
 
+# external
 import aiohttp
 import bs4 as bs
 import discord
 from discord.ext import commands, tasks
+
+# project modules
 from bot import constants
 
 log = logging.getLogger("astropix")
 
-class Astropix(commands.Cog):
-    """ A Discord Cog to handle scraping and sending the NASA picture of the day. """
 
-    def __init__(self, bot: commands.Bot):
-        """ Initializes the cog. """
+class Astropix(commands.Cog):
+    """A Discord Cog to handle scraping and sending the NASA picture of the day."""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """Initializes the cog."""
 
         self.bot = bot
         self.channel = self.bot.fetch_channel(constants.Channels.yachts)
         self.schedule_send.start()
 
-    async def scrape_and_send(self):
-        """ Scrapes and sends the astronomy picture of the day. """
+    async def scrape_and_send(self) -> None:
+        """Scrapes and sends the astronomy picture of the day."""
 
         # Grabs the page with a static link (literally has not changed since the 90s)
         html_page = urllib.request.urlopen("https://apod.nasa.gov/apod/astropix.html")
@@ -58,15 +63,15 @@ class Astropix(commands.Cog):
                 log.error("Unable to scrape image")
 
     @tasks.loop(time=time(hour=16))
-    async def schedule_send(self):
-        """ Handles the looping of the scrape_and_send() function. """
+    async def schedule_send(self) -> None:
+        """Handles the looping of the scrape_and_send() function."""
 
         await self.scrape_and_send()
         log.info("Sent scheduled message")
 
 
-async def setup(bot: commands.Bot):
-    """ Sets up the cog """
+async def setup(bot: commands.Bot) -> None:
+    """Sets up the cog"""
 
     await bot.add_cog(Astropix(bot))
     log.info("Loaded")
