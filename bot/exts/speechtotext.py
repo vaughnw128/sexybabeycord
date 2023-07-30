@@ -58,9 +58,11 @@ class SpeechToText(commands.Cog):
                     text = recognizer.recognize_google(audio_text)
                     await message.reply(text)
                     await interaction.followup.send("Done!")
+                    log.info(f"Voice message was transcribed {fname}")
                 except:
                     await message.reply("Unable to transcribe message")
                     await interaction.followup.send("Done!")
+                    log.warning(f"Voice message was unable to be transcribed {fname}")
             os.remove(fname)
             os.remove(fname.replace("wav", "ogg"))
         else:

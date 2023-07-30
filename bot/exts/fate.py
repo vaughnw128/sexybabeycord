@@ -51,20 +51,35 @@ class Fate(commands.Cog):
         )
 
         # Reads messages in channel history to know what tweets can be sent
-        recents = []
-        async for message in fate_channel.history(limit=300):
-            link = re.search(
-                r"https:\/\/(fx|vx|)twitter.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
-                message.content,
-            )
-            if link is not None:
-                recents.append(int(link.group(0).split("/")[-1]))
-        # Gathers tweets and sends them
-        tweets = await gather(api.user_tweets(449700739, limit=20))
+        try:
+            recents = []
+            async for message in fate_channel.history(limit=300):
+                link = re.search(
+                    r"https:\/\/(fx|vx|)twitter.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
+                    message.content,
+                )
+                if link is not None:
+                    recents.append(int(link.group(0).split("/")[-1]))
+        except Exception:
+            log.warning("Unable to gather message history")
+            return
+
+        # Gathers tweets
+        try:
+            tweets = await gather(api.user_tweets(449700739, limit=20))
+        except Exception:
+            log.warning("Unable to gather tweets")
+            return
+        
+        # Sends tweets that aren't in the recents
+        num_tweets = 0
         for tweet in reversed(tweets):
             if tweet.id not in recents:
                 await fate_channel.send(tweet.url.replace("twitter", "vxtwitter"))
+                num_tweets += 1
 
+        if num_tweets > 0:
+            log.info(f"Sent {num_tweets} tweets from @JamesCageWhite")
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
@@ -73,7 +88,7 @@ async def setup(bot: commands.Bot) -> None:
     with open(constants.Fate.accounts, "r") as f:
         accounts = json.load(f)
 
-    for account in accounts:
+    for count, account in enumerate(accounts):
         await api.pool.add_account(
             account["username"],
             account["password"],
@@ -81,8 +96,10 @@ async def setup(bot: commands.Bot) -> None:
             account["email_password"],
             cookies=account["cookies"],
         )
+    log.info(f"Loaded {count} accounts")
 
     accounts = await api.pool.accounts_info()
+    log.info("Added accounts to the pool")
 
     await bot.add_cog(Fate(bot))
     log.info("Loaded")

@@ -77,7 +77,7 @@ def distort(fname: str) -> str:
                 with Image(filename=fname) as src_image:
                     # Coalesces and then distorts and puts the frame buffers into an output
                     src_image.coalesce()
-                    for i, frame in enumerate(src_image.sequence):
+                    for frame in src_image.sequence:
                         frameimage = Image(image=frame)
                         x, y = frame.width, frame.height
                         if x > 1 and y > 1:

@@ -52,7 +52,7 @@ class FixLink(commands.Cog):
             )
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
     await bot.add_cog(FixLink(bot))
