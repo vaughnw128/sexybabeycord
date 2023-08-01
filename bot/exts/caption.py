@@ -78,6 +78,7 @@ def caption(fname: str, caption_text: str) -> str:
             x, y = temp_img.width, temp_img.height
             font_size = round(64 * (x/720))
             bar_height = int(math.ceil(len(caption_text)/25) * (x/8))
+            if bar_height < 1: bar_height = 1 
             font = Font(path="bot/resources/caption_font.otf", size=font_size)
 
             # Checks gif vs png/jpg
