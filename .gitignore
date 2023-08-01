@@ -2,7 +2,7 @@
 accounts.json
 accounts.db
 bot/resources/file_cache/*
-temp.py
+test.py
 
 
 # Byte-compiled / optimized / DLL files
