@@ -1,18 +1,35 @@
-import os
-import urllib
+""" 
+    Distort
 
+    Allows for users to right click on images to distort them
+    I like this one a lot.
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
+import logging
+import os
+
+# external
 import discord
-import requests
-import validators
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from bot.sblib import grab_file
 
+# project modules
+from bot import constants
+from bot.utils import file_helper
+
+log = logging.getLogger("distort")
 
 
 class Distort(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    """A Discord Cog to handle image distortion"""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """Initialize the command context menu"""
+
         self.bot = bot
         self.distort_menu = app_commands.ContextMenu(
             name="distort", callback=self.distort_ctx
@@ -21,93 +38,71 @@ class Distort(commands.Cog):
 
     async def distort_ctx(
         self, interaction: discord.Interaction, message: discord.Message
-    ):
-        await interaction.response.defer(ephemeral=True)
-        try:
-            fname = await grab_file(message)  # Grabs the image
-        except Exception:
+    ) -> None:
+        """Build the distort context menu"""
+
+        await interaction.response.defer()
+
+        # Grabs the file from the message and checks it
+        fname = file_helper.grab(message)  # Grabs the image
+        if fname is None:
             await interaction.followup.send(
                 "An unexpected error occured while trying to fetch the image."
             )
+            log.warning("Image was unable to be fetched")
             return
-        if fname is None:
+
+        # Checks file extension and distorts + sends
+        if fname.endswith((".png", ".jpg", ".gif")):
+            distorted = distort(fname)
+            if distorted is not None:
+                log.info(f"Image was succesfully distorted: {distorted})")
+                await interaction.followup.send(file=discord.File(distorted))
+                os.remove(distorted)
+        else:
+            log.info(f"Wrong filetype rejected: {fname})")
             await interaction.followup.send(
-                "The message you tried to distort is either not an image, or is of an invalid type."
+                "Silly fool! Distort doesn't work on that filetype"
             )
-            return
-
-        try:
-            distort(fname)
-        except Exception:
-            await interaction.followup.send(
-                "An unexpected error occured while trying to distort the image."
-            )
-            return
-
-        await interaction.followup.send("Done!")
-        await interaction.channel.send(
-            file=discord.File(fname), view=DistortView(fname)
-        )
-        os.remove(fname)
+            os.remove(fname)
 
 
-# View setup for the buttons
-class DistortView(discord.ui.View):
-    def __init__(self, fname):
-        super().__init__()
-        self.fname = fname
+def distort(fname: str) -> str:
+    """Handles the distortion using ImageMagick"""
 
-    # Distort view -- temporarily disabled
-    # @discord.ui.button(label="Distort", style=discord.ButtonStyle.green)
-    # async def distort_button_callback(
-    #     self, interaction: discord.Interaction, button: discord.ui.Button
-    # ):
-    #     distort(self.fname)
-    #     await interaction.message.edit(attachments=[discord.File(self.fname)])
-    #     await interaction.response.defer()
-
-    # Lock view -- temporarily disabled
-    # @discord.ui.button(label="Lock", style=discord.ButtonStyle.red)
-    # async def lock_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     await interaction.response.defer()
-    #     await interaction.response.edit_message(view=None)
-
-
-def distort(fname: str):
     with Image(filename=fname) as temp_img:
+        # Checks gif vs png/jpg
         if fname.endswith("gif"):
             with Image() as dst_image:
                 with Image(filename=fname) as src_image:
+                    # Coalesces and then distorts and puts the frame buffers into an output
                     src_image.coalesce()
-                    for i, frame in enumerate(src_image.sequence):
+                    for frame in src_image.sequence:
                         frameimage = Image(image=frame)
                         x, y = frame.width, frame.height
                         if x > 1 and y > 1:
-                            frameimage.liquid_rescale(round(x * 0.60), round(y * 0.60))
+                            frameimage.liquid_rescale(
+                                round(x * constants.Distort.ratio),
+                                round(y * constants.Distort.ratio),
+                            )
                             frameimage.resize(x, y)
                             dst_image.sequence.append(frameimage)
                 dst_image.optimize_layers()
                 dst_image.optimize_transparency()
                 dst_image.save(filename=fname)
         else:
+            # Simple distortion
             x, y = temp_img.width, temp_img.height
-            temp_img.liquid_rescale(round(x * 0.60), round(y * 0.60))
+            temp_img.liquid_rescale(
+                round(x * constants.Distort.ratio), round(y * constants.Distort.ratio)
+            )
             temp_img.resize(x, y)
             temp_img.save(filename=fname)
+    return fname
 
 
-async def setup(bot: commands.Bot):
-    """Sets up the cog
+async def setup(bot: commands.Bot) -> None:
+    """Sets up the cog"""
 
-    Parameters
-    -----------
-    bot: commands.Bot
-    The main cog runners commands.Bot object
-    """
-
-    if not os.path.exists("bot/resources/images"):
-        os.makedirs("bot/resources/images")
-
-    # Adds the cog and reports that it's loaded
     await bot.add_cog(Distort(bot))
-    print("Distort: I'm loaded 👺")
+    log.info("Loaded")

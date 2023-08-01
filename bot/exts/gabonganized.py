@@ -1,17 +1,37 @@
-# Gabonganized.py
-# When someone sends a face pic, they get gabonganized. Simple as.
-import random
+""" 
+    Gabonganized
 
+    Allows users to right click face pictures and 
+    gabonganize them, and also has random gabonganizing effects
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
+import logging
+import os
+import random
+import re
+
+# external
 import discord
 import face_recognition
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from bot.sblib import grab_file
-import os
+
+# project modules
+from bot import constants
+from bot.utils import file_helper
+
+log = logging.getLogger("gabonganized")
+
 
 class Gabonga(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    """Gabonga class to handle all gabonga requests"""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """Intializes the 'bonga class and assigns the command tree for the 'bonga menu"""
         self.bot = bot
 
         self.gabonga_menu = app_commands.ContextMenu(
@@ -21,63 +41,87 @@ class Gabonga(commands.Cog):
 
     async def gabonga_menu(
         self, interaction: discord.Interaction, message: discord.Message
-    ):
+    ) -> None:
+        """Controls the bonga menu"""
+
         await interaction.response.defer()
-        try:
-            fname = await grab_file(message)  # Grabs the image
-        except Exception:
+
+        # Grabs the file from the message and checks it
+        fname = file_helper.grab(message)  # Grabs the image
+        if fname is None:
             await interaction.followup.send(
                 "An unexpected error occured while trying to fetch the image."
             )
-            return
-        if fname is None:
-            await interaction.followup.send(
-                "The message you tried to gabonga is either not an image, or is of an invalid type."
-            )
-            return
-        elif fname.endswith(".gif"):
-            await interaction.followup.send(
-                "Gifs are not allowed!"
-            )
+            log.warning("Image was unable to be fetched")
             return
 
-        try:
-            fname = gabonga(fname)
+        if fname.endswith((".png", ".jpg")):
+            gabonganized = gabonga(fname)
+            if gabonganized is not None:
+                log.info(f"Image was succesfully gabonganized: {gabonganized})")
+                await interaction.followup.send(
+                    content="I have two words...", file=discord.File(gabonganized)
+                )
+                os.remove(gabonganized)
+            else:
+                log.info(f"No faces in bonga request: {fname})")
+                await interaction.followup.send(
+                    "Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:"
+                )
+                os.remove(fname)
+        else:
+            log.info(f"Wrong filetype rejected: {fname})")
             await interaction.followup.send(
-                content="I have two words...", file=discord.File(fname)
+                "Silly fool! 'bonga only works on portable network graphics and and joint photographic experts group :nerd:"
             )
             os.remove(fname)
-        except Exception:
-            await interaction.followup.send(
-                "Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:"
-            )
-            return
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
+        """On message gabonga has a 10% chance of gabonganizing someone's face pic"""
+
+        # Uses fixlink's regex to check for twitter first as it will be removed
+        link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+
+        link = re.search(
+            link_regex,
+            message.content,
+        )
+
+        if link is not None:
+            return
+
         # Checks for the author being the bot
-        if message.author.id == 873414777064542268:
+        if message.author.id == constants.Bot.id:
             return
 
         # Grabs the file using reused distort bot code
-        fname = await grab_file(message)
+        fname = file_helper.grab(message)
         if fname is None:
             return
 
-        fname = gabonga(fname)
+        if fname is not None and fname.endswith((".png", ".jpg")):
+            gabonganized = gabonga(fname)
 
-        if fname is not None:
-            # Only executes 4% of the time
-            if random.randint(0, 100) > 96:
-                await message.channel.send(
-                    content=f"{message.author.mention} I have two words...",
-                    file=discord.File(fname),
-                )
+            if gabonganized is not None:
+                # Only executes 10% of the time
+                rand = random.randint(0, 100)
+                if rand > 90:
+                    await message.channel.send(
+                        content=f"{message.author.mention} I have two words...",
+                        file=discord.File(gabonganized),
+                    )
+                    log.info(f"Random 'bonga hit: {rand}")
+                else:
+                    log.info(f"Random 'bonga miss: {rand}")
+                os.remove(gabonganized)
+            else:
                 os.remove(fname)
 
 
-# gabonga
-def gabonga(fname: str):
+def gabonga(fname: str) -> str:
+    """Handles the actual editing work of gabonga"""
+
     # Uses face rec to grab the face and get the location
     image = face_recognition.load_image_file(fname)
     face_locations = face_recognition.face_locations(image)
@@ -90,26 +134,21 @@ def gabonga(fname: str):
         top, right, bottom, left = face_location
         with Image(filename=fname) as face:
             with Image(filename="bot/resources/gabonga.png") as gabonga:
+                # Resize the 'bonga PNG
                 gabonga.resize(round((right - left) * 1.3), round((bottom - top) * 1.3))
+
                 # Finds the center location of the image for gabonga to be located
                 centered_x = left + (right - left) // 2 - gabonga.width // 2
                 centered_y = top + (bottom - top) // 2 - gabonga.height // 2
+
                 # Composites gabonga on top
                 face.composite(gabonga, left=centered_x, top=centered_y)
             face.save(filename=fname)
     return fname
 
-async def setup(bot: commands.Bot):
-    """Sets up the cog
 
-    Parameters
-    -----------
-    bot: commands.Bot
-       The main cog runners commands.Bot object
-    """
-
-    if not os.path.exists("bot/resources/images"):
-        os.makedirs("bot/resources/images")
+async def setup(bot: commands.Bot) -> None:
+    """Sets up the cog"""
 
     await bot.add_cog(Gabonga(bot))
-    print("gabonga: Get gabonganized")
+    log.info("Loaded")

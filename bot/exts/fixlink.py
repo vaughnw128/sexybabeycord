@@ -1,15 +1,36 @@
-# fixlink.py
-# Simple cog to fix twitter, tiktok, and instagram links so they can embed properly into discord
+""" 
+    Fixlink
+
+    Automatically corrects twitter, instagram, and tiktok link
+    to their safe-embedded counterparts (vx, dd)
+
+    Made with love and care by Vaughn Woerpel
+"""
+
+# built-in
+import logging
 import re
+
+# external
+import discord
 from discord.ext import commands
+
+# project modules
+log = logging.getLogger("fixlink")
 
 
 class FixLink(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    """Fixlink class to handle the... fixing of links"""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """Initialize fixlink"""
+
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
+        """Fix links on message if they match the regex"""
+
         link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
 
         link = re.search(
@@ -31,13 +52,8 @@ class FixLink(commands.Cog):
             )
 
 
-async def setup(bot: commands.Bot):
-    """Sets up the cog
+async def setup(bot: commands.Bot) -> None:
+    """Sets up the cog"""
 
-    Parameters
-    -----------
-    bot: commands.Bot
-       The main cog runners commands.Bot object
-    """
     await bot.add_cog(FixLink(bot))
-    print("fixlink: I'm loaded : 3")
+    log.info("Loaded")
