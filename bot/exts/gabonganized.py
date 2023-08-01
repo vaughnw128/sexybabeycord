@@ -109,7 +109,7 @@ class Gabonga(commands.Cog):
                 if rand > 90:
                     await message.channel.send(
                         content=f"{message.author.mention} I have two words...",
-                        file=discord.File(fname),
+                        file=discord.File(gabonganized),
                     )
                     log.info(f"Random 'bonga hit: {rand}")
                 else:

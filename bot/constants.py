@@ -57,3 +57,10 @@ class _Distort:
 
 
 Distort = _Distort()
+
+
+class _Caption:
+    font = "bot/resources/caption_font.otf"
+
+Caption = _Caption()
+

@@ -70,7 +70,7 @@ class Fate(commands.Cog):
         except Exception:
             log.warning("Unable to gather tweets")
             return
-        
+
         # Sends tweets that aren't in the recents
         num_tweets = 0
         for tweet in reversed(tweets):
@@ -80,6 +80,7 @@ class Fate(commands.Cog):
 
         if num_tweets > 0:
             log.info(f"Sent {num_tweets} tweets from @JamesCageWhite")
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

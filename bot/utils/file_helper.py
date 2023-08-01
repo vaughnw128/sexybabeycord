@@ -27,20 +27,12 @@ def grab(message: discord.Message) -> str:
 
     url = None
     # Finds the URL that the image is at
-    if message.embeds:
+    if message.embeds:        
         # Checks if the embed itself is an image and grabs the url
-        if message.embeds[0].video.proxy_url is not None:
-            url = message.embeds[0].video.proxy_url
-        elif (
-            message.embeds[0].thumbnail.proxy_url is not None
-            and "tenor" not in message.embeds[0].thumbnail.proxy_url
-        ):
-            url = message.embeds[0].thumbnail.proxy_url
-        elif message.embeds[0].url is not None:
+        if "tenor" in message.embeds[0].url:
             url = message.embeds[0].url
-        elif message.embeds[0].video.url is not None:
-            url = message.embeds[0].video.url
-
+        elif message.embeds[0].thumbnail.proxy_url:
+            url = message.embeds[0].thumbnail.proxy_url
     # Checks to see if the image is a message attachment
     elif message.attachments:
         url = message.attachments[0].url
@@ -56,12 +48,16 @@ def grab(message: discord.Message) -> str:
     url = url.partition("?")[0]
 
     if "tenor" in url:
-        id = url.split("-")[len(url.split("-")) - 1]
-        resp = requests.get(
-            f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1"
-        )
-        data = resp.json()
-        url = data["results"][0]["media_formats"]["mediumgif"]["url"]
+        try:
+            id = url.split("-")[-1]
+            resp = requests.get(
+                f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1"
+            )
+            data = resp.json()
+            url = data["results"][0]["media_formats"]["mediumgif"]["url"]
+        except KeyError:
+            log.error(f"Unable to get gif from tenor: {url}")
+            return None
 
     fname = None
     if validators.url(url):
