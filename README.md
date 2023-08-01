@@ -46,6 +46,7 @@ The current components (cogs) of the bot are as follows:
 - fixlink: Takes any link to twitter, instagram, or tiktok, and fixes it with either the 'vx' or 'dd' prefix for proper embed formatting.
 - fate: Uses twscrape to grab @JamesCageWhite's tweets and send them in our #fate channel. Love that guy.
 - gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
+- caption: Adds captions to images when you reply with the 'caption' keyword.
 
 Components that I plan on adding in the future:
 - Not sure!
