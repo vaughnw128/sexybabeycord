@@ -15,7 +15,7 @@ import re
 
 # external
 import discord
-import face_recognition
+import face_recognition # type: ignore
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
@@ -101,7 +101,7 @@ class Gabonga(commands.Cog):
             return
 
         if fname is not None and fname.endswith((".png", ".jpg")):
-            gabonganized = gabonga(fname)
+            gabonganized = await gabonga(fname)
 
             if gabonganized is not None:
                 # Only executes 10% of the time
@@ -118,8 +118,7 @@ class Gabonga(commands.Cog):
             else:
                 os.remove(fname)
 
-
-def gabonga(fname: str) -> str:
+async def gabonga(fname: str) -> str:
     """Handles the actual editing work of gabonga"""
 
     # Uses face rec to grab the face and get the location
@@ -145,7 +144,6 @@ def gabonga(fname: str) -> str:
                 face.composite(gabonga, left=centered_x, top=centered_y)
             face.save(filename=fname)
     return fname
-
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

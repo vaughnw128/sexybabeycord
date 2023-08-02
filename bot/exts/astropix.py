@@ -21,6 +21,7 @@ from discord.ext import commands, tasks
 
 # project modules
 from bot import constants
+from bot.utils import file_helper
 
 log = logging.getLogger("astropix")
 
@@ -35,40 +36,46 @@ class Astropix(commands.Cog):
         self.channel = self.bot.fetch_channel(constants.Channels.yachts)
         self.schedule_send.start()
 
-    async def scrape_and_send(self) -> None:
-        """Scrapes and sends the astronomy picture of the day."""
-
-        # Grabs the page with a static link (literally has not changed since the 90s)
-        html_page = urllib.request.urlopen("https://apod.nasa.gov/apod/astropix.html")
-        soup = bs.BeautifulSoup(html_page)
-        images = []
-        alt = ""
-
-        # Finds the images on the page
-        for img in soup.findAll("img", alt=True):
-            images.append(img.get("src"))
-            alt = img.get("alt")
-
-        # Grabs the image based on the image URL and converts to a Discord file object
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
-                    img = await resp.read()
-                    with io.BytesIO(img) as file:
-                        await self.channel.send(
-                            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-                            file=discord.File(file, "astropic.jpg"),
-                        )
-            except Exception:
-                log.error("Unable to scrape image")
-
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
-        await self.scrape_and_send()
+        fname, alt = await self.scrape_astropix()
+        await self.channel.send(
+            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
+            file=discord.File(fname),
+        )
+        file_helper.remove(fname)
         log.info("Sent scheduled message")
 
+async def scrape_astropix() -> tuple[str, str]:
+    """Scrapes and sends the astronomy picture of the day."""
+
+    # Grabs the page with a static link (literally has not changed since the 90s)
+    html_page = urllib.request.urlopen("https://apod.nasa.gov/apod/astropix.html")
+    soup = bs.BeautifulSoup(html_page, features="html.parser")
+    images = []
+    alt = ""
+
+    # Finds the images on the page
+    for img in soup.findAll("img", alt=True):
+        images.append(img.get("src"))
+        alt = img.get("alt")
+
+    # Grabs the image based on the image URL and converts to a Discord file object
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
+                img = await resp.read()
+                with io.BytesIO(img) as file:
+                    fname = f"{constants.Bot.file_cache}astropix.jpg"
+                    with open(fname, "wb") as f:
+                        f.write(file.getbuffer())
+                    return fname, alt
+        except Exception:
+            log.error("Unable to scrape image")
+            return None
+            
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

@@ -9,6 +9,7 @@
 # built-in
 import logging
 import os
+import magic
 import urllib
 
 # external
@@ -36,18 +37,24 @@ def grab(message: discord.Message) -> str:
     # Checks to see if the image is a message attachment
     elif message.attachments:
         url = message.attachments[0].url
+        
+    # Otherwise just grab URL
     else:
         for item in message.content.split(" "):
             if validators.url(item):
                 url = item
 
+    # If there isn't a url, return None
     if url is None:
         return None
 
     # Remove the trailing modifiers at the end of the link
     url = url.partition("?")[0]
 
-    if "tenor" in url:
+    log.error(url)
+
+    # Handle tenor gifs
+    if "tenor" in url and ".gif" not in url:
         try:
             id = url.split("-")[-1]
             resp = requests.get(
@@ -65,9 +72,20 @@ def grab(message: discord.Message) -> str:
             fname = requests.utils.urlparse(url)
             fname = f"{constants.Bot.file_cache}{(os.path.basename(fname.path))}"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+
+            # Downloads the file
             with open(fname, "wb") as f:
                 with urllib.request.urlopen(req) as r:
                     f.write(r.read())
+            
+            # Adds a mime-type based file extension if it doesn't have one
+            ext = os.path.splitext(fname)[-1].lower()
+            if len(ext) == 0:
+                mime_type = magic.from_file(fname, mime=True)
+                new_fname = f"{fname}.{mime_type.split('/')[1]}"
+                os.rename(fname, new_fname)
+                fname = new_fname
+
             return fname
         except Exception:
             log.error("Unable to download file")
@@ -75,3 +93,9 @@ def grab(message: discord.Message) -> str:
     else:
         log.error("Could not find a valid URL")
         return None
+
+def remove(fname: str) -> None:
+    """Remove file if it exists"""
+
+    if os.path.exists(fname):
+        os.remove(fname)

@@ -19,7 +19,7 @@ from wand.image import Image
 
 # project modules
 from bot import constants
-from bot.utils import file_helper
+from bot.utils import file_helper, magick_helper
 
 log = logging.getLogger("distort")
 
@@ -54,7 +54,7 @@ class Distort(commands.Cog):
 
         # Checks file extension and distorts + sends
         if fname.endswith((".png", ".jpg", ".gif")):
-            distorted = distort(fname)
+            distorted = await magick_helper.distort(fname)
             if distorted is not None:
                 log.info(f"Image was succesfully distorted: {distorted})")
                 await interaction.followup.send(file=discord.File(distorted))
@@ -65,40 +65,6 @@ class Distort(commands.Cog):
                 "Silly fool! Distort doesn't work on that filetype"
             )
             os.remove(fname)
-
-
-def distort(fname: str) -> str:
-    """Handles the distortion using ImageMagick"""
-
-    with Image(filename=fname) as temp_img:
-        # Checks gif vs png/jpg
-        if fname.endswith("gif"):
-            with Image() as dst_image:
-                with Image(filename=fname) as src_image:
-                    # Coalesces and then distorts and puts the frame buffers into an output
-                    src_image.coalesce()
-                    for frame in src_image.sequence:
-                        frameimage = Image(image=frame)
-                        x, y = frame.width, frame.height
-                        if x > 1 and y > 1:
-                            frameimage.liquid_rescale(
-                                round(x * constants.Distort.ratio),
-                                round(y * constants.Distort.ratio),
-                            )
-                            frameimage.resize(x, y)
-                            dst_image.sequence.append(frameimage)
-                dst_image.optimize_layers()
-                dst_image.optimize_transparency()
-                dst_image.save(filename=fname)
-        else:
-            # Simple distortion
-            x, y = temp_img.width, temp_img.height
-            temp_img.liquid_rescale(
-                round(x * constants.Distort.ratio), round(y * constants.Distort.ratio)
-            )
-            temp_img.resize(x, y)
-            temp_img.save(filename=fname)
-    return fname
 
 
 async def setup(bot: commands.Bot) -> None:
