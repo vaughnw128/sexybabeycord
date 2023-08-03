@@ -10,12 +10,12 @@ import glob
 import os
 
 import discord
-import discord.ext.commands as commands
 import discord.ext.test as dpytest
 import pytest_asyncio
 
 from bot import constants
 from bot.bot import Sexybabeycord
+from bot.utils import file_helper
 
 
 @pytest_asyncio.fixture
@@ -25,6 +25,7 @@ async def bot():
     client = Sexybabeycord(intents=intents, command_prefix=constants.Bot.prefix)
 
     await client._async_setup_hook()  # setup the loop
+    await file_helper.setup()
 
     dpytest.configure(client)
 
