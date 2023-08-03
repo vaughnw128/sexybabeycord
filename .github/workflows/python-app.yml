@@ -37,5 +37,7 @@ jobs:
         python -m poetry install
   
     - name: Run tests
+      env:
+        TENOR_TOKEN: ${{SECRETS.TENOR_TOKEN}}
       run: |
         poetry run python -m pytest
