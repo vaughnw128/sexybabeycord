@@ -1,4 +1,4 @@
-""" 
+"""
     Test_astropix
 
     Tests the astronomy picture of the day cog
@@ -9,9 +9,10 @@
 # external
 import pytest
 
+from bot import constants
+
 # project modules
 from bot.exts.astropix import scrape_astropix
-from bot import constants
 from bot.utils import file_helper
 
 

@@ -1,7 +1,7 @@
-""" 
+"""
     SpeechToText
 
-    Allows users to right click voice messages and 
+    Allows users to right click voice messages and
     output them to the text channel
 
     Made with love and care by Vaughn Woerpel
@@ -33,40 +33,64 @@ class SpeechToText(commands.Cog):
 
         self.bot = bot
         self.speech_to_text_menu = app_commands.ContextMenu(
-            name="Speech to text", callback=self.speech_to_text
+            name="Speech to text", callback=self.stt_menu
         )
         self.bot.tree.add_command(self.speech_to_text_menu)
 
-    async def speech_to_text(
+    async def stt_menu(
         self, interaction: discord.Interaction, message: discord.Message
     ) -> None:
         """Handles action of converting speech to text"""
 
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
+        response = await speech_to_text_helper(message)
 
-        fname = file_helper.grab(message)
+        match response:
+            case "Message had no file":
+                await interaction.followup.send("That message didn't have a file!!")
+                return
+            case "Not a voice message":
+                await interaction.followup.send("Heh... that wasn't a voice message")
+                return
+            case "Unable to transcribe message":
+                await interaction.followup.send(
+                    "Erm, looks like I wasn't able to get that one..."
+                )
+                return
 
-        if fname.endswith("voice-message.ogg"):
-            wav_var = AudioSegment.from_ogg(fname)
-            fname = fname.replace("ogg", "wav")
-            wav_var.export(fname, format="wav")
+        await interaction.followup.send(content=response)
 
-            with sr.AudioFile(fname) as source:
-                audio_text = recognizer.listen(source)
-                try:
-                    # using google speech recognition
-                    text = recognizer.recognize_google(audio_text)
-                    await message.reply(text)
-                    await interaction.followup.send("Done!")
-                    log.info(f"Voice message was transcribed {fname}")
-                except:
-                    await message.reply("Unable to transcribe message")
-                    await interaction.followup.send("Done!")
-                    log.warning(f"Voice message was unable to be transcribed {fname}")
-            os.remove(fname)
-            os.remove(fname.replace("wav", "ogg"))
-        else:
-            await interaction.followup.send("Not a voice message.")
+
+async def speech_to_text_helper(message: discord.Message) -> str:
+    """Helper method for speech to text, also allows for testing"""
+
+    fname = file_helper.grab(message)
+    if fname is None:
+        return "Message had no file"
+
+    # Checks to see if it's a voice message
+    if not fname.endswith("voice-message.ogg"):
+        file_helper.remove(fname)
+        return "Not a voice message"
+
+    # Translates from ogg to wav
+    wav_var = AudioSegment.from_ogg(fname)
+    fname = fname.replace("ogg", "wav")
+    wav_var.export(fname, format="wav")
+    file_helper.remove(fname.replace("wav", "ogg"))
+
+    # Recognizes the audio
+    with sr.AudioFile(fname) as source:
+        audio_text = recognizer.listen(source)
+        try:
+            text = recognizer.recognize_google(audio_text)
+            log.info(f"Voice message was transcribed {fname}")
+            file_helper.remove(fname)
+            return text
+        except:
+            log.warning(f"Voice message was unable to be transcribed {fname}")
+            file_helper.remove(fname)
+            return "Unable to transcribe message"
 
 
 async def setup(bot: commands.Bot):

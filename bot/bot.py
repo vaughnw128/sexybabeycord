@@ -1,4 +1,4 @@
-""" 
+"""
     File_helper
 
     Custom bot class to implement some useful stuff
@@ -11,6 +11,7 @@ import importlib
 import inspect
 import logging
 import pkgutil
+import traceback
 import types
 
 # external
@@ -19,6 +20,7 @@ from discord.ext import commands
 
 # project modules
 from bot import constants, exts
+from bot.utils import file_helper
 
 log = logging.getLogger("bot")
 
@@ -57,9 +59,14 @@ class Sexybabeycord(commands.Bot):
 
         await self.load_extensions(exts)
         await self.sync_app_commands()
+        await file_helper.setup()
         log.info("Started")
 
     async def on_error(self, event: str, *args, **kwargs) -> None:
         """Handles exts errors"""
 
-        print(f"Error in {event}")
+        message = args[0]
+        log.warning("ERROR CAUGHT")
+        log.warning(f"Event: {event}")
+        log.warning(f"Message: {message}")
+        log.warning(traceback.format_exc())

@@ -1,4 +1,4 @@
-""" 
+"""
     __init__
 
     Just handles some logging stuff, mostly
@@ -10,6 +10,7 @@
 import logging
 import os
 import sys
+from datetime import datetime
 
 # external
 import coloredlogs
@@ -17,16 +18,20 @@ import coloredlogs
 # project modules
 from bot import constants
 
-if os.path.exists(constants.Logging.logfile):
-    os.remove(constants.Logging.logfile)
-
 root_log = logging.getLogger()
 
 format = "%(asctime)s - %(levelname)s : [%(module)s] %(message)s"
 log_format = logging.Formatter(format)
 
+if not os.path.exists(constants.Logging.loglocation):
+    os.makedirs(constants.Logging.loglocation)
+
 # Sets file writer
-file_handler = logging.FileHandler(constants.Logging.logfile, encoding="utf8")
+time = str(datetime.now().strftime("%Y%m%dT%H%M%S"))
+filename = f"sexybabeycord-{time}.log"
+file_handler = logging.FileHandler(
+    f"{constants.Logging.loglocation}{filename}", encoding="utf8"
+)
 file_handler.setFormatter(log_format)
 root_log.addHandler(file_handler)
 

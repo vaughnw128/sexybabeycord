@@ -1,4 +1,4 @@
-""" 
+"""
     Test_caption
 
     Tests the captioning cog
@@ -18,9 +18,12 @@ from bot.exts.caption import caption_helper
 async def test_no_caption(bot):
     """Test grabbing astronomy picture of the day"""
 
-    original_message = await dpytest.message("https://tenor.com/view/sexybabeys-sexybabeyscord-sexybabeycord-vaughn-vaughncord-gif-18421747")
+    original_message = await dpytest.message(
+        "https://tenor.com/view/sexybabeys-sexybabeyscord-sexybabeycord-vaughn-vaughncord-gif-18421747"
+    )
     message = await original_message.reply("")
     assert await caption_helper(message) == "Message doesn't start with caption"
+
 
 @pytest.mark.asyncio
 async def test_no_original(bot):
@@ -28,6 +31,7 @@ async def test_no_original(bot):
 
     message = await dpytest.message("caption what was I supposed to be doing again?")
     assert await caption_helper(message) == "Message is not a reply"
+
 
 # @pytest.mark.asyncio
 # async def test_no_caption_text(bot):

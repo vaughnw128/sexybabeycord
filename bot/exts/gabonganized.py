@@ -1,7 +1,7 @@
-""" 
+"""
     Gabonganized
 
-    Allows users to right click face pictures and 
+    Allows users to right click face pictures and
     gabonganize them, and also has random gabonganizing effects
 
     Made with love and care by Vaughn Woerpel
@@ -15,7 +15,7 @@ import re
 
 # external
 import discord
-import face_recognition # type: ignore
+import face_recognition  # type: ignore
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
@@ -72,7 +72,6 @@ class Gabonga(commands.Cog):
         )
         file_helper.remove(response)
 
-
     # @commands.Cog.listener()
     # async def on_message(self, message: discord.Message) -> None:
     #     """On message gabonga has a 10% chance of gabonganizing someone's face pic"""
@@ -115,6 +114,7 @@ class Gabonga(commands.Cog):
     #         else:
     #             os.remove(fname)
 
+
 async def gabonga_helper(message: discord.Message) -> str:
     """Helper method to help with gabonga requests"""
 
@@ -143,6 +143,7 @@ async def gabonga_helper(message: discord.Message) -> str:
         file_helper.remove(fname)
         return "Gabonga failure"
 
+
 async def gabonga(fname: str, face_locations: list) -> str:
     """Handles the actual editing work of gabonga"""
 
@@ -163,6 +164,7 @@ async def gabonga(fname: str, face_locations: list) -> str:
                 face.composite(gabonga, left=centered_x, top=centered_y)
             face.save(filename=fname)
     return fname
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

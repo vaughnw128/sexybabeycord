@@ -1,4 +1,4 @@
-""" 
+"""
     File_helper
 
     Handles some useful stuff for working with files from discord
@@ -9,11 +9,11 @@
 # built-in
 import logging
 import os
-import magic
 import urllib
 
 # external
 import discord
+import magic
 import requests
 import validators
 
@@ -23,12 +23,19 @@ from bot import constants
 log = logging.getLogger("file_helper")
 
 
+def setup() -> None:
+    """Remove file if it exists"""
+
+    if os.path.exists(constants.Bot.file_cache):
+        os.makedirs(constants.Bot.file_cache)
+
+
 def grab(message: discord.Message) -> str:
     """Grabs files from various types of discord messages"""
 
     url = None
     # Finds the URL that the image is at
-    if message.embeds:        
+    if message.embeds:
         # Checks if the embed itself is an image and grabs the url
         if "tenor" in message.embeds[0].url:
             url = message.embeds[0].url
@@ -37,7 +44,7 @@ def grab(message: discord.Message) -> str:
     # Checks to see if the image is a message attachment
     elif message.attachments:
         url = message.attachments[0].url
-        
+
     # Otherwise just grab URL
     else:
         for item in message.content.split(" "):
@@ -75,7 +82,7 @@ def grab(message: discord.Message) -> str:
             with open(fname, "wb") as f:
                 with urllib.request.urlopen(req) as r:
                     f.write(r.read())
-            
+
             # Adds a mime-type based file extension if it doesn't have one
             ext = os.path.splitext(fname)[-1].lower()
             if len(ext) == 0:
@@ -91,6 +98,7 @@ def grab(message: discord.Message) -> str:
     else:
         log.error(f"Could not find a valid URL: {url}")
         return None
+
 
 def remove(fname: str) -> None:
     """Remove file if it exists"""

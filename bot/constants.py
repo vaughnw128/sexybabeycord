@@ -39,7 +39,7 @@ Guild = _Guild()
 
 
 class _Logging:
-    logfile = "sexybabeycord.log"
+    loglocation = "logs/"
 
 
 Logging = _Logging()
@@ -62,5 +62,5 @@ Distort = _Distort()
 class _Caption:
     font = "bot/resources/caption_font.otf"
 
-Caption = _Caption()
 
+Caption = _Caption()
