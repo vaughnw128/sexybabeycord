@@ -17,7 +17,7 @@ from bot.utils import file_helper
 
 
 @pytest.mark.asyncio
-async def test_scrape_image():
+async def test_scrape_image(bot):
     """Test grabbing astronomy picture of the day"""
 
     fname, _ = await scrape_astropix()

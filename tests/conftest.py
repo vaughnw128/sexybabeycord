@@ -21,11 +21,12 @@ from bot.utils import file_helper
 @pytest_asyncio.fixture
 async def bot():
     """Initializes a bot instance for the testing functions to use"""
+
     intents = discord.Intents.all()
     client = Sexybabeycord(intents=intents, command_prefix=constants.Bot.prefix)
 
     await client._async_setup_hook()  # setup the loop
-    await file_helper.setup()
+    file_helper.setup()
 
     dpytest.configure(client)
 

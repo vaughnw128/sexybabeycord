@@ -26,7 +26,7 @@ log = logging.getLogger("file_helper")
 def setup() -> None:
     """Remove file if it exists"""
 
-    if os.path.exists(constants.Bot.file_cache):
+    if not os.path.exists(constants.Bot.file_cache):
         os.makedirs(constants.Bot.file_cache)
 
 
