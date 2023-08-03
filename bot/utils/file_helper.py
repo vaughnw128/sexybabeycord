@@ -51,8 +51,6 @@ def grab(message: discord.Message) -> str:
     # Remove the trailing modifiers at the end of the link
     url = url.partition("?")[0]
 
-    log.error(url)
-
     # Handle tenor gifs
     if "tenor" in url and ".gif" not in url:
         try:
@@ -88,10 +86,10 @@ def grab(message: discord.Message) -> str:
 
             return fname
         except Exception:
-            log.error("Unable to download file")
+            log.error(f"Unable to download file: {url}")
             return None
     else:
-        log.error("Could not find a valid URL")
+        log.error(f"Could not find a valid URL: {url}")
         return None
 
 def remove(fname: str) -> None:

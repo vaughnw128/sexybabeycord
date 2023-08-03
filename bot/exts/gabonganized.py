@@ -21,7 +21,6 @@ from discord.ext import commands
 from wand.image import Image
 
 # project modules
-from bot import constants
 from bot.utils import file_helper
 
 log = logging.getLogger("gabonganized")
@@ -45,87 +44,107 @@ class Gabonga(commands.Cog):
         """Controls the bonga menu"""
 
         await interaction.response.defer()
+        response = await gabonga_helper(message)
 
-        # Grabs the file from the message and checks it
-        fname = file_helper.grab(message)  # Grabs the image
-        if fname is None:
-            await interaction.followup.send(
-                "An unexpected error occured while trying to fetch the image."
-            )
-            log.warning("Image was unable to be fetched")
-            return
-
-        if fname.endswith((".png", ".jpg")):
-            gabonganized = gabonga(fname)
-            if gabonganized is not None:
-                log.info(f"Image was succesfully gabonganized: {gabonganized})")
+        match response:
+            case "Message had no file":
+                await interaction.followup.send("That message didn't have a file!!")
+                return
+            case "Invalid filetype":
                 await interaction.followup.send(
-                    content="I have two words...", file=discord.File(gabonganized)
+                    "Silly fool! 'bonga only works on portable network graphics and and joint photographic experts group :nerd:"
                 )
-                os.remove(gabonganized)
-            else:
-                log.info(f"No faces in bonga request: {fname})")
+                return
+            case "No faces in image":
+                log.info(f"No faces in bonga request")
                 await interaction.followup.send(
                     "Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:"
                 )
-                os.remove(fname)
-        else:
-            log.info(f"Wrong filetype rejected: {fname})")
-            await interaction.followup.send(
-                "Silly fool! 'bonga only works on portable network graphics and and joint photographic experts group :nerd:"
-            )
-            os.remove(fname)
+                return
+            case "Gabonga failure":
+                log.error(f"Failure while trying to gabonganize image/gif")
+                await interaction.followup.send("Gabonga has mysteriously failed")
+                return
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
-        """On message gabonga has a 10% chance of gabonganizing someone's face pic"""
-
-        # Uses fixlink's regex to check for twitter first as it will be removed
-        link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
-
-        link = re.search(
-            link_regex,
-            message.content,
+        log.info(f"Image was succesfully gabonganized: {response})")
+        await interaction.followup.send(
+            content="I have two words...", file=discord.File(response)
         )
+        file_helper.remove(response)
 
-        if link is not None:
-            return
 
-        # Checks for the author being the bot
-        if message.author.id == constants.Bot.id:
-            return
+    # @commands.Cog.listener()
+    # async def on_message(self, message: discord.Message) -> None:
+    #     """On message gabonga has a 10% chance of gabonganizing someone's face pic"""
 
-        # Grabs the file using reused distort bot code
-        fname = file_helper.grab(message)
-        if fname is None:
-            return
+    #     # Uses fixlink's regex to check for twitter first as it will be removed
+    #     link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
 
-        if fname is not None and fname.endswith((".png", ".jpg")):
-            gabonganized = await gabonga(fname)
+    #     link = re.search(
+    #         link_regex,
+    #         message.content,
+    #     )
 
-            if gabonganized is not None:
-                # Only executes 10% of the time
-                rand = random.randint(0, 100)
-                if rand > 90:
-                    await message.channel.send(
-                        content=f"{message.author.mention} I have two words...",
-                        file=discord.File(gabonganized),
-                    )
-                    log.info(f"Random 'bonga hit: {rand}")
-                else:
-                    log.info(f"Random 'bonga miss: {rand}")
-                os.remove(gabonganized)
-            else:
-                os.remove(fname)
+    #     if link is not None:
+    #         return
 
-async def gabonga(fname: str) -> str:
-    """Handles the actual editing work of gabonga"""
+    #     # Checks for the author being the bot
+    #     if message.author.id == constants.Bot.id:
+    #         return
+
+    #     # Grabs the file using reused distort bot code
+    #     fname = file_helper.grab(message)
+    #     if fname is None:
+    #         return
+
+    #     if fname is not None and fname.endswith((".png", ".jpg")):
+    #         gabonganized = await gabonga(fname)
+
+    #         if gabonganized is not None:
+    #             # Only executes 10% of the time
+    #             rand = random.randint(0, 100)
+    #             if rand > 90:
+    #                 await message.channel.send(
+    #                     content=f"{message.author.mention} I have two words...",
+    #                     file=discord.File(gabonganized),
+    #                 )
+    #                 log.info(f"Random 'bonga hit: {rand}")
+    #             else:
+    #                 log.info(f"Random 'bonga miss: {rand}")
+    #             os.remove(gabonganized)
+    #         else:
+    #             os.remove(fname)
+
+async def gabonga_helper(message: discord.Message) -> str:
+    """Helper method to help with gabonga requests"""
+
+    # Grabs and checks file
+    fname = file_helper.grab(message)
+    if fname is None:
+        return "Message had no file"
+
+    # Checks filetype
+    if not fname.endswith((".png", ".jpg", ".jpeg")):
+        file_helper.remove(fname)
+        return "Invalid filetype"
 
     # Uses face rec to grab the face and get the location
     image = face_recognition.load_image_file(fname)
     face_locations = face_recognition.face_locations(image)
     if len(face_locations) == 0:
-        return None
+        file_helper.remove(fname)
+        return "No faces in image"
+
+    gabonganized = await gabonga(fname, face_locations)
+
+    if gabonganized is not None:
+        return gabonganized
+    else:
+        file_helper.remove(fname)
+        return "Gabonga failure"
+
+async def gabonga(fname: str, face_locations: list) -> str:
+    """Handles the actual editing work of gabonga"""
 
     # Tries to do multiple faces... might not work
     for face_location in face_locations:

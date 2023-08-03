@@ -33,20 +33,22 @@ class Astropix(commands.Cog):
         """Initializes the cog."""
 
         self.bot = bot
-        self.channel = self.bot.fetch_channel(constants.Channels.yachts)
         self.schedule_send.start()
 
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
-        fname, alt = await self.scrape_astropix()
-        await self.channel.send(
+        channel = await self.bot.fetch_channel(constants.Channels.yachts)
+
+        fname, alt = await scrape_astropix()
+        await channel.send(
             content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(fname),
+            file=discord.File(fname)
         )
         file_helper.remove(fname)
         log.info("Sent scheduled message")
+
 
 async def scrape_astropix() -> tuple[str, str]:
     """Scrapes and sends the astronomy picture of the day."""

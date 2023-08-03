@@ -14,6 +14,7 @@ from bot.exts.astropix import scrape_astropix
 from bot import constants
 from bot.utils import file_helper
 
+
 @pytest.mark.asyncio
 async def test_scrape_image():
     """Test grabbing astronomy picture of the day"""
@@ -21,8 +22,3 @@ async def test_scrape_image():
     fname, _ = await scrape_astropix()
     assert fname == f"{constants.Bot.file_cache}astropix.jpg"
     file_helper.remove(fname)
-    
-
-
-    
-    

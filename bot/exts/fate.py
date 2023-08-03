@@ -62,14 +62,14 @@ class Fate(commands.Cog):
                     recents.append(int(link.group(0).split("/")[-1]))
         except Exception:
             log.warning("Unable to gather message history")
-            return
+            return None
 
         # Gathers tweets
         try:
             tweets = await gather(api.user_tweets(449700739, limit=20))
         except Exception:
             log.warning("Unable to gather tweets")
-            return
+            return None
 
         # Sends tweets that aren't in the recents
         num_tweets = 0

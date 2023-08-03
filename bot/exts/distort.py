@@ -42,30 +42,49 @@ class Distort(commands.Cog):
         """Build the distort context menu"""
 
         await interaction.response.defer()
+        response = await distort_helper(message)
 
-        # Grabs the file from the message and checks it
-        fname = file_helper.grab(message)  # Grabs the image
-        if fname is None:
-            await interaction.followup.send(
-                "An unexpected error occured while trying to fetch the image."
-            )
-            log.warning("Image was unable to be fetched")
-            return
-
-        # Checks file extension and distorts + sends
-        if fname.endswith((".png", ".jpg", ".gif")):
-            distorted = await magick_helper.distort(fname)
-            if distorted is not None:
-                log.info(f"Image was succesfully distorted: {distorted})")
-                await interaction.followup.send(file=discord.File(distorted))
-                os.remove(distorted)
-        else:
-            log.info(f"Wrong filetype rejected: {fname})")
-            await interaction.followup.send(
+        match response:
+            case "Message had no file":
+                interaction.followup.send("That message didn't have a file!!")
+                return
+            case "Invalid filetype":
+                await interaction.followup.send(
                 "Silly fool! Distort doesn't work on that filetype"
-            )
-            os.remove(fname)
+                )
+                return
+            case "Distort failure":
+                log.error(f"Failure while trying to distort image/gif")
+                await interaction.followup.send(
+                "Distortion has mysteriously failed"
+                )
+                return
+        
+        log.info(f"Image was succesfully distorted: {response})")
+        await interaction.followup.send(file=discord.File(response))
+        file_helper.remove(response)
 
+
+async def distort_helper(message: discord.Message) -> str:
+    """Helper method for distorting, allows for testing"""
+
+    # Grabs and checks file
+    fname = file_helper.grab(message)
+    if fname is None:
+        return "Message had no file"
+
+    # Checks filetype
+    if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
+        file_helper.remove(fname)
+        return "Invalid filetype"
+
+    distorted = await magick_helper.distort(fname)
+
+    if distorted is not None:
+        return distorted
+    else:
+        file_helper.remove(fname)
+        return "Distort failure"
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
