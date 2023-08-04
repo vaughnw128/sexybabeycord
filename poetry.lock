@@ -885,6 +885,16 @@ plugins = ["setuptools"]
 requirements-deprecated-finder = ["pip-api", "pipreqs"]
 
 [[package]]
+name = "libmagic"
+version = "1.0"
+description = "libmagic bindings"
+optional = false
+python-versions = "*"
+files = [
+    {file = "libmagic-1.0.tar.gz", hash = "sha256:649f1ce7fb7c92796badbb812555e4a926351da4f5cdf82e810b5cd371aedf8d"},
+]
+
+[[package]]
 name = "loguru"
 version = "0.7.0"
 description = "Python logging made (stupidly) simple"
@@ -1794,4 +1804,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.10.6"
-content-hash = "b221b177c824da8761233975251d18edb50e6d4a8c502330f2eae02e9ab62277"
+content-hash = "da9dc08592175406ba40b11812feadfeb0bea9aa4dbf8ecf0307e4d1b8800155"

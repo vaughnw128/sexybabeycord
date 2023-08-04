@@ -1,7 +1,5 @@
 FROM ubuntu:22.04 as base
 
-ENV PYTHON_VERSION 3.10.6
-
 WORKDIR /bot
 
 RUN apt-get -y update
@@ -24,12 +22,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         tk-dev \
         libffi-dev \
         liblzma-dev \
-        git 
+        git
 
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv
 ENV PYENV_ROOT /pyenv
 RUN /pyenv/bin/pyenv install 3.10.6
 RUN /pyenv/bin/pyenv global 3.10.6
+
+RUN apt-get install -y python3-pip
 
 COPY pyproject.toml poetry.lock ./
 
@@ -38,8 +38,8 @@ COPY pyproject.toml poetry.lock ./
 # RUN cmake ./dlib; cmake --build .
 
 RUN pip3 install poetry
-RUN poetry self add poetry-dotenv-plugin
-RUN poetry install
+
+RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry config virtualenvs.in-project true --local && poetry install
 
 COPY . .
 
