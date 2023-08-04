@@ -59,7 +59,7 @@ class Sexybabeycord(commands.Bot):
 
         await self.load_extensions(exts)
         await self.sync_app_commands()
-        await file_helper.setup()
+        file_helper.setup()
         log.info("Started")
 
     async def on_error(self, event: str, *args, **kwargs) -> None:

@@ -1,4 +1,4 @@
-""" 
+"""
     Fate
 
     Automatically posts @JamesCageWhite's tweets in our
@@ -10,6 +10,7 @@
 # built-in
 import json
 import logging
+import os
 import re
 
 # external
@@ -86,7 +87,11 @@ async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
     # Loads all accounts from json and adds them to the pool
-    with open(constants.Fate.accounts, "r") as f:
+    if not os.path.exists(constants.Fate.accounts):
+        log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")
+        return
+
+    with open(constants.Fate.accounts) as f:
         accounts = json.load(f)
 
     for count, account in enumerate(accounts):

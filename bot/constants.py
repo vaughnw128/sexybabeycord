@@ -46,7 +46,7 @@ Logging = _Logging()
 
 
 class _Fate:
-    accounts = "bot/resources/accounts.json"
+    accounts = "accounts.json"
 
 
 Fate = _Fate()
