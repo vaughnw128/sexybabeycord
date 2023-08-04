@@ -33,9 +33,9 @@ RUN /pyenv/bin/pyenv global 3.10.6
 
 COPY pyproject.toml poetry.lock ./
 
-RUN pip3 install cmake
-RUN git clone https://github.com/davisking/dlib.git
-RUN cmake ./dlib; cmake --build .
+# RUN pip3 install cmake
+# RUN git clone https://github.com/davisking/dlib.git
+# RUN cmake ./dlib; cmake --build .
 
 RUN pip3 install poetry
 RUN poetry self add poetry-dotenv-plugin
