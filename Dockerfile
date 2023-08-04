@@ -22,7 +22,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         liblzma-dev \
         git \
         ffmpeg \
-        cmake
+        cmake \
+        libmagic
 
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv
 ENV PYENV_ROOT /pyenv
