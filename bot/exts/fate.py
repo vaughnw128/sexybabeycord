@@ -87,9 +87,9 @@ async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
     # Loads all accounts from json and adds them to the pool
-    if not os.path.exists(constants.Fate.accounts):
-        log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")
-        return
+    # if not os.path.exists(constants.Fate.accounts):
+    #     log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")
+    #     return
 
     with open(constants.Fate.accounts) as f:
         accounts = json.load(f)
