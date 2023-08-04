@@ -21,6 +21,9 @@ jobs:
 
       - name: Cache the virtualenv
         uses: actions/cache@v3
+        with:
+          path: ./.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       
       - name: Build and push
         uses: docker/build-push-action@v4
