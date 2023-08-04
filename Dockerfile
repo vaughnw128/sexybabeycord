@@ -35,10 +35,10 @@ RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip in
 WORKDIR /bot
 COPY pyproject.toml poetry.lock ./
 
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6
-RUN poetry install
+RUN mkdir -p .venv
+RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry config virtualenvs.in-project true --local && poetry install
 
 COPY . .
 
-ENTRYPOINT ["poetry"]
-CMD ["run", "python", "-m", "bot"]
+ENTRYPOINT ["python"]
+CMD ["-m", "bot"]
