@@ -8,7 +8,7 @@ RUN apt-get -y update
 RUN apt-get install -y ffmpeg cmake
 
 RUN apt-get update \ 
-        && apt-get install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget ca-certificates curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev mecab-ipadic-utf8 git
+        && apt-get install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget ca-certificates curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev git
 
 # Set-up necessary Env vars for PyEnv
 ENV PYENV_ROOT /root/.pyenv
