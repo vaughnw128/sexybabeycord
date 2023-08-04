@@ -40,5 +40,5 @@ RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry
 
 COPY . .
 
-ENTRYPOINT ["poetry"]
-CMD ["run", "python", "-m", "bot"]
+ENTRYPOINT ["sh"]
+CMD ["entrypoint.sh"]
