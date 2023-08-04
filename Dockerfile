@@ -23,7 +23,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         git \
         ffmpeg \
         cmake \
-        libmagic-dev
+        libmagic-dev \
+        libmagickwand-dev
 
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv
 ENV PYENV_ROOT /pyenv
