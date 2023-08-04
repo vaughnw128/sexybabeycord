@@ -26,9 +26,9 @@ jobs:
           context: .
           file: Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          cache-from: type=registry,ref=ghcr.io/apicius/sexybabeycord:latest
+          cache-from: type=registry,ref=ghcr.io/vaughnw128/sexybabeycord:latest
           cache-to: type=inline
           tags: |
-            ghcr.io/apicius/sexybabeycord:latest
+            ghcr.io/vaughnw128/sexybabeycord:latest
           build-args: |
             git_sha=${{ github.sha }}
