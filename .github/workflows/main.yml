@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build-and-test:
     uses: ./.github/workflows/build_and_test.yml
+    secrets: inherit
 
 
   docker-image:
