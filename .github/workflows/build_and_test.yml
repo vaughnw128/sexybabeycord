@@ -1,14 +1,10 @@
-# Run this job on pushes to `main`, and for pull requests. If you don't specify
-# `branches: [main], then this actions runs _twice_ on pull requests, which is
-# annoying.
-
 on:
   push:
     branches: [main]
   pull_request:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -38,10 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m poetry install
-  
-  test:  
-    runs-on: ubuntu-latest
-    steps:
+        
     - name: Run tests
       env:
         TENOR_TOKEN: ${{SECRETS.TENOR_TOKEN}}
