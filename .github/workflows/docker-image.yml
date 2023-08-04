@@ -24,7 +24,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           cache-from: type=registry,ref=ghcr.io/apicius/sexybabeycord:latest
           cache-to: type=inline
