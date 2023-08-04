@@ -1,21 +1,26 @@
 FROM ubuntu:22.04 as base
 
-ENV HOME="/root"
-WORKDIR ${HOME}
+ENV PYTHON_VERSION 3.10.6
+
+WORKDIR /bot
 
 RUN apt-get -y update
 RUN apt-get install -y ffmpeg cmake
 
-RUN apt-get install -y git
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
-ENV PYENV_ROOT="${HOME}/.pyenv"
-ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
+RUN apt-get update \ 
+        && apt-get install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget ca-certificates curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev mecab-ipadic-utf8 git
 
-ENV PYTHON_VERSION=3.10.6
-RUN pyenv install ${PYTHON_VERSION}
-RUN pyenv global ${PYTHON_VERSION}
+# Set-up necessary Env vars for PyEnv
+ENV PYENV_ROOT /root/.pyenv
+ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
-WORKDIR /bot
+# Install pyenv
+RUN set -ex \
+    && curl https://pyenv.run | bash \
+    && pyenv update \
+    && pyenv install $PYTHON_VERSION \
+    && pyenv global $PYTHON_VERSION \
+    && pyenv rehash
 
 COPY pyproject.toml poetry.lock ./
 
