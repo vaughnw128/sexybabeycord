@@ -4,7 +4,7 @@ ENV HOME="/root"
 WORKDIR ${HOME}
 
 RUN apt-get -y update
-RUN apt-get install -y ffmpeg make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+RUN apt-get install -y ffmpeg make build-essential libssl-dev wget curl llvm python-openssl
 
 RUN apt-get install -y git
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
