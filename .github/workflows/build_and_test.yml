@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -31,11 +31,17 @@ jobs:
       with:
         path: ./.venv
         key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+   
+    - uses: FedericoCarboni/setup-ffmpeg@v2
+      id: setup-ffmpeg
   
     - name: Install dependencies
       run: |
         python -m poetry install
   
+  test:  
+    runs-on: ubuntu-latest
+    steps:
     - name: Run tests
       env:
         TENOR_TOKEN: ${{SECRETS.TENOR_TOKEN}}
