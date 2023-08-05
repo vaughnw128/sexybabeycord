@@ -44,9 +44,5 @@ RUN poetry install
 
 COPY . .
 
-# Testing no entrypoint
-RUN poetry run python -m bot
-
-
-# ENTRYPOINT ["poetry"]
-# CMD ["run", "python", "-m", "bot"]
+ENTRYPOINT ["poetry"]
+CMD ["run", "python", "-m", "bot"]
