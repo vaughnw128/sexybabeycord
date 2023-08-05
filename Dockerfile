@@ -24,13 +24,26 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         ffmpeg \
         cmake \
         libmagic-dev \
-        libmagickwand-dev
+        libmagickwand-dev \
+        libx11-dev \
+        libgtk-3-dev \
+        libboost-dev \
+        libavdevice-dev \
+        libavfilter-dev \
+        libavformat-dev \
+        libavcodec-dev \
+        libswresample-dev \
+        libswscale-dev \
+        libavutil-dev \
+        libopenblas-dev \
+        liblapack-dev
+
 
 RUN git clone https://github.com/pyenv/pyenv.git /pyenv
 ENV PYENV_ROOT /pyenv
 RUN /pyenv/bin/pyenv install 3.10.6
 RUN /pyenv/bin/pyenv global 3.10.6
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install numpy poetry setuptools wheel six auditwheel cmake dlib
+RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install numpy poetry setuptools wheel six auditwheel cmake dlib face-recognition
 
 RUN git clone https://github.com/davisking/dlib.git
 RUN cmake ./dlib; cmake --build .
