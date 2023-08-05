@@ -46,7 +46,8 @@ RUN /pyenv/bin/pyenv global 3.10.6
 RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install numpy poetry setuptools wheel six auditwheel cmake
 
 RUN git clone https://github.com/davisking/dlib.git
-RUN cmake ./dlib; cmake --build -DUSE_SSE2_INSTRUCTIONS=ON .
+RUN cmake ./dlib; cmake --build .
+RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && python ./dlib/setup.py install
 RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install dlib face-recognition
 
 WORKDIR /bot
