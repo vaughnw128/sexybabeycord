@@ -1,6 +1,5 @@
-FROM ubuntu:latest as base
-
-WORKDIR /
+FROM python:3.10.6-slim
+WORKDIR /bot
 
 RUN apt-get -y update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -39,24 +38,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         liblapack-dev
 
 
-RUN git clone https://github.com/pyenv/pyenv.git /pyenv
-ENV PYENV_ROOT /pyenv
-RUN /pyenv/bin/pyenv install 3.10.6
-RUN /pyenv/bin/pyenv global 3.10.6
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install numpy poetry setuptools wheel six auditwheel cmake
+RUN pip install numpy poetry setuptools wheel six auditwheel cmake
 
 RUN git clone https://github.com/davisking/dlib.git
 RUN cmake ./dlib; cmake --build .
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && python ./dlib/setup.py install
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && pip install dlib face-recognition
+RUN pip install dlib face-recognition
 
-WORKDIR /bot
 COPY pyproject.toml poetry.lock ./
 
-RUN mkdir -p .venv
-RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry config virtualenvs.in-project true --local && poetry install
+RUN poetry install
 
 COPY . .
 
-ENTRYPOINT ["sh"]
-CMD ["entrypoint.sh"]
+ENTRYPOINT ["python"]
+CMD ["--version"]
