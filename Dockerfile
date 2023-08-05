@@ -38,12 +38,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         liblapack-dev
 
 
-RUN pip install numpy poetry setuptools wheel six auditwheel cmake
+RUN cd ~ && \
+    mkdir -p dlib && \
+    git clone -b 'v19.9' --single-branch https://github.com/davisking/dlib.git dlib/ && \
+    cd  dlib/ && \
+    python3 setup.py install --yes USE_SSE2_INSTRUCTIONS --no USE_SSE4_INSTRUCTIONS
 
-RUN git clone https://github.com/davisking/dlib.git
-RUN cmake ./dlib; cmake --build .
-RUN pip install dlib face-recognition
-
+RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry install
