@@ -37,13 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libopenblas-dev \
         liblapack-dev
 
-
-RUN pip install numpy poetry setuptools wheel six auditwheel cmake
-
-RUN git clone https://github.com/davisking/dlib.git
-RUN cmake ./dlib; cmake --build .
-RUN pip install dlib face-recognition
-
+RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry install
