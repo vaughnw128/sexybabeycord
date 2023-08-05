@@ -50,5 +50,5 @@ RUN poetry install
 
 COPY . .
 
-ENTRYPOINT ["python"]
-CMD ["--version"]
+ENTRYPOINT ["poetry"]
+CMD ["run", "python", "-m", "bot"]
