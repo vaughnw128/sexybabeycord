@@ -54,6 +54,8 @@ COPY pyproject.toml poetry.lock ./
 RUN mkdir -p .venv
 RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry config virtualenvs.in-project true --local && poetry install
 
+ENV DUSE_SSE2_INSTRUCTIONS=0
+
 COPY . .
 
 ENTRYPOINT ["sh"]
