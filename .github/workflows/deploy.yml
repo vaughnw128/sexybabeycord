@@ -19,4 +19,6 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           SCRIPT_AFTER: |
             cd ${{ secrets.REMOTE_TARGET }}
-            touch asdf.txt
+            docker rm $(docker stop $(docker ps -a -q --filter ancestor=ghcr.io/vaughnw128/sexybabeycord:latest --format="{{.ID}}"))
+            docker rmi ghcr.io/vaughnw128/sexybabeycord:latest
+            sudo docker run -d -t -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env --pull always ghcr.io/vaughnw128/sexybabeycord:latest
