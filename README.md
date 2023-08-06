@@ -1,6 +1,6 @@
 # Sexybabeycord (A Sexybabeycord Production)
 
-[![.github/workflows/build_and_test.yml](https://github.com/vaughnw128/sexybabeycord/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/build_and_test.yml)
+[![CI/CD](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 This is the newest iteration/amalgam of the many discord bots I've made over the years. 
