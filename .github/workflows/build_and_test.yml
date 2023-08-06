@@ -1,8 +1,9 @@
 on:
   workflow_call
   push:
-    - '!main'
-
+    branches:
+      - '!main'
+      
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
