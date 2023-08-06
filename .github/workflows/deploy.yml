@@ -2,13 +2,13 @@ on:
   workflow_call
 
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
 
     steps:
     - name: checkout code
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
 
     - name: ssh deploy
       uses: easingthemes/ssh-deploy@v4
