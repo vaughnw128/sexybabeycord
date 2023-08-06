@@ -8,19 +8,11 @@
 
 # built-in
 import logging
-import math
-import os
-import random
 import re
-from typing import Optional
 
 # external
 import discord
-from discord import app_commands
 from discord.ext import commands
-from wand.color import Color
-from wand.font import Font
-from wand.image import Image
 
 # project modules
 from bot import constants
@@ -102,11 +94,10 @@ async def caption_helper(message: discord.Message) -> str:
         file_helper.remove(fname)
         return "Invalid filetype"
 
-    captioned = await magick_helper.caption(fname, caption_text)
-
-    if captioned is not None:
+    try:
+        captioned = await magick_helper.caption(fname, caption_text)
         return captioned
-    else:
+    except Exception:
         file_helper.remove(fname)
         return "Caption failure"
 

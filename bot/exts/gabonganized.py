@@ -68,48 +68,6 @@ class Gabonga(commands.Cog):
         )
         file_helper.remove(response)
 
-    # @commands.Cog.listener()
-    # async def on_message(self, message: discord.Message) -> None:
-    #     """On message gabonga has a 10% chance of gabonganizing someone's face pic"""
-
-    #     # Uses fixlink's regex to check for twitter first as it will be removed
-    #     link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
-
-    #     link = re.search(
-    #         link_regex,
-    #         message.content,
-    #     )
-
-    #     if link is not None:
-    #         return
-
-    #     # Checks for the author being the bot
-    #     if message.author.id == constants.Bot.id:
-    #         return
-
-    #     # Grabs the file using reused distort bot code
-    #     fname = file_helper.grab(message)
-    #     if fname is None:
-    #         return
-
-    #     if fname is not None and fname.endswith((".png", ".jpg")):
-    #         gabonganized = await gabonga(fname)
-
-    #         if gabonganized is not None:
-    #             # Only executes 10% of the time
-    #             rand = random.randint(0, 100)
-    #             if rand > 90:
-    #                 await message.channel.send(
-    #                     content=f"{message.author.mention} I have two words...",
-    #                     file=discord.File(gabonganized),
-    #                 )
-    #                 log.info(f"Random 'bonga hit: {rand}")
-    #             else:
-    #                 log.info(f"Random 'bonga miss: {rand}")
-    #             os.remove(gabonganized)
-    #         else:
-    #             os.remove(fname)
-
 
 async def gabonga_helper(message: discord.Message) -> str:
     """Helper method to help with gabonga requests"""
