@@ -1,8 +1,5 @@
 on:
   workflow_call
-  push:
-    branches:
-      - '!main'
       
 jobs:
   build-and-test:
