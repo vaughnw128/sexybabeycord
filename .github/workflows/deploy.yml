@@ -19,7 +19,7 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           SCRIPT_AFTER: |
             cd ${{ secrets.REMOTE_TARGET }}
-            docker stop sexybabeycord 2&1> /dev/null
-            docker rm sexybabeycord 2&1> /dev/null
-            docker rmi ghcr.io/vaughnw128/sexybabeycord:latest 2>&1 /dev/null
+            docker stop sexybabeycord 2&>1 /dev/null
+            docker rm sexybabeycord 2&>1 /dev/null
+            docker rmi ghcr.io/vaughnw128/sexybabeycord:latest 2&>1 /dev/null
             sudo docker run -d -t --name sexybabeycord -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env --pull always ghcr.io/vaughnw128/sexybabeycord:latest
