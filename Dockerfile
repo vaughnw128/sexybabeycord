@@ -37,7 +37,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libopenblas-dev \
         liblapack-dev
 
-
 RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 
