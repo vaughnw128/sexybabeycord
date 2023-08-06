@@ -22,53 +22,52 @@ from bot import constants
 
 async def caption(fname: str, caption_text: str) -> str:
     """Adds a caption to images and gifs with image_magick"""
-    try:
-        with Image(filename=fname) as temp_img:
-            x, y = temp_img.width, temp_img.height
-            font_size = round(64 * (x / 720))
-            bar_height = int(math.ceil(len(caption_text) / 25) * (x / 8))
-            if bar_height < 1:
-                bar_height = 1
-            font = Font(path="bot/resources/caption_font.otf", size=font_size)
 
-            # Checks gif vs png/jpg
-            if fname.endswith("gif"):
-                with Image() as dst_image:
-                    with Image(filename=fname) as src_image:
-                        # Coalesces and then distorts and puts the frame buffers into an output
-                        src_image.coalesce()
-                        for frame in src_image.sequence:
-                            with Image(image=frame) as frameimage:
-                                x, y = frame.width, frame.height
-                                if x > 1 and y > 1:
-                                    with Image(
-                                        width=x,
-                                        height=y + bar_height,
-                                        background=Color("white"),
-                                    ) as bg_image:
-                                        bg_image.composite(
-                                            frameimage, left=0, top=bar_height
-                                        )
-                                        bg_image.caption(
-                                            text=caption_text,
-                                            gravity="north",
-                                            font=font,
-                                        )
-                                        dst_image.sequence.append(bg_image)
-                    dst_image.optimize_layers()
-                    dst_image.optimize_transparency()
-                    dst_image.save(filename=fname)
-            else:
-                with Image(
-                    width=x, height=y + bar_height, background=Color("white")
-                ) as bg_image:
-                    bg_image.composite(temp_img, left=0, top=bar_height)
-                    bg_image.caption(text=caption_text, gravity="north", font=font)
-                    bg_image.save(filename=fname)
+    with Image(filename=fname) as src_image:
+        # Get height and width of image
+        if fname.endswith(".gif"):
+            x, y = src_image.sequence[0].width, src_image.sequence[0].height
+        else:
+            x, y = src_image.width, src_image.height
 
-        return fname
-    except Exception:
-        return None
+        font_size = round(64 * (x / 720))
+        bar_height = int(math.ceil(len(caption_text) / 24) * (x / 8))
+        if bar_height < 1:
+            bar_height = 1
+        font = Font(path="bot/resources/caption_font.otf", size=font_size)
+
+        # Generate template image
+        template_image = Image(
+            width=x,
+            height=y + bar_height,
+            background=Color("white"),
+        )
+
+        template_image.caption(
+            text=caption_text,
+            gravity="north",
+            font=font,
+        )
+
+        # Checks gif vs png/jpg
+        if fname.endswith(".gif"):
+            with Image() as dst_image:
+                # Coalesces and then distorts and puts the frame buffers into an output
+                src_image.coalesce()
+                for framenumber, frame in enumerate(src_image.sequence):
+                    with Image(image=template_image) as bg_image:
+                        fwidth, fheight = frame.width, frame.height
+                        if fwidth > 1 and fheight > 1:
+                            bg_image.composite(frame, left=0, top=bar_height)
+                            dst_image.sequence.append(bg_image)
+                dst_image.optimize_layers()
+                dst_image.optimize_transparency()
+                dst_image.save(filename=fname)
+        else:
+            template_image.composite(src_image, left=0, top=bar_height)
+            template_image.save(filename=fname)
+
+    return fname
 
 
 async def distort(fname: str) -> str:
@@ -81,15 +80,15 @@ async def distort(fname: str) -> str:
             with Image() as dst_image:
                 # Coalesces and then distorts and puts the frame buffers into an output
                 for frame in src_image.sequence:
-                    frameimage = Image(image=frame)
-                    x, y = frame.width, frame.height
-                    if x > 1 and y > 1:
-                        frameimage.liquid_rescale(
-                            round(x * constants.Distort.ratio),
-                            round(y * constants.Distort.ratio),
-                        )
-                        frameimage.resize(x, y)
-                        dst_image.sequence.append(frameimage)
+                    with Image(image=frame) as frameimage:
+                        x, y = frame.width, frame.height
+                        if x > 1 and y > 1:
+                            frameimage.liquid_rescale(
+                                round(x * constants.Distort.ratio),
+                                round(y * constants.Distort.ratio),
+                            )
+                            frameimage.resize(x, y)
+                            dst_image.sequence.append(frameimage)
                 dst_image.optimize_layers()
                 dst_image.optimize_transparency()
                 dst_image.save(filename=fname)
