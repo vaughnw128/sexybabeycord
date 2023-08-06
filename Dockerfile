@@ -40,6 +40,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
 RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 
+RUN poetry self add poetry-dotenv-plugin
 RUN poetry install
 
 COPY . .

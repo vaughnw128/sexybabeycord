@@ -74,34 +74,33 @@ async def caption(fname: str, caption_text: str) -> str:
 async def distort(fname: str) -> str:
     """Handles the distortion using ImageMagick"""
 
-    with Image(filename=fname) as temp_img:
+    with Image(filename=fname) as src_image:
         # Checks gif vs png/jpg
         if fname.endswith("gif"):
+            src_image.coalesce()
             with Image() as dst_image:
-                with Image(filename=fname) as src_image:
-                    # Coalesces and then distorts and puts the frame buffers into an output
-                    src_image.coalesce()
-                    for frame in src_image.sequence:
-                        frameimage = Image(image=frame)
-                        x, y = frame.width, frame.height
-                        if x > 1 and y > 1:
-                            frameimage.liquid_rescale(
-                                round(x * constants.Distort.ratio),
-                                round(y * constants.Distort.ratio),
-                            )
-                            frameimage.resize(x, y)
-                            dst_image.sequence.append(frameimage)
+                # Coalesces and then distorts and puts the frame buffers into an output
+                for frame in src_image.sequence:
+                    frameimage = Image(image=frame)
+                    x, y = frame.width, frame.height
+                    if x > 1 and y > 1:
+                        frameimage.liquid_rescale(
+                            round(x * constants.Distort.ratio),
+                            round(y * constants.Distort.ratio),
+                        )
+                        frameimage.resize(x, y)
+                        dst_image.sequence.append(frameimage)
                 dst_image.optimize_layers()
                 dst_image.optimize_transparency()
                 dst_image.save(filename=fname)
         else:
             # Simple distortion
-            x, y = temp_img.width, temp_img.height
-            temp_img.liquid_rescale(
+            x, y = src_image.width, src_image.height
+            src_image.liquid_rescale(
                 round(x * constants.Distort.ratio), round(y * constants.Distort.ratio)
             )
-            temp_img.resize(x, y)
-            temp_img.save(filename=fname)
+            src_image.resize(x, y)
+            src_image.save(filename=fname)
     return fname
 
 

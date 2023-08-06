@@ -1,4 +1,4 @@
-""" 
+"""
     Distort
 
     Allows for users to right click on images to distort them
@@ -15,10 +15,8 @@ import os
 import discord
 from discord import app_commands
 from discord.ext import commands
-from wand.image import Image
 
 # project modules
-from bot import constants
 from bot.utils import file_helper, magick_helper
 
 log = logging.getLogger("distort")
@@ -50,16 +48,14 @@ class Distort(commands.Cog):
                 return
             case "Invalid filetype":
                 await interaction.followup.send(
-                "Silly fool! Distort doesn't work on that filetype"
+                    "Silly fool! Distort doesn't work on that filetype"
                 )
                 return
             case "Distort failure":
                 log.error(f"Failure while trying to distort image/gif")
-                await interaction.followup.send(
-                "Distortion has mysteriously failed"
-                )
+                await interaction.followup.send("Distortion has mysteriously failed")
                 return
-        
+
         log.info(f"Image was succesfully distorted: {response})")
         await interaction.followup.send(file=discord.File(response))
         file_helper.remove(response)
@@ -85,6 +81,7 @@ async def distort_helper(message: discord.Message) -> str:
     else:
         file_helper.remove(fname)
         return "Distort failure"
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

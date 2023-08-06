@@ -126,7 +126,6 @@ async def gabonga_helper(message: discord.Message) -> str:
 
     # Uses face rec to grab the face and get the location
     face_locations = await magick_helper.get_faces(fname)
-    log.info(face_locations)
     if len(face_locations) == 0:
         file_helper.remove(fname)
         return "No faces in image"
@@ -143,12 +142,13 @@ async def gabonga_helper(message: discord.Message) -> str:
 async def gabonga(fname: str, face_locations: list) -> str:
     """Handles the actual editing work of gabonga"""
 
-    # Tries to do multiple faces... might not work
-    for face_location in face_locations:
-        # Print the location of each face in this image
-        x, y, w, h = face_location
-        with Image(filename=fname) as face:
-            with Image(filename="bot/resources/gabonga.png") as gabonga:
+    with Image(filename=fname) as face:
+        with Image(filename="bot/resources/gabonga.png") as gabonga:
+            # Tries to do multiple faces... might not work
+            for face_location in face_locations:
+                # Print the location of each face in this image
+                x, y, w, h = face_location
+
                 # Resize the 'bonga PNG
                 gabonga.resize(w, h)
 
