@@ -38,12 +38,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         liblapack-dev
 
 
-RUN cd ~ && \
-    mkdir -p dlib && \
-    git clone -b 'v19.9' --single-branch https://github.com/davisking/dlib.git dlib/ && \
-    cd  dlib/ && \
-    python3 setup.py install --yes USE_SSE2_INSTRUCTIONS --no USE_SSE4_INSTRUCTIONS
-
 RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 

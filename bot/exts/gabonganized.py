@@ -9,19 +9,15 @@
 
 # built-in
 import logging
-import os
-import random
-import re
 
 # external
 import discord
-import face_recognition  # type: ignore
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
 
 # project modules
-from bot.utils import file_helper
+from bot.utils import file_helper, magick_helper
 
 log = logging.getLogger("gabonganized")
 
@@ -129,8 +125,8 @@ async def gabonga_helper(message: discord.Message) -> str:
         return "Invalid filetype"
 
     # Uses face rec to grab the face and get the location
-    image = face_recognition.load_image_file(fname)
-    face_locations = face_recognition.face_locations(image)
+    face_locations = await magick_helper.get_faces(fname)
+    log.info(face_locations)
     if len(face_locations) == 0:
         file_helper.remove(fname)
         return "No faces in image"
@@ -150,18 +146,14 @@ async def gabonga(fname: str, face_locations: list) -> str:
     # Tries to do multiple faces... might not work
     for face_location in face_locations:
         # Print the location of each face in this image
-        top, right, bottom, left = face_location
+        x, y, w, h = face_location
         with Image(filename=fname) as face:
             with Image(filename="bot/resources/gabonga.png") as gabonga:
                 # Resize the 'bonga PNG
-                gabonga.resize(round((right - left) * 1.3), round((bottom - top) * 1.3))
-
-                # Finds the center location of the image for gabonga to be located
-                centered_x = left + (right - left) // 2 - gabonga.width // 2
-                centered_y = top + (bottom - top) // 2 - gabonga.height // 2
+                gabonga.resize(w, h)
 
                 # Composites gabonga on top
-                face.composite(gabonga, left=centered_x, top=centered_y)
+                face.composite(gabonga, left=x, top=y)
             face.save(filename=fname)
     return fname
 

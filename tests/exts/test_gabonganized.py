@@ -51,9 +51,7 @@ async def test_image(bot):
     """Test gabonganizing an image"""
 
     message = await dpytest.message(
-        "https://images-ext-1.discordapp.net/external/WjnwUTwFktFOau3aa2ktj-qFFmK1WxqoNz-DbvNuCNk/%3Fimgs%3Dhttps%3A%2F%2Fpbs.twimg.com%2Fmedia%2FF2gCnMmbIAEOH0j.jpg%2Chttps%3A%2F%2Fpbs.twimg.com%2Fmedia%2FF2gCnMkacAA1oEs.jpg/https/vxtwitter.com/rendercombined.jpg?width=731&height=487"
+        "https://media.discordapp.net/attachments/644753024287506452/1137537737440895016/IMG_8708.png?width=910&height=910"
     )
-    assert (
-        await gabonga_helper(message) == f"{constants.Bot.file_cache}rendercombined.jpg"
-    )
-    file_helper.remove(f"{constants.Bot.file_cache}rendercombined.jpg")
+    assert await gabonga_helper(message) == f"{constants.Bot.file_cache}IMG_8708.png"
+    file_helper.remove(f"{constants.Bot.file_cache}IMG_8708.png")
