@@ -12,7 +12,7 @@ import os
 
 class _Bot:
     prefix = "~"
-    testing = False
+    testing = True
     if testing:
         token = os.getenv("TESTING_TOKEN")
         id = 1137764471725625354
@@ -78,3 +78,22 @@ class _Caption:
 
 
 Caption = _Caption()
+
+
+class _MoodMeter:
+    number_emojis = (
+        "0️⃣",
+        "1️⃣",
+        "2️⃣",
+        "3️⃣",
+        "4️⃣",
+        "5️⃣",
+        "6️⃣",
+        "7️⃣",
+        "8️⃣",
+        "9️⃣",
+    )
+    letter_emojis = ("🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯")
+
+
+MoodMeter = _MoodMeter()
