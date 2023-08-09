@@ -3,6 +3,7 @@ accounts.json
 accounts.db
 bot/resources/file_cache/*
 logs/*
+moodmeter.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
