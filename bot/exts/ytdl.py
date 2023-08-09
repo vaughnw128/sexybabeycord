@@ -90,7 +90,11 @@ async def ytdl(message: discord.Message) -> None:
             f"{constants.Bot.file_cache}{sanitized['title']} [{sanitized['id']}].webm"
         )
 
+        new_fname = f"{constants.Bot.file_cache}{sanitized['id']}.webm"
+
         ydl.download(link.group(0))
+        os.rename(fname, new_fname)
+        fname = new_fname
 
         try:
             stats = os.stat(fname)
