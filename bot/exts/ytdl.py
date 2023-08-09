@@ -24,7 +24,7 @@ from bot.utils import file_helper
 
 log = logging.getLogger("ytdl")
 
-link_regex = r"https:\/\/(www.|)youtube.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+link_regex = r"https:\/\/(www.|)youtu(be.com|.be)([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
 
 
 class Ytdl(commands.Cog):
@@ -47,7 +47,9 @@ class Ytdl(commands.Cog):
 
         match response:
             case "Message had no Youtube link":
-                await interaction.followup.send("That message didn't have a file!!")
+                await interaction.followup.send(
+                    "That message didn't have a youtube link"
+                )
                 return
             case "Size limit exceeded":
                 log.error(f"File size exceeded")
@@ -64,6 +66,11 @@ class Ytdl(commands.Cog):
         await interaction.followup.send(file=discord.File(response))
 
 
+def my_hook(d):
+    if d["status"] == "finished":
+        os.rename(d["filename"], "outfile.mp4")
+
+
 async def ytdl(message: discord.Message) -> None:
     """Helper method for fixing links"""
 
@@ -76,7 +83,11 @@ async def ytdl(message: discord.Message) -> None:
     if link is None:
         return "Message had no Youtube link"
 
-    ydl_opts = {"paths": {"home": constants.Bot.file_cache}}
+    ydl_opts = {
+        "paths": {"home": constants.Bot.file_cache},
+        "format": "mp4",
+        "progress_hooks": [my_hook],
+    }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -87,14 +98,12 @@ async def ytdl(message: discord.Message) -> None:
         sanitized = ydl.sanitize_info(info)
 
         fname = (
-            f"{constants.Bot.file_cache}{sanitized['title']} [{sanitized['id']}].webm"
+            f"{constants.Bot.file_cache}{sanitized['title']} [{sanitized['id']}].mp4"
         )
 
-        new_fname = f"{constants.Bot.file_cache}{sanitized['id']}.webm"
-
         ydl.download(link.group(0))
-        os.rename(fname, new_fname)
-        fname = new_fname
+
+        fname = "outfile.mp4"
 
         try:
             stats = os.stat(fname)
