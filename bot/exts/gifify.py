@@ -8,16 +8,18 @@
 
 # built-in
 import logging
+import os
+import subprocess
 
 # external
 import discord
 from discord import app_commands
 from discord.ext import commands
-from moviepy.editor import VideoFileClip
-from wand.image import Image
+
+from bot import constants
 
 # project modules
-from bot.utils import file_helper, magick_helper
+from bot.utils import file_helper
 
 log = logging.getLogger("gifify")
 
@@ -51,6 +53,12 @@ class Gifify(commands.Cog):
                     "Silly fool! gifify only works on video files!"
                 )
                 return
+            case "Size limit exceeded":
+                log.error(f"File size exceeded")
+                await interaction.followup.send(
+                    "The resulting gif exceeded Discord filesize limits"
+                )
+                return
             case "Gifify failure":
                 log.error(f"Failure while trying to Gifify video")
                 await interaction.followup.send("Gifify has mysteriously failed")
@@ -62,7 +70,7 @@ class Gifify(commands.Cog):
 
 
 async def gifify_helper(message: discord.Message) -> str:
-    """Helper method to help with gabonga requests"""
+    """Helper method to help with gifify requests"""
 
     # Grabs and checks file
     fname = file_helper.grab(message)
@@ -74,15 +82,29 @@ async def gifify_helper(message: discord.Message) -> str:
         file_helper.remove(fname)
         return "Invalid filetype"
 
-    videoClip = VideoFileClip(fname)
-    fname = fname.split(".")[0] + ".gif"
-    videoClip.write_gif(fname)
+    # Creates new filenames
+    fname_in = f"{constants.Bot.file_cache}ffmpeg_in.{fname.split('.')[-1]}"
+    fname_out = f"{constants.Bot.file_cache}ffmpeg_out.gif"
 
-    if fname is not None:
-        return fname
-    else:
-        file_helper.remove(fname)
-        return "Gabonga failure"
+    # Rename the file to prevent OS command injection
+    os.rename(fname, fname_in)
+    subprocess.run(
+        [f"ffmpeg -y -i {fname_in} -r 20 {fname_out} -loglevel quiet"], shell=True
+    )
+    file_helper.remove(fname_in)
+
+    try:
+        stats = os.stat(fname_out)
+        file_size = stats.st_size / (1024 * 1024)
+    except Exception:
+        file_helper.remove(fname_out)
+        return "Gifify failure"
+
+    if file_size > 24.9:
+        file_helper.remove(fname_out)
+        return "Size limit exceeded"
+
+    return fname_out
 
 
 async def setup(bot: commands.Bot) -> None:
