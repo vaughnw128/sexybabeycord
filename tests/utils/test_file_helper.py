@@ -17,7 +17,7 @@ from bot.utils import file_helper
 
 @pytest.mark.asyncio
 async def test_grab_file_simple_url(bot):
-    """Test broken mime type url"""
+    """Test simple url"""
 
     message = await dpytest.message(
         "https://images.pexels.com/photos/4587955/pexels-photo-4587955.jpeg?cs=srgb&dl=pexels-anna-shvets-4587955.jpg&fm=jpg"
@@ -100,4 +100,16 @@ async def test_grab_file_attachment_jpg(bot):
     )
     fname = file_helper.grab(message)
     assert fname == f"{constants.Bot.file_cache}F2X7SLRWIAAon-6.jpg"
+    file_helper.remove(fname)
+
+
+@pytest.mark.asyncio
+async def test_grab_file_mp4_url(bot):
+    """Test mp4 url"""
+
+    message = await dpytest.message(
+        "https://cdn.discordapp.com/attachments/542817408155516973/1084591777262084187/Snaptik.app_7060855697592061230.mp4"
+    )
+    fname = file_helper.grab(message)
+    assert fname == f"{constants.Bot.file_cache}Snaptik.app_7060855697592061230.mp4"
     file_helper.remove(fname)
