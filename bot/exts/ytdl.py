@@ -64,11 +64,12 @@ class Ytdl(commands.Cog):
 
         log.info(f"Youtube video was succesfully converted: {response})")
         await interaction.followup.send(file=discord.File(response))
+        file_helper.remove(response)
 
 
-def my_hook(d):
+def filename_hook(d):
     if d["status"] == "finished":
-        os.rename(d["filename"], "outfile.mp4")
+        os.rename(d["filename"], f"{constants.Bot.file_cache}outfile.mp4")
 
 
 async def ytdl(message: discord.Message) -> None:
@@ -86,7 +87,7 @@ async def ytdl(message: discord.Message) -> None:
     ydl_opts = {
         "paths": {"home": constants.Bot.file_cache},
         "format": "mp4",
-        "progress_hooks": [my_hook],
+        "progress_hooks": [filename_hook],
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -103,7 +104,7 @@ async def ytdl(message: discord.Message) -> None:
 
         ydl.download(link.group(0))
 
-        fname = "outfile.mp4"
+        fname = f"{constants.Bot.file_cache}outfile.mp4"
 
         try:
             stats = os.stat(fname)
