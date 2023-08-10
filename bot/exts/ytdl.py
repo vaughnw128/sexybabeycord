@@ -17,6 +17,7 @@ import discord
 import yt_dlp
 from discord import app_commands
 from discord.ext import commands
+from yt_dlp.utils import download_range_func
 
 # project modules
 from bot import constants
@@ -37,34 +38,96 @@ class Ytdl(commands.Cog):
         self.ytdl_menu = app_commands.ContextMenu(name="ytdl", callback=self.ytdl_menu)
         self.bot.tree.add_command(self.ytdl_menu)
 
+    @app_commands.command(name="download")
+    async def download(
+        self,
+        interaction: discord.Interaction,
+        link: str,
+        start: str | None,
+        end: str | None,
+    ):
+        """Allows for downloading with commands"""
+
+        await interaction.response.defer()
+
+        # Searches for the link regex from the message
+        url = re.search(
+            link_regex,
+            link,
+        )
+
+        optional_arguments = None
+        if start is not None and end is not None:
+            start = convert_to_seconds(start)
+            end = convert_to_seconds(end)
+
+            optional_arguments = {
+                "download_ranges": download_range_func(None, [(start, end)]),
+                "force_keyframes_at_cuts": True,
+            }
+
+        if url is None:
+            await interaction.followup.send("That message didn't have a youtube link")
+            return
+
+        url = url.group(0)
+        await ytdl_helper(interaction, url, optional_arguments)
+
     async def ytdl_menu(
         self, interaction: discord.Interaction, message: discord.Message
     ) -> None:
         """Controls the ytdl menu"""
 
         await interaction.response.defer()
-        response = await ytdl(message)
 
-        match response:
-            case "Message had no Youtube link":
-                await interaction.followup.send(
-                    "That message didn't have a youtube link"
-                )
-                return
-            case "Size limit exceeded":
-                log.error(f"File size exceeded")
-                await interaction.followup.send(
-                    "The resulting video exceeded Discord filesize limits"
-                )
-                return
-            case "Ytdl failure":
-                log.error(f"Failure while trying to run Ytdl")
-                await interaction.followup.send("Ytdl has mysteriously failed")
-                return
+        # Searches for the link regex from the message
+        url = re.search(
+            link_regex,
+            message.content,
+        )
 
-        log.info(f"Youtube video was succesfully converted: {response})")
-        await interaction.followup.send(file=discord.File(response))
-        file_helper.remove(response)
+        if url is None:
+            await interaction.followup.send("That message didn't have a youtube link")
+            return
+
+        url = url.group(0)
+        await ytdl_helper(interaction, url, None)
+
+
+def convert_to_seconds(minutes: str) -> int:
+    """Converting XX:XX notation to seconds"""
+
+    if ":" in minutes:
+        split = minutes.split(":")
+        seconds = int(split[0]) * 60 + int(split[1])
+        return seconds
+    else:
+        return int(minutes)
+
+
+async def ytdl_helper(
+    interaction: discord.Interaction, url: str, optional_args: dict | None
+):
+    """Helper method for YTDL"""
+
+    response = await ytdl(url, optional_args)
+
+    match response:
+        case "Size limit exceeded":
+            log.error(f"File size exceeded")
+            await interaction.followup.send(
+                "The resulting video exceeded Discord filesize limits"
+            )
+            return
+        case "Ytdl failure":
+            log.error(f"Failure while trying to run Ytdl")
+            await interaction.followup.send("Ytdl has mysteriously failed")
+            return
+
+    log.info(f"Youtube video was succesfully converted: {response})")
+    await interaction.followup.send(file=discord.File(response))
+    file_helper.remove(response)
+    return response
 
 
 def filename_hook(d):
@@ -72,52 +135,35 @@ def filename_hook(d):
         os.rename(d["filename"], f"{constants.Bot.file_cache}outfile.mp4")
 
 
-async def ytdl(message: discord.Message) -> None:
+async def ytdl(url, optional_args: dict | None) -> None:
     """Helper method for fixing links"""
 
-    # Searches for the link regex from the message
-    link = re.search(
-        link_regex,
-        message.content,
-    )
-
-    if link is None:
-        return "Message had no Youtube link"
-
+    # Optional arguments for yt-dlp
     ydl_opts = {
         "paths": {"home": constants.Bot.file_cache},
         "format": "mp4",
         "progress_hooks": [filename_hook],
     }
 
+    # Add optional args if passed in from the clip mode
+    if optional_args is not None:
+        ydl_opts.update(optional_args)
+
+    print(ydl_opts)
+    # Downloading the video
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        try:
-            info = ydl.extract_info(link.group(0), download=False)
-        except Exception:
-            return "Ytdl failure"
-
-        sanitized = ydl.sanitize_info(info)
-
-        fname = (
-            f"{constants.Bot.file_cache}{sanitized['title']} [{sanitized['id']}].mp4"
-        )
-
-        ydl.download(link.group(0))
+        ydl.download(url)
 
         fname = f"{constants.Bot.file_cache}outfile.mp4"
 
         try:
-            stats = os.stat(fname)
-            file_size = stats.st_size / (1024 * 1024)
+            if file_helper.size_limit_exceeded(fname):
+                file_helper.remove(fname)
+                return "Size limit exceeded"
+            return fname
         except Exception:
             file_helper.remove(fname)
             return "Ytdl failure"
-
-        if file_size > 24.9:
-            file_helper.remove(fname)
-            return "Size limit exceeded"
-
-        return fname
 
 
 async def setup(bot: commands.Bot) -> None:

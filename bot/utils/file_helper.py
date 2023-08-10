@@ -105,3 +105,12 @@ def remove(fname: str) -> None:
 
     if os.path.exists(fname):
         os.remove(fname)
+
+
+def size_limit_exceeded(fname: str) -> bool:
+    stats = os.stat(fname)
+    file_size = stats.st_size / (1024 * 1024)
+
+    if file_size > 24.9:
+        return True
+    return False
