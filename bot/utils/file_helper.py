@@ -58,6 +58,10 @@ def grab(message: discord.Message) -> str:
     # Remove the trailing modifiers at the end of the link
     url = url.partition("?")[0]
 
+    return download_url(url)
+
+
+def download_url(url: str) -> str | None:
     # Handle tenor gifs
     if "tenor" in url and ".gif" not in url:
         try:

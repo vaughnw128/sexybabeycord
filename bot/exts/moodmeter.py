@@ -18,9 +18,12 @@ import time
 import discord
 from discord import app_commands
 from discord.ext import commands
+from wand.drawing import Drawing
+from wand.image import Image
 
 # project
 from bot import constants
+from bot.utils import file_helper
 
 log = logging.getLogger("moodmeter")
 
@@ -62,9 +65,10 @@ class SelectLetter(discord.ui.Select):
 
 
 class MoodView(discord.ui.View):
-    def __init__(self, *, timeout=180):
+    def __init__(self, database, *, timeout=180):
         self.letter = "N"
         self.number = "N"
+        self.db = database
 
         super().__init__(timeout=timeout)
         self.add_item(SelectLetter())
@@ -78,18 +82,16 @@ class MoodView(discord.ui.View):
             f"Your mood is {self.letter}{self.number}"
         )
 
-        timestamp = round(time.mktime(interaction.created_at.timetuple()))
-
         mood = {
-            timestamp: {
-                "user": interaction.user.id,
-                "letter": self.letter,
-                "number": self.number,
-            }
+            "timestamp": int(time.time()),
+            "user": interaction.user.id,
+            "guild": interaction.guild.id,
+            "mood": self.letter + self.number,
         }
 
-        with open("bot/resources/moodmeter.json", "w") as jsonFile:
-            json.dump(mood, jsonFile, indent=4)
+        self.db.MoodMeter.insert_one(mood)
+        file = await drop_pin(self.letter + self.number, interaction.user)
+        await interaction.channel.send(file=file)
 
     async def on_timeout(self, interaction: discord.Interaction):
         interaction.message.edit(
@@ -108,9 +110,27 @@ class MoodMeter(commands.Cog):
     async def mood(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             file=discord.File("bot/resources/MoodMeter.png"),
-            view=MoodView(),
+            view=MoodView(database=self.bot.database),
             ephemeral=True,
         )
+
+
+async def drop_pin(mood: str, user: discord.User) -> discord.File:
+    x = constants.MoodMeter.location[mood[0]]
+    y = constants.MoodMeter.location[mood[1]]
+
+    avatar = file_helper.download_url(user.avatar.url)
+
+    with Image(filename=constants.MoodMeter.image) as image:
+        with Image(filename=avatar) as avatar:
+            avatar.resize(50, 50)
+            avatar.crop()
+            image.composite(
+                avatar, left=(x - (avatar.width // 2)), top=(y - (avatar.height // 2))
+            )
+            image.save(filename=f"{constants.Bot.file_cache}{user.name}_mood.png")
+
+    return discord.File(f"{constants.Bot.file_cache}/{user.name}_mood.png")
 
 
 async def setup(bot: commands.Bot) -> None:

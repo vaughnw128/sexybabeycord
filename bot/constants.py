@@ -26,6 +26,14 @@ class _Bot:
 Bot = _Bot()
 
 
+class _Database:
+    connection_uri = os.getenv("MONGO_URI")
+    database = "SexybabeyDB"
+
+
+Database = _Database()
+
+
 class _Channels:
     if Bot.testing:
         yachts = 1137763756869427231
@@ -81,6 +89,8 @@ Caption = _Caption()
 
 
 class _MoodMeter:
+    image = "bot/resources/MoodMeter.png"
+
     number_emojis = (
         "0️⃣",
         "1️⃣",
@@ -94,6 +104,29 @@ class _MoodMeter:
         "9️⃣",
     )
     letter_emojis = ("🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯")
+
+    location = {
+        "9": 224,
+        "8": 311,
+        "7": 398,
+        "6": 485,
+        "5": 572,
+        "4": 659,
+        "3": 746,
+        "2": 833,
+        "1": 920,
+        "0": 1007,
+        "A": 242,
+        "B": 329,
+        "C": 416,
+        "D": 503,
+        "E": 590,
+        "F": 677,
+        "G": 764,
+        "H": 851,
+        "I": 938,
+        "J": 1025,
+    }
 
 
 MoodMeter = _MoodMeter()

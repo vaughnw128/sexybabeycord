@@ -1,7 +1,7 @@
-""" 
+"""
     Astropix
 
-    Scrapes and sends the NASA picture of the day to our 
+    Scrapes and sends the NASA picture of the day to our
     server's #yachts chat. It's usually quite beautiful :>
 
     Made with love and care by Vaughn Woerpel
@@ -44,7 +44,7 @@ class Astropix(commands.Cog):
         fname, alt = await scrape_astropix()
         await channel.send(
             content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(fname)
+            file=discord.File(fname),
         )
         file_helper.remove(fname)
         log.info("Sent scheduled message")
@@ -77,7 +77,7 @@ async def scrape_astropix() -> tuple[str, str]:
         except Exception:
             log.error("Unable to scrape image")
             return None
-            
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
