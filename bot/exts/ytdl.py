@@ -56,22 +56,36 @@ class Ytdl(commands.Cog):
             link,
         )
 
+        if url is None:
+            await interaction.followup.send("That message didn't have a youtube link")
+            return
+
+        # Gets the timestamp when it's passed through via the link as the start
+        link_timestamp = re.search(r"\?t=(\d+)", link)
+
+        # If tree for setting start and end times
         optional_arguments = None
         if start is not None and end is not None:
             start = convert_to_seconds(start)
             end = convert_to_seconds(end)
+        elif link_timestamp is not None and end is not None:
+            start = convert_to_seconds(link_timestamp.group(1))
+            end = convert_to_seconds(end)
+        elif link_timestamp is not None and end is None:
+            start = convert_to_seconds(link_timestamp.group(1))
+            end = start + 30
+        elif start is not None:
+            start = convert_to_seconds(start)
+            end = start + 30
 
+        # Optional arguments only if start and end are not none
+        if start is not None and end is not None:
             optional_arguments = {
                 "download_ranges": download_range_func(None, [(start, end)]),
                 "force_keyframes_at_cuts": True,
             }
 
-        if url is None:
-            await interaction.followup.send("That message didn't have a youtube link")
-            return
-
-        url = url.group(0)
-        await ytdl_helper(interaction, url, optional_arguments)
+        await ytdl_helper(interaction, url.group(0), optional_arguments)
 
     async def ytdl_menu(
         self, interaction: discord.Interaction, message: discord.Message
@@ -90,8 +104,7 @@ class Ytdl(commands.Cog):
             await interaction.followup.send("That message didn't have a youtube link")
             return
 
-        url = url.group(0)
-        await ytdl_helper(interaction, url, None)
+        await ytdl_helper(interaction, url.group(0), None)
 
 
 def convert_to_seconds(minutes: str) -> int:
