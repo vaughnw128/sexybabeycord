@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+from datetime import time
 
 # external
 import discord
@@ -32,17 +33,26 @@ log = logging.getLogger("fate")
 class Fate(commands.Cog):
     """Cog for running #fate"""
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: commands.Bot, accounts: list) -> None:
         """Initializes the cog."""
 
         self.bot = bot
+        self.accounts = accounts
         self.fate_task.start()
+        self.relogin_task.start()
 
     # Check James's twitter every 5 minutes
     @tasks.loop(minutes=5)
     async def fate_task(self) -> None:
         """Task loop just calling fate()"""
         await self.fate()
+
+    @tasks.loop(time=time(hour=0))
+    async def relogin_task(self) -> None:
+        """Handles reloading accounts once per day to prevent de-auth issues"""
+
+        await api.pool.relogin(self.accounts)
+        log.info("Accounts re-logged in")
 
     async def fate(self) -> None:
         """Handles grabbing the tweets from twitter using twscrape"""
@@ -107,5 +117,5 @@ async def setup(bot: commands.Bot) -> None:
     accounts = await api.pool.accounts_info()
     log.info("Added accounts to the pool")
 
-    await bot.add_cog(Fate(bot))
+    await bot.add_cog(Fate(bot, accounts))
     log.info("Loaded")
