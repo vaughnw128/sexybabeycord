@@ -64,16 +64,14 @@ poetry run -m bot
 
 The current components (cogs) of the bot are as follows:
 - Astropix: Scrapes and sends the NASA picture of the day every day at noon.
-- Statcat: Message statistics generator.
 - Distort: Grabs images from messages then uses liquid rescaling to distort and resend them.
 - fixlink: Takes any link to twitter, instagram, or tiktok, and fixes it with either the 'vx' or 'dd' prefix for proper embed formatting.
 - fate: Uses twscrape to grab @JamesCageWhite's tweets and send them in our #fate channel. Love that guy.
 - gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
 - caption: Adds captions to images when you reply with the 'caption' keyword.
+- Mood Matrix: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
+- Ytdl: Downloads youtube videos and clips with a command or menu button.
 
-Components that I plan on adding in the future:
-- Mood Matrix (Creates a daily matrix based on the its so over/we balling/etc image)
-- FixYoutube?
     
     
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>
