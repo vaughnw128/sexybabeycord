@@ -41,6 +41,7 @@ poetry self add poetry-dotenv-plugin
 poetry install
 ```
 
+Additional dependencies are required, such as ffmpeg, and libmagickwand-dev.
 
 Then, it's necessary to create a `.env` file to match the one in `bot/resources/templates/env_template` in the root directory of the project. The tenor token is required to grab certain gifs posted from tenor, and can be obtained for free by following the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
 ```
