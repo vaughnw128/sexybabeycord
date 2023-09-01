@@ -3,15 +3,15 @@
 [![CI/CD](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-This is the newest iteration/amalgam of the many discord bots I've made over the years. 
+This is the newest iteration/amalgam of the many discord bots I've made over the years.
 I plan on adding new bots and re-implementing old bots in this new and improved system!
 The bot itself is a collection of multiple pieces, each with vastly
 different functionalities. There certainly will be more to come as our
 server never has enough bots (lie).
 
 What the hell is Sexybabeycord?: Sexybabeycord is the current iteration of the Discord server that I share
-with my close friends (we accidentally nuked the last one with homemade spambots). It's more of a 
-chaotic groupchat than a high-functioning Discord 'community,' as we all have Administrator 
+with my close friends (we accidentally nuked the last one with homemade spambots). It's more of a
+chaotic groupchat than a high-functioning Discord 'community,' as we all have Administrator
 permissions, and we don't particularly care for rules. I love making bots for our server, and my
 friends seem to as well.
 
@@ -72,7 +72,8 @@ The current components (cogs) of the bot are as follows:
 - caption: Adds captions to images when you reply with the 'caption' keyword.
 - Mood Matrix: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
 - Ytdl: Downloads youtube videos and clips with a command or menu button.
+- Peanut gallery: Whenever someone sends a youtube link, a random comment from the video is automatically sent to chat
 
-    
-    
+
+
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>
