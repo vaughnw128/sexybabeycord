@@ -1,4 +1,4 @@
-FROM python:3.10.6-slim
+FROM python:3.10.12-slim
 WORKDIR /bot
 
 RUN apt-get -y update
@@ -37,7 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libopenblas-dev \
         liblapack-dev
 
-RUN pip install poetry
+RUN pip install poetry yt-dlp
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry self add poetry-dotenv-plugin

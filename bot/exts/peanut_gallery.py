@@ -1,4 +1,4 @@
-""" 
+"""
     Peanut Gallery
 
     Automatically grabs a comment from whatever youtube link is sent,
@@ -7,11 +7,13 @@
     Made with love and care by Vaughn Woerpel
 """
 
+import json
+
 # built-in
 import logging
-import re
-import json
 import random
+import re
+import subprocess
 
 # external
 import discord
@@ -22,6 +24,7 @@ from discord.ext import commands
 log = logging.getLogger("peanut-gallery")
 
 link_regex = r"https:\/\/(www.|)youtu(be.com|.be)([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+
 
 class PeanutGallery(commands.Cog):
     """Fixlink class to handle the... fixing of links"""
@@ -37,11 +40,12 @@ class PeanutGallery(commands.Cog):
 
         comment = await peanut(message)
         if comment is not None:
-            await message.reply(comment)
+            await message.reply(embed=comment)
+
 
 async def peanut(message: discord.Message) -> str:
     """Helper method for grabbing commentsa"""
-    
+
     # Searches for the link regex from the message
     link = re.search(
         link_regex,
@@ -50,26 +54,27 @@ async def peanut(message: discord.Message) -> str:
 
     if link is None:
         return None
-    
-    optional_arguments = {
-        "forcejson": True,
-        "getcomments": True,
-        "extractor_args": {
-            "youtube": {
-                "max_comments": "1000,all,100"
-            }
-        }
-    }
-    
-    with yt_dlp.YoutubeDL(optional_arguments) as ydl:
-        info = ydl.extract_info(link.group(0), download=False)
-        
-        if info['comments'] is None:
-            return
 
-        comment = random.choice(info['comments'])
+    info = subprocess.check_output(
+        f"yt-dlp --skip-download --write-comments --extractor-args \"youtube:max_comments='100,100,0,0'\" {link.group(0)} -j",
+        shell=True,
+    ).decode()
+    info = json.loads(info)
 
-    return comment['text']
+    if info["comments"] is None:
+        return None
+
+    comment = random.choice(info["comments"])
+
+    embed = discord.Embed(title="", description=comment["text"])
+    embed.set_author(
+        name=comment["author"],
+        url=comment["author_url"],
+        icon_url=comment["author_thumbnail"],
+    )
+
+    return embed
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
