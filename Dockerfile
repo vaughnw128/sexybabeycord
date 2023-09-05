@@ -35,8 +35,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libswscale-dev \
         libavutil-dev \
         libopenblas-dev \
-        liblapack-dev \
-        docker.io
+        liblapack-dev
 
 RUN pip install poetry yt-dlp
 COPY pyproject.toml poetry.lock ./
