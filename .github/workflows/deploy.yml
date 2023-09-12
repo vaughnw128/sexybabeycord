@@ -22,4 +22,4 @@ jobs:
             docker stop sexybabeycord 2&>1 /dev/null
             docker rm sexybabeycord 2&>1 /dev/null
             docker rmi ghcr.io/vaughnw128/sexybabeycord:latest 2&>1 /dev/null
-            docker run -d -t --name sexybabeycord -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env --pull always ghcr.io/vaughnw128/sexybabeycord:latest
+            docker run -d -ti --name sexybabeycord -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env -v /var/run/docker.sock:/var/run/docker.sock --pull always ghcr.io/vaughnw128/sexybabeycord:latest

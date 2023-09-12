@@ -23,12 +23,18 @@ class Bash(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Intializes the bash class"""
+
+        subprocess.run("docker run -dit --name alpine alpine", shell=True)
+
         self.bot = bot
 
     @app_commands.command(name="bash")
     async def bash(self, interaction: discord.Interaction, command: str) -> None:
         await interaction.response.defer()
-        output = exec(command.split(" "))
+
+        command = ["docker", "exec", "alpine"] + command.split(" ")
+
+        output = exec()
         output = [line.decode() for line in output if line is not None]
         printable = "".join(output)
 
