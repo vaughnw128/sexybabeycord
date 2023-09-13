@@ -1,4 +1,4 @@
-FROM python:3.10.12-slim
+FROM python:3.11.5
 WORKDIR /bot
 
 RUN apt-get -y update
