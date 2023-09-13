@@ -173,11 +173,13 @@ class Remind(commands.Cog):
         await interaction.response.defer()
 
         cursor = self.db.Reminders.find({"user": interaction.user.id})
-        embeds = []
-
         cursor_length = len(list(cursor))
 
-        for i, document in enumerate(cursor):
+        cursor = self.db.Reminders.find({"user": interaction.user.id})
+        embeds = []
+
+        count = 1
+        for document in cursor:
             embed = discord.Embed(title="Reminder", color=0xFB0DA8)
             embed.add_field(
                 name="", value=f"**Reason:** `{document['reason']}`", inline=False
@@ -188,8 +190,8 @@ class Remind(commands.Cog):
             embed.add_field(
                 name="", value=f"\n\n{document['message_url']}", inline=False
             )
-            embed.set_footer(text=f"{i}/{cursor_length}")
-
+            embed.set_footer(text=f"{count}/{cursor_length}")
+            count += 1
             embeds.append(embed)
 
         if len(embeds) > 1:
