@@ -12,7 +12,7 @@ import os
 
 class _Bot:
     prefix = "~"
-    testing = True
+    testing = False
     if testing:
         token = os.getenv("TESTING_TOKEN")
         id = 1137764471725625354
