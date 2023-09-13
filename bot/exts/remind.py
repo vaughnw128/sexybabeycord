@@ -36,15 +36,15 @@ class DateTransformer(app_commands.Transformer):
         if redate.match(date):
             if "-" in date:
                 return datetime.datetime.strptime(date, "%m-%d-%Y").replace(
-                    hour=17, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
             elif "/" in date:
                 return datetime.datetime.strptime(date, "%m/%d/%Y").replace(
-                    hour=17, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
             else:
                 return datetime.datetime.strptime(date, "%m.%d.%Y").replace(
-                    hour=17, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
         return None
 
@@ -64,8 +64,22 @@ class Remind(commands.Cog):
 
         cursor = self.db.Reminders.find({})
         for document in cursor:
-            print(document)
-            # if document['later'] < datetime.datetime.now():
+            if document['later'] < datetime.datetime.now():
+                user = await self.bot.fetch_user(document['user'])
+
+                embed = discord.Embed(
+                        title="DING! DING! DING! Get reminded!!",
+                        color=0xFB0DA8
+                    )
+
+                embed.add_field(name="", value=f"**Reason:** `{document['reason']}`", inline=False)
+                embed.add_field(name="", value=f"**Time:** `{document['later']}`", inline=False)
+                embed.add_field(name="", value=f"\n\n{document['message_url']}", inline=False)
+
+                channel = await self.bot.fetch_channel(document['channel'])
+                await channel.send(embed=embed, content=f"<@{document['user']}>")
+
+                self.db.Reminders.delete_one(filter=document)
 
     @app_commands.command(name="remind", description="Set a reminder for later!")
     @app_commands.describe(
@@ -90,17 +104,6 @@ class Remind(commands.Cog):
         if inon == "in":
             later = now + datetime.timedelta(**{unit: duration})
 
-        reminder = {
-            "timestamp": now.replace(microsecond=0),
-            "user": interaction.user.id,
-            "channel": interaction.channel.id,
-            "guild": interaction.guild.id,
-            "reason": reason,
-            "later": later.replace(microsecond=0),
-        }
-
-        self.db.Reminders.insert_one(reminder)
-
         embed = discord.Embed(
             title="Reminder Generated!",
             description=f"@{interaction.user.display_name}",
@@ -108,9 +111,20 @@ class Remind(commands.Cog):
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
         embed.add_field(name="", value=f"**Time:** `{later}`", inline=False)
+        message = await interaction.followup.send(embed=embed)
 
-        await interaction.followup.send(embed=embed)
+        reminder = {
+            "timestamp": now.replace(microsecond=0),
+            "user": interaction.user.id,
+            "channel": interaction.channel.id,
+            "guild": interaction.guild.id,
+            "reason": reason,
+            "later": later.replace(microsecond=0),
+            "message_url": message.jump_url
+        }
 
+        self.db.Reminders.insert_one(reminder)
+    
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

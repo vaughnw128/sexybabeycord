@@ -6,7 +6,7 @@ authors = ["Vaughn Woerpel"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.10.12"
+python = "^3.10.12"
 Wand = "^0.6.11"
 aiohttp = "^3.8.4"
 beautifulsoup4 = "^4.12.2"
@@ -33,6 +33,7 @@ moviepy = "^1.0.3"
 youtube-dl = "^2021.12.17"
 yt-dlp = "^2023.7.6"
 pymongo = {extras = ["ocsp"], version = "^4.5.0"}
+pyopenssl = "^23.2.0"
 
 [build-system]
 requires = ["poetry-core"]

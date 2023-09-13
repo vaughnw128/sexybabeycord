@@ -24,8 +24,11 @@ async def main() -> None:
     """Define bot parameters and initialize the client object"""
 
     intents = discord.Intents.all()
+
+    uri = constants.Database.connection_uri
+
     client = Sexybabeycord(
-        mongo_client=pymongo.MongoClient(constants.Database.connection_uri),
+        mongo_client=pymongo.MongoClient(uri),
         intents=intents,
         command_prefix=constants.Bot.prefix,
     )
