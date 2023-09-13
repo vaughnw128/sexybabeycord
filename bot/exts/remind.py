@@ -17,7 +17,7 @@ from typing import Literal
 # external
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 from wand.image import Image
 
 # project
@@ -29,17 +29,23 @@ log = logging.getLogger("remind")
 class DateTransformer(app_commands.Transformer):
     async def transform(
         self, interaction: discord.Interaction, date: str
-    ) -> datetime.date | None:
+    ) -> datetime.datetime | None:
         redate = re.compile(
             r"^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$"
         )
         if redate.match(date):
             if "-" in date:
-                return datetime.datetime.strptime(date, "%m-%d-%Y").date.isoformat()
+                return datetime.datetime.strptime(date, "%m-%d-%Y").replace(
+                    hour=17, second=0, microsecond=0
+                )
             elif "/" in date:
-                return datetime.datetime.strptime(date, "%m/%d/%Y").date.isoformat()
+                return datetime.datetime.strptime(date, "%m/%d/%Y").replace(
+                    hour=17, second=0, microsecond=0
+                )
             else:
-                return datetime.datetime.strptime(date, "%m.%d.%Y").date.isoformat()
+                return datetime.datetime.strptime(date, "%m.%d.%Y").replace(
+                    hour=17, second=0, microsecond=0
+                )
         return None
 
 
@@ -50,6 +56,16 @@ class Remind(commands.Cog):
         """Intializes the Remind class"""
         self.bot = bot
         self.db = self.bot.database
+        self.check_reminders.start()
+
+    @tasks.loop(minutes=1)
+    async def check_reminders(self) -> None:
+        """Handles the looping of the checking reminders"""
+
+        cursor = self.db.Reminders.find({})
+        for document in cursor:
+            print(document)
+            # if document['later'] < datetime.datetime.now():
 
     @app_commands.command(name="remind", description="Set a reminder for later!")
     @app_commands.describe(
@@ -73,23 +89,27 @@ class Remind(commands.Cog):
         now = datetime.datetime.now()
         if inon == "in":
             later = now + datetime.timedelta(**{unit: duration})
-            print(later)
-        else:
-            later = later.replace(hour=12, minute=0, second=0)
-            print(later)
 
         reminder = {
             "timestamp": now.replace(microsecond=0),
             "user": interaction.user.id,
+            "channel": interaction.channel.id,
             "guild": interaction.guild.id,
             "reason": reason,
             "later": later.replace(microsecond=0),
         }
 
-        print(self.db.Reminders)
         self.db.Reminders.insert_one(reminder)
 
-        await interaction.followup.send("Sent to DB!")
+        embed = discord.Embed(
+            title="Reminder Generated!",
+            description=f"@{interaction.user.display_name}",
+            color=0xFB0DA8,
+        )
+        embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
+        embed.add_field(name="", value=f"**Time:** `{later}`", inline=False)
+
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
