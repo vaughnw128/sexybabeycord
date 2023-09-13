@@ -41,7 +41,7 @@ class ReminderView(discord.ui.View):
             if self.loc != 0:
                 self.loc -= 1
             else:
-                self.loc = len(self.embeds)-1
+                self.loc = len(self.embeds) - 1
             await interaction.message.edit(embed=self.embeds[self.loc])
         except Exception:
             log.error("Button error")
@@ -52,7 +52,7 @@ class ReminderView(discord.ui.View):
     ):
         await interaction.response.defer()
         try:
-            if self.loc != len(self.embeds)-1:
+            if self.loc != len(self.embeds) - 1:
                 self.loc += 1
             else:
                 self.loc = 0
@@ -114,7 +114,6 @@ class Remind(commands.Cog):
                 embed.add_field(
                     name="", value=f"\n\n{document['message_url']}", inline=False
                 )
-                
 
                 channel = await self.bot.fetch_channel(document["channel"])
                 await channel.send(embed=embed, content=f"<@{document['user']}>")
@@ -150,7 +149,11 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-        embed.add_field(name="", value=f"**Time:** `{later.replace(microsecond=0)}`", inline=False)
+        embed.add_field(
+            name="",
+            value=f"**Time:** `{later.replace(microsecond=0) - datetime.timedelta(hours=4)}`",
+            inline=False,
+        )
         message = await interaction.followup.send(embed=embed)
 
         reminder = {
@@ -185,7 +188,9 @@ class Remind(commands.Cog):
                 name="", value=f"**Reason:** `{document['reason']}`", inline=False
             )
             embed.add_field(
-                name="", value=f"**Time:** `{document['later']}`", inline=False
+                name="",
+                value=f"**Time:** `{document['later'] - datetime.timedelta(hours=4)}`",
+                inline=False,
             )
             embed.add_field(
                 name="", value=f"\n\n{document['message_url']}", inline=False
