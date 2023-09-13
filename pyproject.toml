@@ -6,7 +6,7 @@ authors = ["Vaughn Woerpel"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10.12"
+python = "3.11.5"
 Wand = "^0.6.11"
 aiohttp = "^3.8.4"
 beautifulsoup4 = "^4.12.2"

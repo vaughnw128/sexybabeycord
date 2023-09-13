@@ -36,11 +36,13 @@ class ReminderView(discord.ui.View):
     async def left_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         try:
             if self.loc != 0:
                 self.loc -= 1
-                await interaction.message.edit(embed=self.embeds[self.loc])
-            await interaction.response.defer()
+            else:
+                self.loc = len(self.embeds)-1
+            await interaction.message.edit(embed=self.embeds[self.loc])
         except Exception:
             log.error("Button error")
 
@@ -48,11 +50,13 @@ class ReminderView(discord.ui.View):
     async def right_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
+        await interaction.response.defer()
         try:
-            if self.loc != len(self.embeds):
+            if self.loc != len(self.embeds)-1:
                 self.loc += 1
-                await interaction.message.edit(embed=self.embeds[self.loc])
-            await interaction.response.defer()
+            else:
+                self.loc = 0
+            await interaction.message.edit(embed=self.embeds[self.loc])
         except Exception:
             log.error("Button error")
 
@@ -92,15 +96,13 @@ class Remind(commands.Cog):
         self.db = self.bot.database
         self.check_reminders.start()
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=15)
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
 
         cursor = self.db.Reminders.find({})
         for document in cursor:
             if document["later"] < datetime.datetime.now():
-                user = await self.bot.fetch_user(document["user"])
-
                 embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
 
                 embed.add_field(
@@ -112,6 +114,7 @@ class Remind(commands.Cog):
                 embed.add_field(
                     name="", value=f"\n\n{document['message_url']}", inline=False
                 )
+                
 
                 channel = await self.bot.fetch_channel(document["channel"])
                 await channel.send(embed=embed, content=f"<@{document['user']}>")
@@ -147,7 +150,7 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-        embed.add_field(name="", value=f"**Time:** `{later}`", inline=False)
+        embed.add_field(name="", value=f"**Time:** `{later.replace(microsecond=0)}`", inline=False)
         message = await interaction.followup.send(embed=embed)
 
         reminder = {
@@ -172,7 +175,9 @@ class Remind(commands.Cog):
         cursor = self.db.Reminders.find({"user": interaction.user.id})
         embeds = []
 
-        for document in cursor:
+        cursor_length = len(list(cursor))
+
+        for i, document in enumerate(cursor):
             embed = discord.Embed(title="Reminder", color=0xFB0DA8)
             embed.add_field(
                 name="", value=f"**Reason:** `{document['reason']}`", inline=False
@@ -183,6 +188,7 @@ class Remind(commands.Cog):
             embed.add_field(
                 name="", value=f"\n\n{document['message_url']}", inline=False
             )
+            embed.set_footer(text=f"{i}/{cursor_length}")
 
             embeds.append(embed)
 
