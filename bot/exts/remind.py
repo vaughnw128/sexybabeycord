@@ -99,15 +99,15 @@ class DateTransformer(app_commands.Transformer):
         if redate.match(date):
             if "-" in date:
                 return datetime.datetime.strptime(date, "%m-%d-%Y").replace(
-                    hour=16, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
             elif "/" in date:
                 return datetime.datetime.strptime(date, "%m/%d/%Y").replace(
-                    hour=16, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
             else:
                 return datetime.datetime.strptime(date, "%m.%d.%Y").replace(
-                    hour=16, second=0, microsecond=0
+                    hour=12, second=0, microsecond=0
                 )
         return None
 
