@@ -27,7 +27,7 @@ from bot import constants
 
 log = logging.getLogger("remind")
 
-os.environ["TZ"] = "US/Pacific"
+os.environ["TZ"] = "US/Eastern"
 time.tzset()
 
 
