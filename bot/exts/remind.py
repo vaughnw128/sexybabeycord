@@ -6,10 +6,12 @@
     Made with love and care by Vaughn Woerpel
 """
 
+
 import datetime
 
 # built-in
 import logging
+import os
 import re
 import time
 from typing import Literal
@@ -24,6 +26,9 @@ from wand.image import Image
 from bot import constants
 
 log = logging.getLogger("remind")
+
+os.environ["TZ"] = "US/Pacific"
+time.tzset()
 
 
 class DeleteReminderView(discord.ui.View):
