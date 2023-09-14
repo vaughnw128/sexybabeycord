@@ -26,6 +26,26 @@ from bot import constants
 log = logging.getLogger("remind")
 
 
+class DeleteReminderView(discord.ui.View):
+    def __init__(self, db, document, *, timeout=180):
+        super().__init__(timeout=timeout)
+        self.db = db
+        self.document = document
+
+    @discord.ui.button(label="Confirm Deletion", style=discord.ButtonStyle.red, row=1)
+    async def delete_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await interaction.response.defer()
+        if interaction.user.id == self.document["user"]:
+            self.db.Reminders.delete_one(filter=self.document)
+
+            await interaction.message.edit(
+                content="Reminder deleted.", embed=None, view=None
+            )
+            button.disabled = True
+
+
 class ReminderView(discord.ui.View):
     def __init__(self, embeds, *, timeout=180):
         super().__init__(timeout=timeout)
@@ -74,15 +94,15 @@ class DateTransformer(app_commands.Transformer):
         if redate.match(date):
             if "-" in date:
                 return datetime.datetime.strptime(date, "%m-%d-%Y").replace(
-                    hour=12, second=0, microsecond=0
+                    hour=16, second=0, microsecond=0
                 )
             elif "/" in date:
                 return datetime.datetime.strptime(date, "%m/%d/%Y").replace(
-                    hour=12, second=0, microsecond=0
+                    hour=16, second=0, microsecond=0
                 )
             else:
                 return datetime.datetime.strptime(date, "%m.%d.%Y").replace(
-                    hour=12, second=0, microsecond=0
+                    hour=16, second=0, microsecond=0
                 )
         return None
 
@@ -110,7 +130,7 @@ class Remind(commands.Cog):
                 )
                 embed.add_field(
                     name="",
-                    value=f"**Time:** `{document['later'] - datetime.timedelta(hours=4)}`",
+                    value=f"**Time:** `{document['later']}`",
                     inline=False,
                 )
                 embed.add_field(
@@ -144,6 +164,11 @@ class Remind(commands.Cog):
         now = datetime.datetime.now()
         if inon == "in":
             later = now + datetime.timedelta(**{unit: duration})
+        elif later == None:
+            interaction.followup.send(
+                "Wrong date format! Please enter in MM-DD-YYYY format."
+            )
+            return
 
         embed = discord.Embed(
             title="Reminder Generated!",
@@ -153,7 +178,7 @@ class Remind(commands.Cog):
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
         embed.add_field(
             name="",
-            value=f"**Time:** `{later.replace(microsecond=0) - datetime.timedelta(hours=4)}`",
+            value=f"**Time:** `{later.replace(microsecond=0)}`",
             inline=False,
         )
         message = await interaction.followup.send(embed=embed)
@@ -191,7 +216,7 @@ class Remind(commands.Cog):
             )
             embed.add_field(
                 name="",
-                value=f"**Time:** `{document['later'] - datetime.timedelta(hours=4)}`",
+                value=f"**Time:** `{document['later']}`",
                 inline=False,
             )
             embed.add_field(
@@ -207,6 +232,41 @@ class Remind(commands.Cog):
             await interaction.followup.send("No reminders found!")
         else:
             await interaction.followup.send(embed=embeds[0])
+
+    @app_commands.command(
+        name="delreminder", description="Delete a reminder that matches a reason"
+    )
+    @app_commands.describe(reason="reminder reason")
+    async def delreminder(self, interaction: discord.Interaction, reason: str) -> None:
+        await interaction.response.defer()
+
+        cursor = self.db.Reminders.find({"user": interaction.user.id, "reason": reason})
+
+        docs = []
+        for document in cursor:
+            docs.append(document)
+
+        if len(docs) == 0:
+            await interaction.followup.send("No reminders found.")
+            return
+
+        document = docs[0]
+        embed = discord.Embed(title="Reminder", color=0xFB0DA8)
+        embed.add_field(
+            name="", value=f"**Reason:** `{document['reason']}`", inline=False
+        )
+        embed.add_field(
+            name="",
+            value=f"**Time:** `{document['later']}`",
+            inline=False,
+        )
+        embed.add_field(name="", value=f"\n\n{document['message_url']}", inline=False)
+
+        await interaction.followup.send(
+            content="Delete this reminder?",
+            embed=embed,
+            view=DeleteReminderView(self.db, document),
+        )
 
 
 async def setup(bot: commands.Bot) -> None:
