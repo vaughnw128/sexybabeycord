@@ -109,7 +109,9 @@ class Remind(commands.Cog):
                     name="", value=f"**Reason:** `{document['reason']}`", inline=False
                 )
                 embed.add_field(
-                    name="", value=f"**Time:** `{document['later']}`", inline=False
+                    name="",
+                    value=f"**Time:** `{document['later'] - datetime.timedelta(hours=4)}`",
+                    inline=False,
                 )
                 embed.add_field(
                     name="", value=f"\n\n{document['message_url']}", inline=False
