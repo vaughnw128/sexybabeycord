@@ -122,8 +122,10 @@ async def ytdl_helper(
     interaction: discord.Interaction, url: str, optional_args: dict | None
 ):
     """Helper method for YTDL"""
-
-    response = await ytdl(url, optional_args)
+    try:
+        response = await ytdl(url, optional_args)
+    except Exception:
+        response = "Ytdl failure"
 
     match response:
         case "Size limit exceeded":
