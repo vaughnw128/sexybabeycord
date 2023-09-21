@@ -147,6 +147,22 @@ class Remind(commands.Cog):
 
                 self.db.Reminders.delete_one(filter=document)
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Checks to see if someone wants to be reminded"""
+
+        # Searches for the link regex from the message
+        is_reminder = re.search(
+            "remind me",
+            message.content.lower(),
+        )
+
+        # If the regex matched send a reminder to use remind
+        if is_reminder is not None:
+            await message.reply(
+                "Hey buddy! You know there's a feature for that... Why don't you try `/remind`?"
+            )
+
     @app_commands.command(name="remind", description="Set a reminder for later!")
     @app_commands.describe(
         reason="reminder reason",
