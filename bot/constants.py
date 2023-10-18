@@ -37,13 +37,9 @@ Database = _Database()
 class _Channels:
     if Bot.testing:
         yachts = 1137763756869427231
-        bots = 1137763767963357184
-        thots = 1137763783037685820
         fate = 1137763793364074556
     else:
         yachts = 644752766736138241
-        bots = 644753024287506452
-        thots = 644753035993677831
         fate = 1021214119141064755
 
 

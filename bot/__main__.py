@@ -9,8 +9,6 @@
 # built-in
 import asyncio
 
-import certifi
-
 # external
 import discord
 import pymongo
