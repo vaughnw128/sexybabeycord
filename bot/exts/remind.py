@@ -143,7 +143,7 @@ class Remind(commands.Cog):
                         value=f"**Time:** `{document['later']}`",
                         inline=False,
                     )
-                    if document["prawntab"] is not None:
+                    if "prawntab" in document.keys():
                         prawn = croniter.croniter(
                             document["prawntab"], document["later"]
                         )
@@ -165,7 +165,7 @@ class Remind(commands.Cog):
                     channel = await self.bot.fetch_channel(document["channel"])
                     await channel.send(embed=embed, content=f"<@{document['user']}>")
 
-                    if document["prawntab"] is not None:
+                    if "prawntab" in document.keys():
                         self.db.Reminders.update_one(
                             document, {"$set": {"later": later}}
                         )
@@ -378,7 +378,7 @@ class Remind(commands.Cog):
                 value=f"**Time:** `{document['later']}`",
                 inline=False,
             )
-            if document["prawntab"] is not None:
+            if "prawntab" in document.keys():
                 embed.add_field(
                     name="",
                     value=f"**Prawntab:** `{document['prawntab']}`",
