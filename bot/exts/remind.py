@@ -16,6 +16,8 @@ import re
 import time
 from typing import Literal
 
+import croniter
+
 # external
 import discord
 from discord import app_commands
@@ -138,6 +140,12 @@ class Remind(commands.Cog):
                     value=f"**Time:** `{document['later']}`",
                     inline=False,
                 )
+                if document["prawntab"] is not None:
+                    embed.add_field(
+                        name="",
+                        value=f"**Prawntab:** `{document['prawntab']}`",
+                        inline=False,
+                    )
                 embed.add_field(
                     name="", value=f"\n\n{document['message_url']}", inline=False
                 )
@@ -145,7 +153,12 @@ class Remind(commands.Cog):
                 channel = await self.bot.fetch_channel(document["channel"])
                 await channel.send(embed=embed, content=f"<@{document['user']}>")
 
-                self.db.Reminders.delete_one(filter=document)
+                if document["prawntab"] is not None:
+                    prawn = croniter.croniter(document["prawntab"], document["later"])
+                    later = prawn.get_next(datetime.datetime)
+                    self.db.Reminders.update_one(document, {"later": later})
+                else:
+                    self.db.Reminders.delete_one(filter=document)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -163,33 +176,24 @@ class Remind(commands.Cog):
                 "Hey buddy! You know there's a feature for that... Why don't you try `/remind`?"
             )
 
-    @app_commands.command(name="remind", description="Set a reminder for later!")
-    @app_commands.describe(
-        reason="reminder reason",
-        inon="reminded in a time or on a date",
-        duration="in how long",
-        unit="what unit",
-        later="what date",
+    @app_commands.command(
+        name="remindmein", description="Set a reminder for later! (In a duration)"
     )
-    async def remind(
+    @app_commands.describe(
+        reason="reminder reason", duration="in how long", unit="what unit"
+    )
+    async def remindmein(
         self,
         interaction: discord.Interaction,
         reason: str,
-        inon: Literal["in", "on"],
-        duration: int | None,
-        unit: Literal["minutes", "hours", "days"] | None,
-        later: app_commands.Transform[datetime.datetime, DateTransformer] | None,
+        duration: int,
+        unit: Literal["minutes", "hours", "days"],
     ) -> None:
         await interaction.response.defer()
 
         now = datetime.datetime.now()
-        if inon == "in":
-            later = now + datetime.timedelta(**{unit: duration})
-        elif later == None:
-            interaction.followup.send(
-                "Wrong date format! Please enter in MM-DD-YYYY format."
-            )
-            return
+
+        later = now + datetime.timedelta(**{unit: duration})
 
         embed = discord.Embed(
             title="Reminder Generated!",
@@ -212,6 +216,126 @@ class Remind(commands.Cog):
             "reason": reason,
             "later": later.replace(microsecond=0),
             "message_url": message.jump_url,
+        }
+
+        self.db.Reminders.insert_one(reminder)
+
+    @app_commands.command(
+        name="remindmeon", description="Set a reminder for later! (On a date)"
+    )
+    @app_commands.describe(
+        reason="reminder reason", later="what date", time="what time"
+    )
+    async def remindmeon(
+        self,
+        interaction: discord.Interaction,
+        reason: str,
+        later: app_commands.Transform[datetime.datetime, DateTransformer],
+        time: str | None,
+    ) -> None:
+        await interaction.response.defer()
+
+        now = datetime.datetime.now()
+
+        if later == None:
+            interaction.followup.send(
+                "Wrong date format! Please enter in MM-DD-YYYY format."
+            )
+            return
+
+        if time != None:
+            if ":" in time:
+                time = time.split(":")
+                hours = int(time[0])
+                minutes = int(time[1])
+            else:
+                hours = int(time)
+                minutes = 0
+
+            if hours > 23 or minutes > 59:
+                interaction.followup.send(
+                    "Wrong time format! Please enter in HH:MM format."
+                )
+                return
+
+            later = later.replace(hour=hours, minute=minutes, second=0, microsecond=0)
+
+        embed = discord.Embed(
+            title="Reminder Generated!",
+            description=f"@{interaction.user.display_name}",
+            color=0xFB0DA8,
+        )
+        embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
+        embed.add_field(
+            name="",
+            value=f"**Time:** `{later.replace(microsecond=0)}`",
+            inline=False,
+        )
+        message = await interaction.followup.send(embed=embed)
+
+        reminder = {
+            "timestamp": now.replace(microsecond=0),
+            "user": interaction.user.id,
+            "channel": interaction.channel.id,
+            "guild": interaction.guild.id,
+            "reason": reason,
+            "later": later.replace(microsecond=0),
+            "message_url": message.jump_url,
+        }
+
+        self.db.Reminders.insert_one(reminder)
+
+    @app_commands.command(
+        name="prawnjob",
+        description="Sets a recurring reminder. A feature like this is one in a krillion!",
+    )
+    @app_commands.describe(
+        reason="reminder reason", prawntab="Crontab-esque string for scheduling"
+    )
+    async def prawnjob(
+        self, interaction: discord.Interaction, reason: str, prawntab: str
+    ) -> None:
+        await interaction.response.defer()
+
+        now = datetime.datetime.now()
+
+        try:
+            prawn = croniter.croniter(prawntab, now)
+            later = prawn.get_next(datetime.datetime)
+        except Exception:
+            await interaction.followup.send(
+                "Wrong format!!! Krill yourself!!! Check this site, bozo: https://crontab.guru/"
+            )
+            return
+
+        embed = discord.Embed(
+            title="Prawnjob Generated!",
+            description=f"@{interaction.user.display_name}",
+            color=0xFB0DA8,
+        )
+        embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
+
+        embed.add_field(
+            name="",
+            value=f"**Prawntab:** `{prawntab}`",
+            inline=False,
+        )
+        embed.add_field(
+            name="",
+            value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
+            inline=False,
+        )
+        message = await interaction.followup.send(embed=embed)
+
+        reminder = {
+            "timestamp": now.replace(microsecond=0),
+            "user": interaction.user.id,
+            "channel": interaction.channel.id,
+            "guild": interaction.guild.id,
+            "reason": reason,
+            "later": later.replace(microsecond=0),
+            "message_url": message.jump_url,
+            "prawntab": prawntab,
         }
 
         self.db.Reminders.insert_one(reminder)
