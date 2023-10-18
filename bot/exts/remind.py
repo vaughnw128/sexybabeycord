@@ -123,42 +123,56 @@ class Remind(commands.Cog):
         self.db = self.bot.database
         self.check_reminders.start()
 
-    @tasks.loop(seconds=15)
+    @tasks.loop(seconds=5)
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
 
         cursor = self.db.Reminders.find({})
         for document in cursor:
             if document["later"] < datetime.datetime.now():
-                embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
+                try:
+                    embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
 
-                embed.add_field(
-                    name="", value=f"**Reason:** `{document['reason']}`", inline=False
-                )
-                embed.add_field(
-                    name="",
-                    value=f"**Time:** `{document['later']}`",
-                    inline=False,
-                )
-                if document["prawntab"] is not None:
                     embed.add_field(
                         name="",
-                        value=f"**Prawntab:** `{document['prawntab']}`",
+                        value=f"**Reason:** `{document['reason']}`",
                         inline=False,
                     )
-                embed.add_field(
-                    name="", value=f"\n\n{document['message_url']}", inline=False
-                )
+                    embed.add_field(
+                        name="",
+                        value=f"**Time:** `{document['later']}`",
+                        inline=False,
+                    )
+                    if document["prawntab"] is not None:
+                        prawn = croniter.croniter(
+                            document["prawntab"], document["later"]
+                        )
+                        later = prawn.get_next(datetime.datetime)
+                        embed.add_field(
+                            name="",
+                            value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
+                            inline=False,
+                        )
+                        embed.add_field(
+                            name="",
+                            value=f"**Prawntab:** `{document['prawntab']}`",
+                            inline=False,
+                        )
+                    embed.add_field(
+                        name="", value=f"\n\n{document['message_url']}", inline=False
+                    )
 
-                channel = await self.bot.fetch_channel(document["channel"])
-                await channel.send(embed=embed, content=f"<@{document['user']}>")
+                    channel = await self.bot.fetch_channel(document["channel"])
+                    await channel.send(embed=embed, content=f"<@{document['user']}>")
 
-                if document["prawntab"] is not None:
-                    prawn = croniter.croniter(document["prawntab"], document["later"])
-                    later = prawn.get_next(datetime.datetime)
-                    self.db.Reminders.update_one(document, {"later": later})
-                else:
-                    self.db.Reminders.delete_one(filter=document)
+                    if document["prawntab"] is not None:
+                        self.db.Reminders.update_one(
+                            document, {"$set": {"later": later}}
+                        )
+                    else:
+                        self.db.Reminders.delete_one(filter=document)
+                except discord.errors.Forbidden:
+                    return
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -364,6 +378,12 @@ class Remind(commands.Cog):
                 value=f"**Time:** `{document['later']}`",
                 inline=False,
             )
+            if document["prawntab"] is not None:
+                embed.add_field(
+                    name="",
+                    value=f"**Prawntab:** `{document['prawntab']}`",
+                    inline=False,
+                )
             embed.add_field(
                 name="", value=f"\n\n{document['message_url']}", inline=False
             )
