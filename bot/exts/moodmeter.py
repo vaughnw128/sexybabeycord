@@ -85,7 +85,8 @@ class MoodView(discord.ui.View):
             "mood": self.letter + self.number,
         }
 
-        self.db.MoodMeter.insert_one(mood)
+        if self.db is not None:
+            self.db.MoodMeter.insert_one(mood)
         file = await drop_pin(self.letter + self.number, interaction.user)
         await interaction.channel.send(file=file)
 

@@ -27,7 +27,7 @@ if not os.path.exists(constants.Logging.loglocation):
     os.makedirs(constants.Logging.loglocation)
 
 # Sets file writer
-time = str(datetime.now().strftime("%Y%m%dT%H%M%S"))
+time = str(datetime.now().strftime("%Y%m%d"))
 filename = f"sexybabeycord-{time}.log"
 file_handler = logging.FileHandler(
     f"{constants.Logging.loglocation}{filename}", encoding="utf8"

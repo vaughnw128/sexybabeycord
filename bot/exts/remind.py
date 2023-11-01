@@ -22,9 +22,6 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from wand.image import Image
 
-# project
-from bot import constants
-
 log = logging.getLogger("remind")
 
 os.environ["TZ"] = "US/Eastern"
@@ -276,6 +273,10 @@ class Remind(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
+
+    if bot.db is None:
+        log.error("No database found. Aborting loading remind.")
+        return
 
     await bot.add_cog(Remind(bot))
     log.info("Loaded")

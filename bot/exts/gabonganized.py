@@ -15,9 +15,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
+import cv2
 
 # project modules
-from bot.utils import file_helper, magick_helper
+from bot.utils import file_helper
 
 log = logging.getLogger("gabonganized")
 
@@ -83,7 +84,7 @@ async def gabonga_helper(message: discord.Message) -> str:
         return "Invalid filetype"
 
     # Uses face rec to grab the face and get the location
-    face_locations = await magick_helper.get_faces(fname)
+    face_locations = await get_faces(fname)
     if len(face_locations) == 0:
         file_helper.remove(fname)
         return "No faces in image"
@@ -115,6 +116,25 @@ async def gabonga(fname: str, face_locations: list) -> str:
             face.save(filename=fname)
     return fname
 
+async def get_faces(fname: str) -> list[tuple]:
+    """Gets the faces using opencv-python"""
+
+    # Load the cascade
+    face_cascade = cv2.CascadeClassifier(
+        "bot/resources/haarcascade_frontalface_default.xml"
+    )
+
+    img = cv2.imread(fname)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    found_faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+    faces = []
+
+    for x, y, w, h in found_faces:
+        faces.append((x, y, w, h))
+
+    return faces
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

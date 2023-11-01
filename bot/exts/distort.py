@@ -15,8 +15,10 @@ import os
 import discord
 from discord import app_commands
 from discord.ext import commands
+from wand.image import Image
 
 # project modules
+from bot import constants
 from bot.utils import file_helper, magick_helper
 
 log = logging.getLogger("distort")
@@ -82,6 +84,37 @@ async def distort_helper(message: discord.Message) -> str:
         file_helper.remove(fname)
         return "Distort failure"
 
+async def distort(fname: str) -> str:
+    """Handles the distortion using ImageMagick"""
+
+    with Image(filename=fname) as src_image:
+        # Checks gif vs png/jpg
+        if fname.endswith("gif"):
+            src_image.coalesce()
+            with Image() as dst_image:
+                # Coalesces and then distorts and puts the frame buffers into an output
+                for frame in src_image.sequence:
+                    with Image(image=frame) as frameimage:
+                        x, y = frame.width, frame.height
+                        if x > 1 and y > 1:
+                            frameimage.liquid_rescale(
+                                round(x * constants.Distort.ratio),
+                                round(y * constants.Distort.ratio),
+                            )
+                            frameimage.resize(x, y)
+                            dst_image.sequence.append(frameimage)
+                dst_image.optimize_layers()
+                dst_image.optimize_transparency()
+                dst_image.save(filename=fname)
+        else:
+            # Simple distortion
+            x, y = src_image.width, src_image.height
+            src_image.liquid_rescale(
+                round(x * constants.Distort.ratio), round(y * constants.Distort.ratio)
+            )
+            src_image.resize(x, y)
+            src_image.save(filename=fname)
+    return fname
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

@@ -2,7 +2,7 @@
     Astropix
 
     Scrapes and sends the NASA picture of the day to our
-    server's #yachts chat. It's usually quite beautiful :>
+    server's general chat. It's usually quite beautiful :>
 
     Made with love and care by Vaughn Woerpel
 """
@@ -39,7 +39,7 @@ class Astropix(commands.Cog):
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
-        channel = await self.bot.fetch_channel(constants.Channels.yachts)
+        channel = await self.bot.fetch_channel(constants.Channels.general)
 
         fname, alt = await scrape_astropix()
         await channel.send(
