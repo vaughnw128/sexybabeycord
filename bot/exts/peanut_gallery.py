@@ -54,26 +54,28 @@ async def peanut(message: discord.Message) -> str:
 
     if link is None:
         return None
+    try:
+        info = subprocess.check_output(
+            f"yt-dlp --skip-download --write-comments --extractor-args \"youtube:max_comments='100,100,0,0'\" {link.group(0)} -j",
+            shell=True,
+        ).decode()
+        info = json.loads(info)
 
-    info = subprocess.check_output(
-        f"yt-dlp --skip-download --write-comments --extractor-args \"youtube:max_comments='100,100,0,0'\" {link.group(0)} -j",
-        shell=True,
-    ).decode()
-    info = json.loads(info)
+        if info["comments"] is None:
+            return None
 
-    if info["comments"] is None:
+        comment = random.choice(info["comments"])
+
+        embed = discord.Embed(title="", description=comment["text"])
+        embed.set_author(
+            name=comment["author"],
+            url=comment["author_url"],
+            icon_url=comment["author_thumbnail"],
+        )
+
+        return embed
+    except Exception:
         return None
-
-    comment = random.choice(info["comments"])
-
-    embed = discord.Embed(title="", description=comment["text"])
-    embed.set_author(
-        name=comment["author"],
-        url=comment["author_url"],
-        icon_url=comment["author_thumbnail"],
-    )
-
-    return embed
 
 
 async def setup(bot: commands.Bot) -> None:

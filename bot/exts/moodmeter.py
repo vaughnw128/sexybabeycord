@@ -9,6 +9,7 @@
 
 # built-in
 import logging
+import re
 import time
 
 # external
@@ -110,6 +111,30 @@ class MoodMeter(commands.Cog):
             view=MoodView(database=self.bot.database),
             ephemeral=True,
         )
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Allows users to do moods from a message regex"""
+
+        match = re.search(r"MOOD\s([A-J][0-9])\b", message.content.upper())
+
+        if match is not None:
+            mood_match = match.group(1)
+
+            await message.reply(f"Your mood is {mood_match}")
+
+            mood = {
+                "timestamp": int(time.time()),
+                "user": message.author.id,
+                "guild": message.guild.id,
+                "mood": mood_match,
+            }
+
+            print(mood)
+
+            self.bot.database.MoodMeter.insert_one(mood)
+            file = await drop_pin(mood_match, message.author)
+            await message.channel.send(file=file)
 
 
 async def drop_pin(mood: str, user: discord.User) -> discord.File:
