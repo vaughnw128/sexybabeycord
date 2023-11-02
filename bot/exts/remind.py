@@ -159,9 +159,13 @@ class Remind(commands.Cog):
                         name="", value=f"\n\n{document['message_url']}", inline=False
                     )
 
+                    # Send message to user and originating channel
+                    user = self.bot.get_user(document['user'])
                     channel = await self.bot.fetch_channel(document["channel"])
+                    await user.send(embed=embed, content=f"<@{document['user']}>")
                     await channel.send(embed=embed, content=f"<@{document['user']}>")
 
+                    # Moves the prawntab to the next time
                     if "prawntab" in document.keys():
                         self.db.Reminders.update_one(
                             document, {"$set": {"later": later}}
@@ -315,7 +319,7 @@ class Remind(commands.Cog):
             later = prawn.get_next(datetime.datetime)
         except Exception:
             await interaction.followup.send(
-                "Wrong format!!! Krill yourself!!! Check this site, bozo: https://crontab.guru/"
+                "Wrong format!!! Krill issue!!! Check this site, bozo: https://crontab.guru/"
             )
             return
 

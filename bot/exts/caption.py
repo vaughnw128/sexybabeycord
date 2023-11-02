@@ -35,7 +35,7 @@ class Caption(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'caption' it adds the caption to the image it's replying to"""
 
-        response = await self.caption_helper(message, self.bot.user.id)
+        response = await caption_helper(message, self.bot.user.id)
 
         match response:
             case "Message sent by self":

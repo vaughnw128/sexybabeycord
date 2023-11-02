@@ -104,7 +104,7 @@ class MoodMeter(commands.Cog):
         """Intializes the MoodMeter class"""
         self.bot = bot
 
-    @app_commands.command(name="mood")
+    @app_commands.command(name="mood", description="Generate a moodmeter for yourself! Meow!")
     async def mood(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             file=discord.File("bot/resources/MoodMeter.png"),

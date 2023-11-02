@@ -64,6 +64,9 @@ def grab(message: discord.Message) -> str:
 def download_url(url: str) -> str | None:
     # Handle tenor gifs
     if "tenor" in url and ".gif" not in url:
+        if constants.Bot.tenor is None:
+            log.error(f"No tenor token has been found in .env")
+            return None
         try:
             id = url.split("-")[-1]
             resp = requests.get(
