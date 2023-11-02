@@ -15,33 +15,61 @@ chaotic groupchat than a high-functioning Discord 'community,' as we all have Ad
 permissions, and we don't particularly care for rules. I love making bots for our server, and my
 friends seem to as well.
 
-## Usage
+## Simple Setup
 
-Sexybabeycord uses poetry to manage dependencies, and as such, should be easy to manage. In order to run on your own system, the Python virtual environment needs to be set up.
+Sexybabeycord uses poetry to manage most dependencies, so it should be fairly easy to set up on a new host.
 
-
-Clone the repository:
-```
+### 1. Clone the repository
+```bash
 git clone https://github.com/vaughnw128/sexybabeycord
 cd sexybabeycord/
 ```
 
+### 2. Install and initialize pyenv
 
-Install and initialize the python environment:
-```
-brew install pyenv
-pyenv install 3.10.6
-pyenv local 3.10.6
+```bash
+$ curl https://pyenv.run | bash
 ```
 
-
-Installing dependencies with poetry:
+Add the following lines to ~/.bashrc and ~/.profile:
+```bash
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
 ```
-poetry self add poetry-dotenv-plugin
-poetry install
+
+Then, add the following like to ~/.bashrc to automatically initialize the virtual environment:
+```bash
+eval "$(pyenv virtualenv-init -)"
 ```
 
-Additional dependencies are required, such as ffmpeg, and libmagickwand-dev.
+Finally, restart your shell and use pyenv to set the version. Currently, this version of Sexybabeycord uses Python 3.11.5.
+```bash
+$ pyenv install 3.11.5
+$ pyenv local 3.11.5
+```
+
+### 3. Install poetry
+```bash
+$ curl -sSL https://install.python-poetry.org | python3 -
+$ poetry self add poetry-dotenv-plugin
+$ poetry install
+```
+
+### 4. Install final dependencies
+
+MacOS:
+```bash
+$ brew install ffmpeg magickwand
+```
+
+Unix:
+```bash
+$ apt get install ffmpeg libmagickwand-dev 
+```
+
+### 5. Set up your .env file
+In order to pass in some of the variables for Sexybabeycord, the .env file should be set up.
 
 Then, it's necessary to create a `.env` file to match the one in `bot/resources/templates/env_template` in the root directory of the project. The tenor token is required to grab certain gifs posted from tenor, and can be obtained for free by following the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
 ```
