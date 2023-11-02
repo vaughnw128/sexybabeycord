@@ -9,13 +9,15 @@
 # built-in
 import logging
 import re
-import math
+import textwrap
+
 
 # external
 import discord
 from discord.ext import commands
 from wand.color import Color
 from wand.font import Font
+from wand.drawing import Drawing
 from wand.image import Image
 
 # project modules
@@ -115,44 +117,37 @@ async def caption(fname: str, caption_text: str) -> str:
         else:
             x, y = src_image.width, src_image.height
 
-        font_size = round(64 * (x / 720))
-        bar_height = int(math.ceil(len(caption_text) / 24) * (x / 8))
-        if bar_height < 1:
-            bar_height = 1
-        font = Font(path="bot/resources/caption_font.otf", size=font_size)
+        wrapper = textwrap.TextWrapper(width=50) 
+        wrapper_split_length = len(wrapper.wrap(text=caption_text))
+        bar_height = wrapper_split_length * round(y/5)
 
-        # Generate template image
-        template_image = Image(
-            width=x,
-            height=y + bar_height,
-            background=Color("white"),
-        )
+        with Image(width=x, height=y+bar_height) as template_image:
+            with Drawing() as context:
+                context.fill_color = 'white'
+                context.rectangle(left=0, top=0, width=x, height=bar_height)
+                font = Font(path="bot/resources/caption_font.otf")
+                context(template_image)
+                template_image.caption(caption_text, left=0, top=0, width=x, height=bar_height, font=font, gravity='center')
 
-        template_image.caption(
-            text=caption_text,
-            gravity="north",
-            font=font,
-        )
+            # Checks gif vs png/jpg
+            if fname.endswith(".gif"):
+                with Image() as dst_image:
+                    # Coalesces and then distorts and puts the frame buffers into an output
+                    src_image.coalesce()
+                    for framenumber, frame in enumerate(src_image.sequence):
+                        with Image(image=template_image) as bg_image:
+                            fwidth, fheight = frame.width, frame.height
+                            if fwidth > 1 and fheight > 1:
+                                bg_image.composite(frame, left=0, top=bar_height)
+                                dst_image.sequence.append(bg_image)
+                    dst_image.optimize_layers()
+                    dst_image.optimize_transparency()
+                    dst_image.save(filename=fname)
+            else:
+                template_image.composite(src_image, left=0, top=bar_height)
+                template_image.save(filename=fname)
 
-        # Checks gif vs png/jpg
-        if fname.endswith(".gif"):
-            with Image() as dst_image:
-                # Coalesces and then distorts and puts the frame buffers into an output
-                src_image.coalesce()
-                for framenumber, frame in enumerate(src_image.sequence):
-                    with Image(image=template_image) as bg_image:
-                        fwidth, fheight = frame.width, frame.height
-                        if fwidth > 1 and fheight > 1:
-                            bg_image.composite(frame, left=0, top=bar_height)
-                            dst_image.sequence.append(bg_image)
-                dst_image.optimize_layers()
-                dst_image.optimize_transparency()
-                dst_image.save(filename=fname)
-        else:
-            template_image.composite(src_image, left=0, top=bar_height)
-            template_image.save(filename=fname)
-
-    return fname
+        return fname
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
