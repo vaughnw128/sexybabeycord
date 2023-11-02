@@ -60,31 +60,48 @@ $ poetry install
 
 MacOS:
 ```bash
-$ brew install ffmpeg magickwand
+$ brew install ffmpeg magickwand pre-commit
 ```
 
 Unix:
 ```bash
-$ apt get install ffmpeg libmagickwand-dev 
+$ apt get install ffmpeg libmagickwand-dev pre-commit
 ```
 
 ### 5. Set up your .env file
 In order to pass in some of the variables for Sexybabeycord, the .env file should be set up.
 
 Then, it's necessary to create a `.env` file to match the one in `bot/resources/templates/env_template` in the root directory of the project. The tenor token is required to grab certain gifs posted from tenor, and can be obtained for free by following the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
+
+Additionally, some features require the use of a database, and some are supplemented by one. These features will be automatically disabled on startup of the bot if a database is not used. Finally, this bot is suited to only be used in a single guild at a time, therefore, the guild ID, general channel, and 'fate' channel must be passed in. If general or fate is not passed in, the corresponding features will not be available.
+
 ```
-DISCORD_TOKEN=1234
-TENOR_TOKEN=1234
+# TOKENS
+DISCORD_TOKEN=
+TENOR_TOKEN=
+
+# DATABASE INFORMATION
+MONGO_URI=
+DATABASE_NAME=
+
+# GUILD/CHANNEL INFORMATION
+GUILD_ID=
+GENERAL_CHANNEL_ID=
+FATE_CHANNEL_ID=
 ```
 
+### 6. Test feature functionality
 
-The bot can then be tested by running pytest
+Some cogs and utilities have build in unit tests. These features can be tested via pytest.
+
 ```
-poetry run -m pytest
+poetry run python -m pytest
 ```
 
+### 7. Running the bot
 
 Finally, once tests pass, the bot can be run
+
 ```
 poetry run -m bot
 ```
