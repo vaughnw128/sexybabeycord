@@ -32,6 +32,7 @@ opencv-python = "^4.8.0.74"
 yt-dlp = "^2023.7.6"
 pymongo = "3.11"
 croniter = "^2.0.1"
+dnspython = "^2.4.2"
 
 [build-system]
 requires = ["poetry-core"]
