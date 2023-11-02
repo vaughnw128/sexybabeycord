@@ -37,7 +37,7 @@ Channels = _Channels()
 
 
 class _Guild:
-    os.getenv("GUILD_ID")
+    id = os.getenv("GUILD_ID")
 
 
 Guild = _Guild()

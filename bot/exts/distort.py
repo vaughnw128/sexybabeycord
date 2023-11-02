@@ -19,7 +19,7 @@ from wand.image import Image
 
 # project modules
 from bot import constants
-from bot.utils import file_helper, magick_helper
+from bot.utils import file_helper
 
 log = logging.getLogger("distort")
 
@@ -76,7 +76,7 @@ async def distort_helper(message: discord.Message) -> str:
         file_helper.remove(fname)
         return "Invalid filetype"
 
-    distorted = await magick_helper.distort(fname)
+    distorted = await distort(fname)
 
     if distorted is not None:
         return distorted

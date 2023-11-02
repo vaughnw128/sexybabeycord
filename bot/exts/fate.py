@@ -101,6 +101,10 @@ async def setup(bot: commands.Bot) -> None:
         log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")
         return
 
+    if constants.Channels.fate is None:
+        log.error("Fate channel has not been specified in the environment variables. Aborting loading fate.")
+        return
+
     with open(constants.Fate.accounts) as f:
         accounts = json.load(f)
 

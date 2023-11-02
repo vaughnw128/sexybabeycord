@@ -35,7 +35,7 @@ class Caption(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'caption' it adds the caption to the image it's replying to"""
 
-        response = await self.caption_helper(message)
+        response = await self.caption_helper(message, self.bot.user.id)
 
         match response:
             case "Message sent by self":
@@ -63,46 +63,46 @@ class Caption(commands.Cog):
         file_helper.remove(response)
 
 
-    async def caption_helper(self, message: discord.Message) -> str:
-        """Helper method for captioning, allows for testing"""
+async def caption_helper(message: discord.Message, bot_id: int) -> str:
+    """Helper method for captioning, allows for testing"""
 
-        # Checks for the author being the bot
-        if message.author.id == self.bot.user.id:
-            return "Message sent by self"
+    # Checks for the author being the bot
+    if message.author.id == bot_id:
+        return "Message sent by self"
 
-        # Checks for the caption keyword
-        if not message.content.startswith("caption"):
-            return "Message doesn't start with caption"
+    # Checks for the caption keyword
+    if not message.content.startswith("caption"):
+        return "Message doesn't start with caption"
 
-        # Get original message if it is actually a message reply
-        try:
-            original_message = await message.channel.fetch_message(
-                message.reference.message_id
-            )
-        except AttributeError:
-            return "Message is not a reply"
+    # Get original message if it is actually a message reply
+    try:
+        original_message = await message.channel.fetch_message(
+            message.reference.message_id
+        )
+    except AttributeError:
+        return "Message is not a reply"
 
-        # Gets caption text
-        caption_text = re.sub(r"^caption", "", message.content).strip()
-        if caption_text is None or len(caption_text) == 0:
-            return "No caption was specified"
+    # Gets caption text
+    caption_text = re.sub(r"^caption", "", message.content).strip()
+    if caption_text is None or len(caption_text) == 0:
+        return "No caption was specified"
 
-        # Grabs and checks file
-        fname = file_helper.grab(original_message)
-        if fname is None:
-            return "Original message had no file"
+    # Grabs and checks file
+    fname = file_helper.grab(original_message)
+    if fname is None:
+        return "Original message had no file"
 
-        # Checks filetype
-        if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
-            file_helper.remove(fname)
-            return "Invalid filetype"
+    # Checks filetype
+    if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
+        file_helper.remove(fname)
+        return "Invalid filetype"
 
-        try:
-            captioned = await caption(fname, caption_text)
-            return captioned
-        except Exception:
-            file_helper.remove(fname)
-            return "Caption failure"
+    try:
+        captioned = await caption(fname, caption_text)
+        return captioned
+    except Exception:
+        file_helper.remove(fname)
+        return "Caption failure"
 
 
 async def caption(fname: str, caption_text: str) -> str:

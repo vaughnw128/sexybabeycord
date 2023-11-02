@@ -82,5 +82,9 @@ async def scrape_astropix() -> tuple[str, str]:
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
+    if constants.Channels.general is None:
+        log.error("General channel has not been specified in the environment variables. Aborting loading astrpix.")
+        return
+
     await bot.add_cog(Astropix(bot))
     log.info("Loaded")

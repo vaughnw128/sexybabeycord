@@ -434,7 +434,7 @@ class Remind(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
-    if bot.db is None:
+    if bot.database is None:
         log.error("No database found. Aborting loading remind.")
         return
 
