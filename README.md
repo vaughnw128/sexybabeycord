@@ -75,7 +75,7 @@ Then, it's necessary to create a `.env` file to match the one in `bot/resources/
 
 Additionally, some features require the use of a database, and some are supplemented by one. These features will be automatically disabled on startup of the bot if a database is not used. Finally, this bot is suited to only be used in a single guild at a time, therefore, the guild ID, general channel, and 'fate' channel must be passed in. If general or fate is not passed in, the corresponding features will not be available.
 
-```
+```bash
 # TOKENS
 DISCORD_TOKEN=
 TENOR_TOKEN=
@@ -94,16 +94,29 @@ FATE_CHANNEL_ID=
 
 Some cogs and utilities have build in unit tests. These features can be tested via pytest.
 
-```
-poetry run python -m pytest
+```bash
+$ poetry run python -m pytest
 ```
 
 ### 7. Running the bot
 
 Finally, once tests pass, the bot can be run
 
+```bash
+$ poetry run -m bot
 ```
-poetry run -m bot
+
+## Dockerizing
+
+Included with the bot is the ability to deploy it with Docker. The most recent image can be found under `packages` on Github. If you desire to build the container yourself, it can be easily built.
+
+```bash
+$ docker build .
+```
+
+Then to run the container:
+```bash
+$ docker run -d -ti --name sexybabeycord -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env -v ./logs:/bot/logs --pull always ghcr.io/vaughnw128/sexybabeycord:latest
 ```
 
 ## Components
@@ -115,10 +128,11 @@ The current components (cogs) of the bot are as follows:
 - fate: Uses twscrape to grab @JamesCageWhite's tweets and send them in our #fate channel. Love that guy.
 - gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
 - caption: Adds captions to images when you reply with the 'caption' keyword.
-- Mood Matrix: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
+- Mood Meter: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
 - Ytdl: Downloads youtube videos and clips with a command or menu button.
 - Peanut gallery: Whenever someone sends a youtube link, a random comment from the video is automatically sent to chat
-
+- Remind: Uses mongodb and crontab formatting to generate one-time reminders and recurring reminders
+- Wrench: A small utility cog just for getting the JSON of a message
 
 
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>
