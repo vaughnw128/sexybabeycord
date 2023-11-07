@@ -202,7 +202,7 @@ async def caption_helper(message: discord.Message, caption_text: str) -> str:
 
     # Checks filetype
     if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
-        # file_helper.remove(fname)
+        file_helper.remove(fname)
         return "Invalid filetype"
 
     try:
