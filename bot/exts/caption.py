@@ -6,16 +6,22 @@
     Made with love and care by Vaughn Woerpel
 """
 
+import io
+
 # built-in
 import logging
 import re
 import shutil
 import textwrap
+import time
 
 # external
 import discord
+import numpy
 from discord import app_commands
 from discord.ext import commands
+from PIL import Image as PILImage
+from PIL import ImageSequence
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.font import Font
@@ -210,56 +216,59 @@ async def caption_helper(message: discord.Message, caption_text: str) -> str:
 async def caption(fname: str, caption_text: str, font: str | None = None) -> str:
     """Adds a caption to images and gifs with image_magick"""
 
-    with Image(filename=fname) as src_image:
-        # Get height and width of image
-        if fname.endswith(".gif"):
-            x, y = src_image.sequence[0].width, src_image.sequence[0].height
-        else:
-            x, y = src_image.width, src_image.height
+    foreground = PILImage.open(fname)
 
-        wrapper = textwrap.TextWrapper(width=50)
-        wrapper_split_length = len(wrapper.wrap(text=caption_text))
-        bar_height = wrapper_split_length * round(y / 5)
+    x, y = foreground.size
 
-        with Image(width=x, height=y + bar_height) as template_image:
-            with Drawing() as context:
-                context.fill_color = "white"
-                context.rectangle(left=0, top=0, width=x, height=bar_height)
+    wrapper = textwrap.TextWrapper(width=50)
+    wrapper_split_length = len(wrapper.wrap(text=caption_text))
+    bar_height = wrapper_split_length * round(y / 5)
 
-                if font is None:
-                    font = "ifunny.otf"
-                font = Font(path=constants.Caption.fontdir + font)
+    with Image(width=x, height=y + bar_height) as template_image:
+        with Drawing() as context:
+            context.fill_color = "white"
+            context.rectangle(left=0, top=0, width=x, height=bar_height)
 
-                context(template_image)
-                template_image.caption(
-                    caption_text,
-                    left=0,
-                    top=0,
-                    width=x,
-                    height=bar_height,
-                    font=font,
-                    gravity="center",
-                )
+            if font is None:
+                font = "ifunny.otf"
+            font = Font(path=constants.Caption.fontdir + font)
 
-            # Checks gif vs png/jpg
-            if fname.endswith(".gif"):
-                with Image() as dst_image:
-                    # Coalesces and then distorts and puts the frame buffers into an output
-                    src_image.coalesce()
-                    for framenumber, frame in enumerate(src_image.sequence):
-                        with Image(image=template_image) as bg_image:
-                            fwidth, fheight = frame.width, frame.height
-                            if fwidth > 1 and fheight > 1:
-                                bg_image.composite(frame, left=0, top=bar_height)
-                                dst_image.sequence.append(bg_image)
-                    dst_image.optimize_layers()
-                    dst_image.optimize_transparency()
-                    dst_image.save(filename=fname)
-            else:
-                template_image.composite(src_image, left=0, top=bar_height)
-                template_image.save(filename=fname)
+            context(template_image)
+            template_image.caption(
+                caption_text,
+                left=0,
+                top=0,
+                width=x,
+                height=bar_height,
+                font=font,
+                gravity="center",
+            )
 
-        return fname
+        img_buffer = numpy.asarray(
+            bytearray(template_image.make_blob(format="png")), dtype="uint8"
+        )
+        bytesio = io.BytesIO(img_buffer)
+        background = PILImage.open(bytesio).convert("RGBA")
+
+    if foreground.is_animated:
+        frames = []
+        for frame in ImageSequence.Iterator(foreground):
+            captioned = background.copy()
+            captioned.paste(frame, (0, bar_height))
+            frames.append(captioned)
+
+        frames[0].save(
+            fname,
+            save_all=True,
+            append_images=frames,
+            loop=0,
+            duration=foreground.info["duration"],
+        )
+    else:
+        background.paste(foreground, (0, bar_height))
+        background.save(fname)
+
+    return fname
 
 
 async def setup(bot: commands.Bot) -> None:
