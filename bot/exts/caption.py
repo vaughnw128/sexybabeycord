@@ -314,24 +314,23 @@ async def caption(
 
     if foreground.is_animated:
         frames = []
-        durations = []
         for frame in ImageSequence.Iterator(foreground):
             captioned = background.copy()
             captioned.paste(frame, (0, bar_height))
             frames.append(captioned)
-            durations.append(20)
 
         if reversed:
             frames.reverse()
 
-        # print(durations)
+        print(foreground.info["duration"])
+        print(get_duration(foreground, playback_speed))
 
         frames[0].save(
             fname,
             save_all=True,
             append_images=frames,
             loop=0,
-            duration=1,
+            duration=get_duration(foreground, playback_speed),
         )
     else:
         background.paste(foreground, (0, bar_height))
@@ -340,18 +339,14 @@ async def caption(
     return fname
 
 
-def get_avg_fps(PIL_Image_object):
-    """Returns the average framerate of a PIL Image object"""
-    PIL_Image_object.seek(0)
-    frames = duration = 0
-    while True:
-        try:
-            frames += 1
-            duration += PIL_Image_object.info["duration"]
-            PIL_Image_object.seek(PIL_Image_object.tell() + 1)
-        except EOFError:
-            return frames / duration * 1000
-    return None
+def get_duration(image_object: PILImage, playback_speed: float) -> int:
+    duration = image_object.info["duration"]
+    duration /= playback_speed
+
+    if duration < 1:
+        duration = 1
+
+    return round(duration)
 
 
 async def setup(bot: commands.Bot) -> None:
