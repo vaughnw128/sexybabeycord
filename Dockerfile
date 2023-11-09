@@ -38,8 +38,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         liblapack-dev \
         docker.io
 
-RUN curl -LJO https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx
-COPY u2net.onnx /root/.u2net/u2net.onnx
+RUN mkdir -p /root/.u2net/
+ADD https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx /root/.u2net/u2net.onnx
 
 RUN pip install poetry yt-dlp
 COPY pyproject.toml poetry.lock ./
