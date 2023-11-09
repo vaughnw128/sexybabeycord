@@ -66,7 +66,12 @@ Distort = _Distort()
 
 class _Caption:
     fontdir = "bot/resources/fonts/"
-    fonts = ["ifunny.otf", "sans.ttf", "papyrus.ttf"]
+    fonts = {
+        "default": f"{fontdir}ifunny.otf",
+        "sans": f"{fontdir}sans.ttf",
+        "papyrus": f"{fontdir}papyrus.ttf",
+        "viz": f"{fontdir}WhizBangRoman.ttf",
+    }
 
 
 Caption = _Caption()
