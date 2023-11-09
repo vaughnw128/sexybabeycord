@@ -22,8 +22,8 @@ jobs:
       - build-and-test
     secrets: inherit
 
-  deploy:
-    uses: ./.github/workflows/deploy.yml
-    needs:
-      - docker-image
-    secrets: inherit
+  # deploy:
+  #   uses: ./.github/workflows/deploy.yml
+  #   needs:
+  #     - docker-image
+  #   secrets: inherit

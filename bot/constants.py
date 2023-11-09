@@ -51,7 +51,7 @@ Logging = _Logging()
 
 
 class _Fate:
-    accounts = "accounts.json"
+    accounts = "data/accounts.json"
 
 
 Fate = _Fate()

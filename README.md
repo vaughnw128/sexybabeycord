@@ -114,9 +114,27 @@ Included with the bot is the ability to deploy it with Docker. The most recent i
 $ docker build .
 ```
 
+If you desire to use twitter accounts, they must be added to an attached docker volume. First make the volume and copy over the data:
+
+```bash
+$ docker volume create sexybabeycord_data
+$ cp accounts.json /var/lib/docker/volumes/sexybabeycord_data/_data/accounts.json
+```
+
 Then to run the container:
 ```bash
-$ docker run -d -ti --name sexybabeycord -v ./accounts.json:/bot/accounts.json -v ./.env:/bot/.env -v ./logs:/bot/logs --pull always ghcr.io/vaughnw128/sexybabeycord:latest
+$ docker run -d \
+--name sexybabeycord \
+-v sexybabeycord_data:/bot/data \
+-e "DISCORD_TOKEN=" \
+-e "TENOR_TOKEN=" \
+-e "MONGO_URI=" \
+-e "DATABASE_NAME=" \
+-e "GUILD_ID=" \
+-e "GENERAL_CHANNEL_ID=" \
+-e "FATE_CHANNEL_ID=" \
+--restart always \
+ghcr.io/vaughnw128/sexybabeycord:latest
 ```
 
 ## Components
