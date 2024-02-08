@@ -22,6 +22,7 @@ jobs:
       - build-and-test
     secrets: inherit
 
+  # Moved to using watchtower and portainer for personal deployment
   # deploy:
   #   uses: ./.github/workflows/deploy.yml
   #   needs:

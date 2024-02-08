@@ -124,56 +124,68 @@ class Remind(commands.Cog):
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
 
-        cursor = self.db.Reminders.find({})
+        cursor = self.db.Reminders.find()
         for document in cursor:
             if document["later"] < datetime.datetime.now():
+                embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
+
+                embed.add_field(
+                    name="",
+                    value=f"**Reason:** `{document['reason']}`",
+                    inline=False,
+                )
+                embed.add_field(
+                    name="",
+                    value=f"**Time:** `{document['later']}`",
+                    inline=False,
+                )
+                if "prawntab" in document.keys():
+                    prawn = croniter.croniter(document["prawntab"], document["later"])
+                    later = prawn.get_next(datetime.datetime)
+                    embed.add_field(
+                        name="",
+                        value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
+                        inline=False,
+                    )
+                    embed.add_field(
+                        name="",
+                        value=f"**Prawntab:** `{document['prawntab']}`",
+                        inline=False,
+                    )
+                embed.add_field(
+                    name="", value=f"\n\n{document['message_url']}", inline=False
+                )
+                # Send message to user and originating channel
                 try:
-                    embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
-
-                    embed.add_field(
-                        name="",
-                        value=f"**Reason:** `{document['reason']}`",
-                        inline=False,
-                    )
-                    embed.add_field(
-                        name="",
-                        value=f"**Time:** `{document['later']}`",
-                        inline=False,
-                    )
-                    if "prawntab" in document.keys():
-                        prawn = croniter.croniter(
-                            document["prawntab"], document["later"]
-                        )
-                        later = prawn.get_next(datetime.datetime)
-                        embed.add_field(
-                            name="",
-                            value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
-                            inline=False,
-                        )
-                        embed.add_field(
-                            name="",
-                            value=f"**Prawntab:** `{document['prawntab']}`",
-                            inline=False,
-                        )
-                    embed.add_field(
-                        name="", value=f"\n\n{document['message_url']}", inline=False
-                    )
-
-                    # Send message to user and originating channel
-                    user = self.bot.get_user(document['user'])
-                    channel = await self.bot.fetch_channel(document["channel"])
+                    user = self.bot.get_user(int(document["user"]))
                     await user.send(embed=embed, content=f"<@{document['user']}>")
-                    await channel.send(embed=embed, content=f"<@{document['user']}>")
-
-                    # Moves the prawntab to the next time
-                    if "prawntab" in document.keys():
-                        self.db.Reminders.update_one(
-                            document, {"$set": {"later": later}}
-                        )
-                    else:
-                        self.db.Reminders.delete_one(filter=document)
                 except discord.errors.Forbidden:
-                    return
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                except AttributeError:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                try:
+                    channel = await self.bot.fetch_channel(document["channel"])
+                    await channel.send(embed=embed, content=f"<@{document['user']}>")
+                except discord.errors.Forbidden:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted."
+                    )
+                    continue
+                except AttributeError:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                    continue
+
+                # Moves the prawntab to the next time
+                if "prawntab" in document.keys():
+                    self.db.Reminders.update_one(document, {"$set": {"later": later}})
+                else:
+                    self.db.Reminders.delete_one(filter=document)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
