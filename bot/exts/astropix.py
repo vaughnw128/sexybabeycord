@@ -35,7 +35,7 @@ class Astropix(commands.Cog):
         self.bot = bot
         self.schedule_send.start()
 
-    @tasks.loop(time=time(hour=16))
+    @tasks.loop(time=time(hour=17))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
@@ -83,7 +83,9 @@ async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
     if constants.Channels.general is None:
-        log.error("General channel has not been specified in the environment variables. Aborting loading astrpix.")
+        log.error(
+            "General channel has not been specified in the environment variables. Aborting loading astrpix."
+        )
         return
 
     await bot.add_cog(Astropix(bot))
