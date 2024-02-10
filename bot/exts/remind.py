@@ -134,11 +134,12 @@ class Remind(commands.Cog):
                     value=f"**Reason:** `{document['reason']}`",
                     inline=False,
                 )
-                embed.add_field(
-                    name="",
-                    value=f"**URL:** `{'True' if document['url'] else 'False'}`",
-                    inline=False,
-                )
+                if "url" in document.keys():
+                    embed.add_field(
+                        name="",
+                        value=f"**URL:** `{'True' if document['url'] else 'False'}`",
+                        inline=False,
+                    )
                 embed.add_field(
                     name="",
                     value=f"**Time:** `{document['later']}`",
@@ -160,7 +161,7 @@ class Remind(commands.Cog):
                 embed.add_field(
                     name="", value=f"\n\n{document['message_url']}", inline=False
                 )
-                if document["url"]:
+                if "url" in document.keys() and document["url"]:
                     embed.set_image(url=document["url"])
                 # Send message to user and originating channel
                 try:
@@ -418,11 +419,12 @@ class Remind(commands.Cog):
             embed.add_field(
                 name="", value=f"**Reason:** `{document['reason']}`", inline=False
             )
-            embed.add_field(
-                name="",
-                value=f"**URL:** `{'True' if document['url'] else 'False'}`",
-                inline=False,
-            )
+            if "url" in document.keys():
+                embed.add_field(
+                    name="",
+                    value=f"**URL:** `{'True' if document['url'] else 'False'}`",
+                    inline=False,
+                )
             embed.add_field(
                 name="",
                 value=f"**Time:** `{document['later']}`",
