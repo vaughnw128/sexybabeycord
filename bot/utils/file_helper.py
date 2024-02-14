@@ -9,7 +9,7 @@
 # built-in
 import logging
 import os
-import urllib
+import shutil
 
 # external
 import discord
@@ -56,8 +56,6 @@ def grab(message: discord.Message) -> str:
         return None
 
     # Remove the trailing modifiers at the end of the link
-    url = url.partition("?")[0]
-
     return download_url(url)
 
 
@@ -83,12 +81,11 @@ def download_url(url: str) -> str | None:
         try:
             fname = requests.utils.urlparse(url)
             fname = f"{constants.Bot.file_cache}{(os.path.basename(fname.path))}"
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 
             # Downloads the file
-            with open(fname, "wb") as f:
-                with urllib.request.urlopen(req) as r:
-                    f.write(r.read())
+            with requests.get(url, stream=True) as r:
+                with open(fname, "wb") as f:
+                    shutil.copyfileobj(r.raw, f)
 
             # Adds a mime-type based file extension if it doesn't have one
             ext = os.path.splitext(fname)[-1].lower()
