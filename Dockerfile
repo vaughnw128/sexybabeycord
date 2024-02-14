@@ -36,7 +36,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libavutil-dev \
         libopenblas-dev \
         liblapack-dev \
-        docker.io
+        docker.io \
+        libmagic1
 
 RUN mkdir -p /root/.u2net/
 ADD https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx /root/.u2net/u2net.onnx

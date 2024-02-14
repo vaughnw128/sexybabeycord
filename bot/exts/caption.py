@@ -415,7 +415,6 @@ def get_frame_durations(PIL_Image_object: PILImage, playback_speed: float):
                 elif duration > 1000:
                     duration = 1000
                 durations[i] = int(round(duration))
-            print(durations)
             return durations
     return None
 
