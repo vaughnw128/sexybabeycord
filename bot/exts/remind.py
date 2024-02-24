@@ -26,8 +26,8 @@ from wand.image import Image
 
 log = logging.getLogger("remind")
 
-os.environ["TZ"] = "US/Eastern"
-time.tzset()
+# os.environ["TZ"] = "US/Eastern"
+# time.tzset()
 
 
 class DeleteReminderView(discord.ui.View):

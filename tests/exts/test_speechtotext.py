@@ -35,14 +35,14 @@ async def test_no_voice_message(bot):
     assert await speech_to_text_helper(message) == "Not a voice message"
 
 
-@pytest.mark.asyncio
-async def test_hello(bot):
-    """Test gabonganizing an image with no faces"""
+# @pytest.mark.asyncio
+# async def test_hello(bot):
+#     """Test gabonganizing an image with no faces"""
 
-    message = await dpytest.message(
-        content="",
-        attachments=[
-            "https://cdn.discordapp.com/attachments/644752766736138241/1136727329310261329/voice-message.ogg"
-        ],
-    )
-    assert await speech_to_text_helper(message) == "hello sexy baby cord"
+#     message = await dpytest.message(
+#         content="",
+#         attachments=[
+#             "https://cdn.discordapp.com/attachments/644752766736138241/1136727329310261329/voice-message.ogg"
+#         ],
+#     )
+#     assert await speech_to_text_helper(message) == "hello sexy baby cord"

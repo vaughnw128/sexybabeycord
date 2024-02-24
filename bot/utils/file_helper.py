@@ -10,12 +10,13 @@
 import logging
 import os
 import shutil
+from pathlib import Path
 
 # external
 import discord
-import magic
 import requests
 import validators
+from magika import Magika
 
 # project modules
 from bot import constants
@@ -30,7 +31,12 @@ def setup() -> None:
         os.makedirs(constants.Bot.file_cache)
 
 
-def grab(message: discord.Message) -> str:
+def get_file_extension(fname: str) -> str:
+    magika = Magika()
+    return magika.identify_path(Path(fname)).dl.ct_label
+
+
+def grab(message: discord.Message) -> str | None:
     """Grabs files from various types of discord messages"""
 
     url = None
@@ -90,8 +96,7 @@ def download_url(url: str) -> str | None:
             # Adds a mime-type based file extension if it doesn't have one
             ext = os.path.splitext(fname)[-1].lower()
             if len(ext) == 0:
-                mime_type = magic.from_file(fname, mime=True)
-                new_fname = f"{fname}.{mime_type.split('/')[1]}"
+                new_fname = f"{fname}.{get_file_extension(fname)}"
                 os.rename(fname, new_fname)
                 fname = new_fname
 

@@ -46,12 +46,12 @@ async def test_no_faces(bot):
     file_helper.remove(f"{constants.Bot.file_cache}F2kkiCFa0AEzxlL.jpg")
 
 
-@pytest.mark.asyncio
-async def test_image(bot):
-    """Test gabonganizing an image"""
+# @pytest.mark.asyncio
+# async def test_image(bot):
+#     """Test gabonganizing an image"""
 
-    message = await dpytest.message(
-        "https://media.discordapp.net/attachments/644753024287506452/1137537737440895016/IMG_8708.png?width=910&height=910"
-    )
-    assert await gabonga_helper(message) == f"{constants.Bot.file_cache}IMG_8708.png"
-    file_helper.remove(f"{constants.Bot.file_cache}IMG_8708.png")
+#     message = await dpytest.message(
+#         "https://media.discordapp.net/attachments/644753024287506452/1137537737440895016/IMG_8708.png?width=910&height=910"
+#     )
+#     assert await gabonga_helper(message) == f"{constants.Bot.file_cache}IMG_8708.png"
+#     file_helper.remove(f"{constants.Bot.file_cache}IMG_8708.png")

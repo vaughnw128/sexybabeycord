@@ -26,7 +26,7 @@ log = logging.getLogger("bot")
 
 
 class Sexybabeycord(commands.Bot):
-    """Discord bot sublass for Sexybabeycord"""
+    """Discord bot subclass for Sexybabeycord"""
 
     def __init__(self, mongo_client, *args, **kwargs):
         """Initialize the bot class"""
@@ -35,7 +35,7 @@ class Sexybabeycord(commands.Bot):
         self.database = None
         if mongo_client is not None and constants.Database.database is not None:
             self.database = self.mongo_client.get_database(constants.Database.database)
-            
+
         super().__init__(*args, **kwargs)
 
     async def sync_app_commands(self) -> None:

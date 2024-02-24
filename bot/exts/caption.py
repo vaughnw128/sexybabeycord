@@ -365,7 +365,7 @@ async def caption(
     else:
         background = PILImage.new("RGBA", (x, y), (255, 255, 255))
 
-    if foreground.is_animated:
+    if file_helper.get_file_extension(fname) == "gif":
         frames = []
         for frame in ImageSequence.Iterator(foreground):
             captioned = background.copy()
