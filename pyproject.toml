@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = ["Vaughn Woerpel"]
 readme = "README.md"
+packages = [{ include = "**/*" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
