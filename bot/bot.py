@@ -28,14 +28,9 @@ log = logging.getLogger("bot")
 class Sexybabeycord(commands.Bot):
     """Discord bot subclass for Sexybabeycord"""
 
-    def __init__(self, mongo_client, *args, **kwargs):
+    def __init__(self, database, *args, **kwargs):
         """Initialize the bot class"""
-
-        self.mongo_client = mongo_client
-        self.database = None
-        if mongo_client is not None and constants.Database.database is not None:
-            self.database = self.mongo_client.get_database(constants.Database.database)
-
+        self.database = database
         super().__init__(*args, **kwargs)
 
     async def sync_app_commands(self) -> None:
@@ -43,10 +38,11 @@ class Sexybabeycord(commands.Bot):
 
         await self.tree.sync()
         await self.tree.sync(guild=discord.Object(constants.Guild.id))
+
         logging.info("Command tree synced")
 
     async def load_extensions(self, module: types.ModuleType) -> None:
-        """Load all cogs by walking the packages in exts"""
+        """Load all cogs by walking the packages in exts."""
 
         logging.info("Loading extensions")
         for module_info in pkgutil.walk_packages(

@@ -27,7 +27,6 @@ log = logging.getLogger("ytdl")
 
 link_regex = r"https:\/\/(www.|)youtu(be.com|.be)([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
 
-
 class Ytdl(commands.Cog):
     """Ytdl class to handle ytdl-ing"""
 

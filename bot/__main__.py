@@ -11,7 +11,8 @@ import asyncio
 
 # external
 import discord
-import pymongo
+from pymongo import MongoClient
+from pymongo.errors import ConfigurationError
 
 # project modules
 from bot import constants
@@ -23,7 +24,14 @@ async def main() -> None:
 
     intents = discord.Intents.all()
 
+    try:
+        mongo_client = MongoClient(constants.Database.connection_uri)
+        database = mongo_client.get_database(constants.Database.database)
+    except ConfigurationError:
+        database = None
+
     client = Sexybabeycord(
+        database=database,
         intents=intents,
         command_prefix=constants.Bot.prefix,
     )

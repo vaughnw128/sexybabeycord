@@ -62,10 +62,9 @@ class SelectLetter(discord.ui.Select):
 
 
 class MoodView(discord.ui.View):
-    def __init__(self, database, *, timeout=180):
+    def __init__(self, *, timeout=180):
         self.letter = "N"
         self.number = "N"
-        self.db = database
 
         super().__init__(timeout=timeout)
         self.add_item(SelectLetter())
@@ -86,8 +85,6 @@ class MoodView(discord.ui.View):
             "mood": self.letter + self.number,
         }
 
-        if self.db is not None:
-            self.db.MoodMeter.insert_one(mood)
         file = await drop_pin(self.letter + self.number, interaction.user)
         await interaction.channel.send(file=file)
 
@@ -108,7 +105,7 @@ class MoodMeter(commands.Cog):
     async def mood(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             file=discord.File("bot/resources/MoodMeter.png"),
-            view=MoodView(database=self.bot.database),
+            view=MoodView(),
             ephemeral=True,
         )
 
@@ -130,9 +127,6 @@ class MoodMeter(commands.Cog):
                 "mood": mood_match,
             }
 
-            print(mood)
-
-            self.bot.database.MoodMeter.insert_one(mood)
             file = await drop_pin(mood_match, message.author)
             await message.channel.send(file=file)
 

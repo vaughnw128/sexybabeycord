@@ -20,8 +20,8 @@ from bot import constants
 
 root_log = logging.getLogger()
 
-format = "%(asctime)s - %(levelname)s : [%(module)s][%(funcName)s] %(message)s"
-log_format = logging.Formatter(format)
+format_string = "%(asctime)s - %(levelname)s : [%(module)s] %(message)s"
+log_format = logging.Formatter(format_string)
 
 if not os.path.exists(constants.Logging.loglocation):
     os.makedirs(constants.Logging.loglocation)
@@ -42,10 +42,10 @@ coloredlogs.DEFAULT_LEVEL_STYLES = {
     "critical": {"background": "red"},
     "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"],
 }
-coloredlogs.DEFAULT_LOG_FORMAT = format
+coloredlogs.DEFAULT_LOG_FORMAT = format_string
 coloredlogs.install(level=5, logger=root_log, stream=sys.stdout)
 
-# Sets module loglevels
+# Sets module log levels
 root_log.setLevel(logging.INFO)
 logging.getLogger("discord").setLevel(logging.WARNING)
 logging.getLogger("asyncio").setLevel(logging.INFO)

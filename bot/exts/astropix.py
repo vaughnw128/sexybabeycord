@@ -8,15 +8,17 @@
 """
 
 # built-in
-import io
 import logging
 import urllib
 from datetime import time
+from io import BytesIO
+
 
 # external
 import aiohttp
 import bs4 as bs
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 # project modules
@@ -49,8 +51,20 @@ class Astropix(commands.Cog):
         file_helper.remove(fname)
         log.info("Sent scheduled message")
 
+    @app_commands.command(name="fartypix")
+    async def fartypix(self, interaction: discord.Interaction):
+        """Handles the looping of the scrape_and_send() function."""
 
-async def scrape_astropix() -> tuple[str, str]:
+        channel = await self.bot.fetch_channel(constants.Channels.general)
+
+        file_bytes, alt = await scrape_astropix()
+        await channel.send(
+            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
+            fp=file_bytes,
+        )
+
+
+async def scrape_astropix() -> tuple[BytesIO, str]:
     """Scrapes and sends the astronomy picture of the day."""
 
     # Grabs the page with a static link (literally has not changed since the 90s)
@@ -68,12 +82,8 @@ async def scrape_astropix() -> tuple[str, str]:
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
-                img = await resp.read()
-                with io.BytesIO(img) as file:
-                    fname = f"{constants.Bot.file_cache}astropix.jpg"
-                    with open(fname, "wb") as f:
-                        f.write(file.getbuffer())
-                    return fname, alt
+                    buffer = BytesIO(await resp.read())
+                    return buffer, alt
         except Exception:
             log.error("Unable to scrape image")
             return None
