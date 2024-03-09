@@ -20,7 +20,7 @@ from bot import constants
 
 root_log = logging.getLogger()
 
-format = "%(asctime)s - %(levelname)s : [%(module)s] %(message)s"
+format = "%(asctime)s - %(levelname)s : [%(module)s][%(funcName)s] %(message)s"
 log_format = logging.Formatter(format)
 
 if not os.path.exists(constants.Logging.loglocation):

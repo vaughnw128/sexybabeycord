@@ -127,7 +127,7 @@ class AdvancedCaptionView(discord.ui.View):
         file_helper.remove(self.fname)
 
     async def on_timeout(self, interaction: discord.Interaction):
-        interaction.message.edit("AdvancedCaption has timed out!")
+        await interaction.message.edit("AdvancedCaption has timed out!")
         await interaction.message.edit(view=None)
         file_helper.remove(self.fname)
 
@@ -168,40 +168,41 @@ class AdvancedCaptionModal(discord.ui.Modal, title="Caption"):
         )
 
 
+async def advanced_edit_menu(
+        interaction: discord.Interaction, message: discord.Message
+) -> None:
+    # Grabs and checks file
+    fname = file_helper.grab(message)
+    if fname is None:
+        await interaction.response.send_message(
+            "That message had no file", ephemeral=True
+        )
+        return
+
+    # Checks filetype
+    if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
+        file_helper.remove(fname)
+        await interaction.response.send_message(
+            "That message has an invalid filetype", ephemeral=True
+        )
+        return
+
+    await interaction.response.send_message(
+        file=discord.File(fname),
+        view=AdvancedCaptionView(fname),
+    )
+
+
 class Caption(commands.Cog):
     """Caption class to handle all caption requests"""
 
     def __init__(self, bot: commands.Bot) -> None:
-        """Intializes the caption class"""
+        """Initializes the caption class"""
         self.bot = bot
         self.advanced_edit = app_commands.ContextMenu(
-            name="Advanced Edit", callback=self.advanced_edit_menu
+            name="Advanced Edit", callback=advanced_edit_menu
         )
         self.bot.tree.add_command(self.advanced_edit)
-
-    async def advanced_edit_menu(
-        self, interaction: discord.Interaction, message: discord.Message
-    ) -> None:
-        # Grabs and checks file
-        fname = file_helper.grab(message)
-        if fname is None:
-            await interaction.response.send_message(
-                "That message had no file", ephemeral=True
-            )
-            return
-
-        # Checks filetype
-        if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
-            file_helper.remove(fname)
-            await interaction.response.send_message(
-                "That message has an invalid filetype", ephemeral=True
-            )
-            return
-
-        await interaction.response.send_message(
-            file=discord.File(fname),
-            view=AdvancedCaptionView(fname),
-        )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -215,7 +216,7 @@ class Caption(commands.Cog):
 
         # Get original message if it is actually a message reply
         try:
-            original_message = await message.channel.fetch_message(
+            await message.channel.fetch_message(
                 message.reference.message_id
             )
         except AttributeError:
@@ -224,50 +225,22 @@ class Caption(commands.Cog):
         # Gets caption text
         caption_text = re.sub(r"^caption", "", message.content).strip()
         if caption_text is None or len(caption_text) == 0:
-            await message.reply("Looks like you didn't add a caption, buddy")
-            return None
+            self.bot.raise_error("Looks like you didn't add a caption, buddy")
 
-        response = await caption_helper(original_message, caption_text)
+        # Grabs and checks file
+        fname = file_helper.grab(message)
+        if fname is None:
+            self.bot.raise_error("Errr looks like that's not a file buddy.")
 
-        match response:
-            case None:
-                return
-            case "Original message had no file":
-                await message.reply("Are you dumb? that's not even a file")
-                return
-            case "Invalid filetype":
-                await message.reply("That's not an image or a gif :/")
-                return
-            case "Caption failure":
-                log.error(f"Failure while trying to caption image/gif")
-                await message.reply("Caption has mysteriously failed")
-                return
+        # Checks filetype
+        if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
+            file_helper.remove(fname)
+            self.bot.raise_error("Wrong filetype, bozo!")
 
-        log.info(f"Image was succesfully captioned: {response})")
-        await message.reply(file=discord.File(response))
-        file_helper.remove(response)
-
-
-async def caption_helper(message: discord.Message, caption_text: str) -> str:
-    """Helper method for captioning, allows for testing"""
-
-    # Grabs and checks file
-    fname = file_helper.grab(message)
-    if fname is None:
-        return "Original message had no file"
-
-    # Checks filetype
-    if not fname.endswith((".png", ".jpg", ".gif", ".jpeg")):
+        fname = await caption(fname, caption_text)
+        log.info(f"Image was succesfully captioned: {fname})")
+        await message.reply(file=discord.File(fname))
         file_helper.remove(fname)
-        return "Invalid filetype"
-
-    try:
-        captioned = await caption(fname, caption_text)
-        return captioned
-    except Exception:
-        file_helper.remove(fname)
-        return "Caption failure"
-
 
 async def caption(
     fname: str,
