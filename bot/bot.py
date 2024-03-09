@@ -12,7 +12,6 @@ import inspect
 import logging
 import pkgutil
 import traceback
-import pymongo
 import types
 
 # external
@@ -27,21 +26,16 @@ log = logging.getLogger("bot")
 
 
 class Sexybabeycord(commands.Bot):
-    """Discord bot sublass for Sexybabeycord"""
+    """Discord bot subclass for Sexybabeycord"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, mongo_client, *args, **kwargs):
         """Initialize the bot class"""
 
-        # Initialize database
+        self.mongo_client = mongo_client
         self.database = None
-        self.mongo_client = None
+        if mongo_client is not None and constants.Database.database is not None:
+            self.database = self.mongo_client.get_database(constants.Database.database)
 
-        uri = constants.Database.connection_uri
-        database = constants.Database.database
-        if uri and database:
-            self.mongo_client = pymongo.MongoClient(uri)
-            self.database = self.mongo_client.get_database(database)
-            
         super().__init__(*args, **kwargs)
 
     async def sync_app_commands(self) -> None:
@@ -77,7 +71,7 @@ class Sexybabeycord(commands.Bot):
         """Handles exts errors"""
 
         message = args[0]
-        await message.reply(type(event))
-        print(kwargs)
-        log.error(event)
-        #log.warning(traceback.format_exc())
+        log.warning("ERROR CAUGHT")
+        log.warning(f"Event: {event}")
+        log.warning(f"Message: {message}")
+        log.warning(traceback.format_exc())

@@ -11,6 +11,10 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class _Bot:
     prefix = "~"
@@ -61,7 +65,7 @@ Logging = _Logging()
 
 
 class _Fate:
-    accounts = "accounts.json"
+    accounts = "data/accounts.json"
 
 
 Fate = _Fate()
@@ -76,7 +80,12 @@ Distort = _Distort()
 
 class _Caption:
     fontdir = "bot/resources/fonts/"
-    fonts = ["ifunny.otf", "sans.ttf", "papyrus.ttf"]
+    fonts = {
+        "default": f"{fontdir}ifunny.otf",
+        "sans": f"{fontdir}sans.ttf",
+        "papyrus": f"{fontdir}papyrus.ttf",
+        "viz": f"{fontdir}WhizBangRoman.ttf",
+    }
 
 
 Caption = _Caption()

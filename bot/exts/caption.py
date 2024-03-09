@@ -11,6 +11,7 @@ import io
 
 # built-in
 import logging
+import math
 import re
 import shutil
 import textwrap
@@ -23,6 +24,7 @@ from discord import app_commands
 from discord.ext import commands
 from PIL import Image as PILImage
 from PIL import ImageSequence
+from rembg import remove
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.font import Font
@@ -39,7 +41,7 @@ log = logging.getLogger("caption")
 class SelectFont(discord.ui.Select):
     def __init__(self):
         options = []
-        for font in constants.Caption.fonts:
+        for font in constants.Caption.fonts.keys():
             options.append(discord.SelectOption(label=font))
         super().__init__(
             placeholder="Select a font", max_values=1, min_values=1, options=options
@@ -57,11 +59,16 @@ class AdvancedCaptionView(discord.ui.View):
         self.reversed = False
         self.caption_text = None
         self.playback_speed = float(1)
+        self.remove_bg = False
         super().__init__(timeout=timeout)
         self.speed_display_button.disabled = True
         if not self.fname.endswith("gif"):
-            # self.reverse_button.disabled = True
+            self.remove_item(self.slow_down_button)
+            self.remove_item(self.speed_display_button)
+            self.remove_item(self.speed_up_button)
             self.remove_item(self.reverse_button)
+        else:
+            self.remove_item(self.remove_bg_button)
 
     @discord.ui.button(label="Preview", style=discord.ButtonStyle.blurple, row=4)
     async def preview_button(
@@ -76,9 +83,22 @@ class AdvancedCaptionView(discord.ui.View):
     ):
         await interaction.response.send_modal(AdvancedCaptionModal(self))
 
-        if SelectFont not in self.children:
+        if "SelectFont" not in "".join(str(self.children)):
             self.add_item(SelectFont())
             await interaction.message.edit(view=self)
+
+    @discord.ui.button(label="🌁", style=discord.ButtonStyle.gray, row=1)
+    async def remove_bg_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        if self.remove_bg:
+            self.remove_bg = False
+            button.style = discord.ButtonStyle.gray
+            await interaction.response.edit_message(view=self)
+        else:
+            self.remove_bg = True
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="⏪", style=discord.ButtonStyle.blurple, row=2)
     async def slow_down_button(
@@ -86,6 +106,18 @@ class AdvancedCaptionView(discord.ui.View):
     ):
         await interaction.response.defer()
         self.playback_speed /= 2
+
+        # foreground = PILImage.open(self.fname)
+        # average_durations = numpy.average(get_frame_durations(foreground, self.playback_speed))
+        # print(self.playback_speed)
+        # print(average_durations)
+
+        # if average_durations >= 1000:
+        #     self.playback_speed *= 2
+        #     average_durations_prev = numpy.average(get_frame_durations(foreground, self.playback_speed))
+        #     diff = ( (average_durations_prev - average_durations) / average_durations) + 1
+        #     self.playback_speed /= diff
+
         self.speed_display_button.label = f"{self.playback_speed}x"
         await interaction.message.edit(view=self)
 
@@ -101,6 +133,17 @@ class AdvancedCaptionView(discord.ui.View):
     ):
         await interaction.response.defer()
         self.playback_speed *= 2
+
+        # foreground = PILImage.open(self.fname)
+        # average_durations = numpy.average(get_frame_durations(foreground, self.playback_speed))
+        # print(self.playback_speed)
+        # print(average_durations)
+        # if average_durations <= 20:
+        #     self.playback_speed /= 2
+        #     average_durations_prev = numpy.average(get_frame_durations(foreground, self.playback_speed))
+        #     diff = ( (average_durations_prev - average_durations) / average_durations) + 1
+        #     self.playback_speed *= diff
+
         self.speed_display_button.label = f"{self.playback_speed}x"
         await interaction.message.edit(view=self)
 
@@ -140,6 +183,7 @@ class AdvancedCaptionView(discord.ui.View):
             font=self.font,
             reversed=self.reversed,
             playback_speed=self.playback_speed,
+            remove_bg=self.remove_bg,
         )
         await interaction.message.edit(attachments=[discord.File(captioned_file)])
         file_helper.remove(temp_filename)
@@ -244,48 +288,57 @@ class Caption(commands.Cog):
 
 async def caption(
     fname: str,
-    caption_text: str,
+    caption_text: str | None = None,
     font: str | None = None,
     reversed: bool | None = False,
     playback_speed: float | None = 1.0,
+    remove_bg: bool | None = False,
 ) -> str:
     """Adds a caption to images and gifs with image_magick"""
 
     foreground = PILImage.open(fname)
+    if fname.endswith(".jpg") or fname.endswith(".jpeg"):
+        fname = fname.replace(".jpg", ".png").replace(".jpeg", ".png")
+        foreground.save(fname)
+        foreground = PILImage.open(fname)
 
     x, y = foreground.size
 
-    wrapper = textwrap.TextWrapper(width=50)
-    wrapper_split_length = len(wrapper.wrap(text=caption_text))
-    bar_height = wrapper_split_length * round(y / 5)
+    bar_height = 0
+    if caption_text:
+        wrapper = textwrap.TextWrapper(width=50)
+        wrapper_split_length = len(wrapper.wrap(text=caption_text))
+        bar_height = wrapper_split_length * round(y / 5)
 
-    with Image(width=x, height=y + bar_height) as template_image:
-        with Drawing() as context:
-            context.fill_color = "white"
-            context.rectangle(left=0, top=0, width=x, height=bar_height)
+        with Image(width=x, height=y + bar_height) as template_image:
+            with Drawing() as context:
+                context.fill_color = "white"
+                context.rectangle(left=0, top=0, width=x, height=bar_height)
 
-            if font is None:
-                font = "ifunny.otf"
-            font = Font(path=constants.Caption.fontdir + font)
+                if font is None:
+                    font = "default"
+                font = Font(path=constants.Caption.fonts[font])
 
-            context(template_image)
-            template_image.caption(
-                caption_text,
-                left=0,
-                top=0,
-                width=x,
-                height=bar_height,
-                font=font,
-                gravity="center",
+                context(template_image)
+                template_image.caption(
+                    caption_text,
+                    left=0,
+                    top=0,
+                    width=x,
+                    height=bar_height,
+                    font=font,
+                    gravity="center",
+                )
+
+            img_buffer = numpy.asarray(
+                bytearray(template_image.make_blob(format="png")), dtype="uint8"
             )
+            bytesio = io.BytesIO(img_buffer)
+            background = PILImage.open(bytesio).convert("RGBA")
+    else:
+        background = PILImage.new("RGBA", (x, y), (255, 255, 255))
 
-        img_buffer = numpy.asarray(
-            bytearray(template_image.make_blob(format="png")), dtype="uint8"
-        )
-        bytesio = io.BytesIO(img_buffer)
-        background = PILImage.open(bytesio).convert("RGBA")
-
-    if foreground.is_animated:
+    if file_helper.get_file_extension(fname) == "gif":
         frames = []
         for frame in ImageSequence.Iterator(foreground):
             captioned = background.copy()
@@ -295,31 +348,48 @@ async def caption(
         if reversed:
             frames.reverse()
 
-        print(foreground.info["duration"])
-        print(get_duration(foreground, playback_speed))
+        durations = get_frame_durations(foreground, playback_speed)
 
         frames[0].save(
             fname,
             save_all=True,
-            append_images=frames,
+            append_images=frames[1:],
             loop=0,
-            duration=get_duration(foreground, playback_speed),
+            duration=durations,
         )
     else:
+        if remove_bg:
+            foreground = remove(foreground)
         background.paste(foreground, (0, bar_height))
         background.save(fname)
 
     return fname
 
 
-def get_duration(image_object: PILImage, playback_speed: float) -> int:
-    duration = image_object.info["duration"]
-    duration /= playback_speed
+def get_frame_durations(PIL_Image_object: PILImage, playback_speed: float):
+    """Returns the average framerate of a PIL Image object"""
+    PIL_Image_object.seek(0)
+    frames = 0
+    durations = []
+    while True:
+        try:
+            frames += 1
+            durations.append(PIL_Image_object.info["duration"])
+            PIL_Image_object.seek(PIL_Image_object.tell() + 1)
+        except EOFError:
+            for i in range(len(durations)):
+                duration = durations[i]
+                if duration == 0:
+                    duration = 100
+                duration = duration / playback_speed
 
-    if duration < 1:
-        duration = 1
-
-    return round(duration)
+                if duration < 20:
+                    duration = 20
+                elif duration > 1000:
+                    duration = 1000
+                durations[i] = int(round(duration))
+            return durations
+    return None
 
 
 async def setup(bot: commands.Bot) -> None:

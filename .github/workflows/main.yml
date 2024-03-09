@@ -22,8 +22,9 @@ jobs:
       - build-and-test
     secrets: inherit
 
-  deploy:
-    uses: ./.github/workflows/deploy.yml
-    needs:
-      - docker-image
-    secrets: inherit
+  # Moved to using watchtower and portainer for personal deployment
+  # deploy:
+  #   uses: ./.github/workflows/deploy.yml
+  #   needs:
+  #     - docker-image
+  #   secrets: inherit

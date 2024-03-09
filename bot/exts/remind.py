@@ -124,56 +124,76 @@ class Remind(commands.Cog):
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
 
-        cursor = self.db.Reminders.find({})
+        cursor = self.db.Reminders.find()
         for document in cursor:
             if document["later"] < datetime.datetime.now():
+                embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
+
+                embed.add_field(
+                    name="",
+                    value=f"**Reason:** `{document['reason']}`",
+                    inline=False,
+                )
+                if "url" in document.keys():
+                    embed.add_field(
+                        name="",
+                        value=f"**URL:** `{'True' if document['url'] else 'False'}`",
+                        inline=False,
+                    )
+                embed.add_field(
+                    name="",
+                    value=f"**Time:** `{document['later']}`",
+                    inline=False,
+                )
+                if "prawntab" in document.keys():
+                    prawn = croniter.croniter(document["prawntab"], document["later"])
+                    later = prawn.get_next(datetime.datetime)
+                    embed.add_field(
+                        name="",
+                        value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
+                        inline=False,
+                    )
+                    embed.add_field(
+                        name="",
+                        value=f"**Prawntab:** `{document['prawntab']}`",
+                        inline=False,
+                    )
+                embed.add_field(
+                    name="", value=f"\n\n{document['message_url']}", inline=False
+                )
+                if "url" in document.keys() and document["url"]:
+                    embed.set_image(url=document["url"])
+                # Send message to user and originating channel
                 try:
-                    embed = discord.Embed(title="DING! Get reminded!!", color=0xFB0DA8)
-
-                    embed.add_field(
-                        name="",
-                        value=f"**Reason:** `{document['reason']}`",
-                        inline=False,
-                    )
-                    embed.add_field(
-                        name="",
-                        value=f"**Time:** `{document['later']}`",
-                        inline=False,
-                    )
-                    if "prawntab" in document.keys():
-                        prawn = croniter.croniter(
-                            document["prawntab"], document["later"]
-                        )
-                        later = prawn.get_next(datetime.datetime)
-                        embed.add_field(
-                            name="",
-                            value=f"**Next Occurence:** `{later.replace(microsecond=0)}`",
-                            inline=False,
-                        )
-                        embed.add_field(
-                            name="",
-                            value=f"**Prawntab:** `{document['prawntab']}`",
-                            inline=False,
-                        )
-                    embed.add_field(
-                        name="", value=f"\n\n{document['message_url']}", inline=False
-                    )
-
-                    # Send message to user and originating channel
-                    user = self.bot.get_user(document['user'])
-                    channel = await self.bot.fetch_channel(document["channel"])
+                    user = self.bot.get_user(int(document["user"]))
                     await user.send(embed=embed, content=f"<@{document['user']}>")
-                    await channel.send(embed=embed, content=f"<@{document['user']}>")
-
-                    # Moves the prawntab to the next time
-                    if "prawntab" in document.keys():
-                        self.db.Reminders.update_one(
-                            document, {"$set": {"later": later}}
-                        )
-                    else:
-                        self.db.Reminders.delete_one(filter=document)
                 except discord.errors.Forbidden:
-                    return
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                except AttributeError:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                try:
+                    channel = await self.bot.fetch_channel(document["channel"])
+                    await channel.send(embed=embed, content=f"<@{document['user']}>")
+                except discord.errors.Forbidden:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted."
+                    )
+                    continue
+                except AttributeError:
+                    log.error(
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion."
+                    )
+                    continue
+
+                # Moves the prawntab to the next time
+                if "prawntab" in document.keys():
+                    self.db.Reminders.update_one(document, {"$set": {"later": later}})
+                else:
+                    self.db.Reminders.delete_one(filter=document)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -195,7 +215,10 @@ class Remind(commands.Cog):
         name="remindmein", description="Set a reminder for later! (In a duration)"
     )
     @app_commands.describe(
-        reason="reminder reason", duration="in how long", unit="what unit"
+        reason="reminder reason",
+        duration="in how long",
+        unit="what unit",
+        url="A URL to include in the message (Can add images, gifs, etc.)",
     )
     async def remindmein(
         self,
@@ -203,6 +226,7 @@ class Remind(commands.Cog):
         reason: str,
         duration: int,
         unit: Literal["minutes", "hours", "days"],
+        url: str | None = None,
     ) -> None:
         await interaction.response.defer()
 
@@ -216,6 +240,9 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
+        embed.add_field(
+            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
+        )
         embed.add_field(
             name="",
             value=f"**Time:** `{later.replace(microsecond=0)}`",
@@ -231,6 +258,7 @@ class Remind(commands.Cog):
             "reason": reason,
             "later": later.replace(microsecond=0),
             "message_url": message.jump_url,
+            "url": url,
         }
 
         self.db.Reminders.insert_one(reminder)
@@ -239,7 +267,10 @@ class Remind(commands.Cog):
         name="remindmeon", description="Set a reminder for later! (On a date)"
     )
     @app_commands.describe(
-        reason="reminder reason", later="what date", time="what time"
+        reason="reminder reason",
+        later="what date",
+        time="what time",
+        url="A URL to include in the message (Can add images, gifs, etc.)",
     )
     async def remindmeon(
         self,
@@ -247,6 +278,7 @@ class Remind(commands.Cog):
         reason: str,
         later: app_commands.Transform[datetime.datetime, DateTransformer],
         time: str | None,
+        url: str | None = None,
     ) -> None:
         await interaction.response.defer()
 
@@ -282,6 +314,9 @@ class Remind(commands.Cog):
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
         embed.add_field(
+            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
+        )
+        embed.add_field(
             name="",
             value=f"**Time:** `{later.replace(microsecond=0)}`",
             inline=False,
@@ -296,6 +331,7 @@ class Remind(commands.Cog):
             "reason": reason,
             "later": later.replace(microsecond=0),
             "message_url": message.jump_url,
+            "url": url,
         }
 
         self.db.Reminders.insert_one(reminder)
@@ -305,10 +341,16 @@ class Remind(commands.Cog):
         description="Sets a recurring reminder. A feature like this is one in a krillion!",
     )
     @app_commands.describe(
-        reason="reminder reason", prawntab="Crontab-esque string for scheduling"
+        reason="reminder reason",
+        prawntab="Crontab-esque string for scheduling",
+        url="A URL to include in the message (Can add images, gifs, etc.)",
     )
     async def prawnjob(
-        self, interaction: discord.Interaction, reason: str, prawntab: str
+        self,
+        interaction: discord.Interaction,
+        reason: str,
+        prawntab: str,
+        url: str | None = None,
     ) -> None:
         await interaction.response.defer()
 
@@ -329,7 +371,9 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-
+        embed.add_field(
+            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
+        )
         embed.add_field(
             name="",
             value=f"**Prawntab:** `{prawntab}`",
@@ -351,6 +395,7 @@ class Remind(commands.Cog):
             "later": later.replace(microsecond=0),
             "message_url": message.jump_url,
             "prawntab": prawntab,
+            "url": url,
         }
 
         self.db.Reminders.insert_one(reminder)
@@ -374,6 +419,12 @@ class Remind(commands.Cog):
             embed.add_field(
                 name="", value=f"**Reason:** `{document['reason']}`", inline=False
             )
+            if "url" in document.keys():
+                embed.add_field(
+                    name="",
+                    value=f"**URL:** `{'True' if document['url'] else 'False'}`",
+                    inline=False,
+                )
             embed.add_field(
                 name="",
                 value=f"**Time:** `{document['later']}`",

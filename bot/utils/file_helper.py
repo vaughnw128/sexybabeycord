@@ -9,13 +9,14 @@
 # built-in
 import logging
 import os
-import urllib
+import shutil
+from pathlib import Path
 
 # external
 import discord
-import magic
 import requests
 import validators
+from magika import Magika
 
 # project modules
 from bot import constants
@@ -30,7 +31,12 @@ def setup() -> None:
         os.makedirs(constants.Bot.file_cache)
 
 
-def grab(message: discord.Message) -> str:
+def get_file_extension(fname: str) -> str:
+    magika = Magika()
+    return magika.identify_path(Path(fname)).dl.ct_label
+
+
+def grab(message: discord.Message) -> str | None:
     """Grabs files from various types of discord messages"""
 
     url = None
@@ -56,8 +62,6 @@ def grab(message: discord.Message) -> str:
         return None
 
     # Remove the trailing modifiers at the end of the link
-    url = url.partition("?")[0]
-
     return download_url(url)
 
 
@@ -83,18 +87,16 @@ def download_url(url: str) -> str | None:
         try:
             fname = requests.utils.urlparse(url)
             fname = f"{constants.Bot.file_cache}{(os.path.basename(fname.path))}"
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 
             # Downloads the file
-            with open(fname, "wb") as f:
-                with urllib.request.urlopen(req) as r:
-                    f.write(r.read())
+            with requests.get(url, stream=True) as r:
+                with open(fname, "wb") as f:
+                    shutil.copyfileobj(r.raw, f)
 
             # Adds a mime-type based file extension if it doesn't have one
             ext = os.path.splitext(fname)[-1].lower()
             if len(ext) == 0:
-                mime_type = magic.from_file(fname, mime=True)
-                new_fname = f"{fname}.{mime_type.split('/')[1]}"
+                new_fname = f"{fname}.{get_file_extension(fname)}"
                 os.rename(fname, new_fname)
                 fname = new_fname
 
