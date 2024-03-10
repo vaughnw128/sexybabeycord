@@ -37,22 +37,19 @@ class Astropix(commands.Cog):
         self.bot = bot
         self.schedule_send.start()
 
-    @tasks.loop(time=time(hour=17))
-    async def schedule_send(self) -> None:
-        """Handles the looping of the scrape_and_send() function."""
-
-        channel = await self.bot.fetch_channel(constants.Channels.general)
-
-        fname, alt = await scrape_astropix()
-        await channel.send(
-            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(fname),
-        )
-        file_helper.remove(fname)
-        log.info("Sent scheduled message")
-
     @app_commands.command(name="fartypix")
     async def fartypix(self, interaction: discord.Interaction):
+        file_bytes, alt = await scrape_astropix()
+        file_bytes = file_bytes.read()
+        ext = file_helper.get_file_extension(file_bytes)
+        print(ext)
+        await interaction.channel.send(
+            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
+            file=discord.File(file_bytes, filename="astropix.png"),
+        )
+
+    @tasks.loop(time=time(hour=17))
+    async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
         channel = await self.bot.fetch_channel(constants.Channels.general)
@@ -60,8 +57,9 @@ class Astropix(commands.Cog):
         file_bytes, alt = await scrape_astropix()
         await channel.send(
             content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            fp=file_bytes,
+            file=discord.File(file_bytes, filename="astropix.png"),
         )
+        log.info("Sent scheduled message")
 
 
 async def scrape_astropix() -> tuple[BytesIO, str]:
@@ -78,15 +76,8 @@ async def scrape_astropix() -> tuple[BytesIO, str]:
         images.append(img.get("src"))
         alt = img.get("alt")
 
-    # Grabs the image based on the image URL and converts to a Discord file object
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(f"http://apod.nasa.gov/{images[0]}") as resp:
-                    buffer = BytesIO(await resp.read())
-                    return buffer, alt
-        except Exception:
-            log.error("Unable to scrape image")
-            return None
+    file_bytes = await file_helper.grab_file_bytes(f"http://apod.nasa.gov/{images[0]}")
+    return file_bytes, alt
 
 
 async def setup(bot: commands.Bot) -> None:

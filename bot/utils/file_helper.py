@@ -11,12 +11,14 @@ import logging
 import os
 import shutil
 from pathlib import Path
+from io import BytesIO
 
 # external
 import discord
 import requests
 import validators
 from magika import Magika
+import aiohttp
 
 # project modules
 from bot import constants
@@ -31,9 +33,13 @@ def setup() -> None:
         os.makedirs(constants.Bot.file_cache)
 
 
-def get_file_extension(fname: str) -> str:
+def get_file_extension(file: BytesIO | str) -> str:
     magika = Magika()
-    return magika.identify_path(Path(fname)).dl.ct_label
+    if isinstance(file, BytesIO):
+        return magika.identify_bytes(file.read()).dl.ct_label
+    elif isinstance(file, str):
+        return magika.identify_path(Path(file)).dl.ct_label
+    return None
 
 
 def grab(message: discord.Message) -> str | None:
@@ -107,6 +113,12 @@ def download_url(url: str) -> str | None:
     else:
         log.error(f"Could not find a valid URL: {url}")
         return None
+
+async def grab_file_bytes(url: str) -> BytesIO:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            buffer = BytesIO(await resp.read())
+            return buffer
 
 
 def remove(fname: str) -> None:
