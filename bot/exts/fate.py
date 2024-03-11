@@ -1,10 +1,10 @@
 """
-    Fate
+Fate
 
-    Automatically posts @JamesCageWhite's tweets in our
-    #fate channel. Love this guy. Very cool very swag I like it
+Automatically posts @JamesCageWhite's tweets in our
+#fate channel. Love this guy. Very cool very swag I like it
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -57,9 +57,7 @@ class Fate(commands.Cog):
     async def fate(self) -> None:
         """Handles grabbing the tweets from twitter using twscrape"""
 
-        fate_channel: discord.TextChannel = await self.bot.fetch_channel(
-            constants.Channels.fate
-        )
+        fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
 
         # Reads messages in channel history to know what tweets can be sent
         try:

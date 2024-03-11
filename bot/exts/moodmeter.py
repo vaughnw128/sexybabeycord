@@ -1,16 +1,16 @@
 """
-    MoodMeter
+MoodMeter
 
-    Allows users to set their mood using a command
-    and dropdown menus
+Allows users to set their mood using a command
+and dropdown menus
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
 import logging
 import re
-import time
+from io import BytesIO
 
 # external
 import discord
@@ -29,14 +29,8 @@ class SelectNumber(discord.ui.Select):
     def __init__(self):
         options = []
         for i in range(0, 10):
-            options.append(
-                discord.SelectOption(
-                    label=i, emoji=constants.MoodMeter.number_emojis[i]
-                )
-            )
-        super().__init__(
-            placeholder="Select an option", max_values=1, min_values=1, options=options
-        )
+            options.append(discord.SelectOption(label=i, emoji=constants.MoodMeter.number_emojis[i]))
+        super().__init__(placeholder="Select an option", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         self.view.number = self.values[0]
@@ -47,14 +41,8 @@ class SelectLetter(discord.ui.Select):
     def __init__(self):
         options = []
         for i in range(0, 10):
-            options.append(
-                discord.SelectOption(
-                    label=chr(i + 65), emoji=constants.MoodMeter.letter_emojis[i]
-                )
-            )
-        super().__init__(
-            placeholder="Select an option", max_values=1, min_values=1, options=options
-        )
+            options.append(discord.SelectOption(label=chr(i + 65), emoji=constants.MoodMeter.letter_emojis[i]))
+        super().__init__(placeholder="Select an option", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         self.view.letter = self.values[0]
@@ -71,27 +59,13 @@ class MoodView(discord.ui.View):
         self.add_item(SelectNumber())
 
     @discord.ui.button(label="Go!", style=discord.ButtonStyle.green, row=2)
-    async def go_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await interaction.response.send_message(
-            f"Your mood is {self.letter}{self.number}"
-        )
-
-        mood = {
-            "timestamp": int(time.time()),
-            "user": interaction.user.id,
-            "guild": interaction.guild.id,
-            "mood": self.letter + self.number,
-        }
-
+    async def go_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(f"Your mood is {self.letter}{self.number}")
         file = await drop_pin(self.letter + self.number, interaction.user)
-        await interaction.channel.send(file=file)
+        await interaction.channel.send(file=discord.File(fp=file, filename="moodmeter.png"))
 
     async def on_timeout(self, interaction: discord.Interaction):
-        interaction.message.edit(
-            "MoodMeter has timed out. Please rerun the command if you wish to input your mood."
-        )
+        interaction.message.edit("MoodMeter has timed out. Please rerun the command if you wish to input your mood.")
 
 
 class MoodMeter(commands.Cog):
@@ -117,37 +91,26 @@ class MoodMeter(commands.Cog):
 
         if match is not None:
             mood_match = match.group(1)
-
             await message.reply(f"Your mood is {mood_match}")
-
-            mood = {
-                "timestamp": int(time.time()),
-                "user": message.author.id,
-                "guild": message.guild.id,
-                "mood": mood_match,
-            }
-
             file = await drop_pin(mood_match, message.author)
-            await message.channel.send(file=file)
+            await message.channel.send(file=discord.File(fp=file, filename="moodmeter.png"))
 
 
-async def drop_pin(mood: str, user: discord.User) -> discord.File:
+async def drop_pin(mood: str, user: discord.User) -> BytesIO:
     x = constants.MoodMeter.location[mood[0]]
     y = constants.MoodMeter.location[mood[1]]
 
-    avatar = file_helper.download_url(user.avatar.url)
+    avatar, ext = await file_helper.grab_file_bytes(user.avatar.url)
 
     with Image(filename=constants.MoodMeter.image) as image:
-        with Image(filename=avatar) as avatar:
+        with Image(file=avatar) as avatar:
             avatar.resize(50, 50)
             avatar.crop()
-            image.composite(
-                avatar, left=(x - (avatar.width // 2)), top=(y - (avatar.height // 2))
-            )
-            image.save(filename=f"{constants.Bot.file_cache}{user.name}_mood.png")
-
-    return discord.File(f"{constants.Bot.file_cache}/{user.name}_mood.png")
-
+            image.composite(avatar, left=(x - (avatar.width // 2)), top=(y - (avatar.height // 2)))
+            buf = BytesIO()
+            image.save(file=buf)
+            buf.seek(0)
+            return buf
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

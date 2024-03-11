@@ -1,9 +1,9 @@
 """
-    __init__
+__init__
 
-    Just handles some logging stuff, mostly
+Just handles some logging stuff, mostly
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -29,9 +29,7 @@ if not os.path.exists(constants.Logging.loglocation):
 # Sets file writer
 time = str(datetime.now().strftime("%Y%m%d"))
 filename = f"sexybabeycord-{time}.log"
-file_handler = logging.FileHandler(
-    f"{constants.Logging.loglocation}{filename}", encoding="utf8"
-)
+file_handler = logging.FileHandler(f"{constants.Logging.loglocation}{filename}", encoding="utf8")
 file_handler.setFormatter(log_format)
 root_log.addHandler(file_handler)
 

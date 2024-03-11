@@ -1,14 +1,15 @@
 """
-    Constants
+Constants
 
-    Holds some constant values that need to be reused
+Holds some constant values that need to be reused
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from dotenv import load_dotenv
@@ -20,7 +21,6 @@ class _Bot:
     prefix = "~"
     token = os.getenv("DISCORD_TOKEN")
     tenor = os.getenv("TENOR_TOKEN")
-    file_cache = "bot/resources/file_cache/"
 
     if token is None or token == "":
         raise ValueError("DISCORD_TOKEN is not set.")
@@ -35,7 +35,9 @@ class _Database:
     connection_uri = os.getenv("MONGO_URI")
     database = os.getenv("DATABASE_NAME")
 
+
 Database = _Database()
+
 
 class _Channels:
     general = os.getenv("GENERAL_CHANNEL_ID")
@@ -43,6 +45,7 @@ class _Channels:
 
     if general is None or general == "":
         raise ValueError("TENOR_TOKEN is not set.")
+
 
 Channels = _Channels()
 

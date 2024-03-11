@@ -1,7 +1,7 @@
 """
-    Discord bot cog template
+Discord bot cog template
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -14,17 +14,15 @@ from discord.ext import commands
 
 log = logging.getLogger("template")
 
-class CogTemplate(commands.Cog):
 
+class CogTemplate(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize the command context menu"""
 
         self.bot = bot
 
         # Command tree menu
-        self.template_menu = app_commands.ContextMenu(
-            name="template", callback=self.template_ctx
-        )
+        self.template_menu = app_commands.ContextMenu(name="template", callback=self.template_ctx)
         self.bot.tree.add_command(self.template_menu)
 
         # Database stuff
@@ -44,12 +42,10 @@ class CogTemplate(commands.Cog):
         """Template for slash commands"""
 
         await interaction.response.defer()
-        
+
         await interaction.response.send_message("Template")
 
-    async def template_ctx(
-        self, interaction: discord.Interaction, message: discord.Message
-    ) -> None:
+    async def template_ctx(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Right click menu command template"""
 
         await interaction.response.defer()

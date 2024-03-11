@@ -1,10 +1,10 @@
 """
-    Astropix
+Astropix
 
-    Scrapes and sends the NASA picture of the day to our
-    server's general chat. It's usually quite beautiful :>
+Scrapes and sends the NASA picture of the day to our
+server's general chat. It's usually quite beautiful :>
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -39,30 +39,27 @@ class Astropix(commands.Cog):
 
     @app_commands.command(name="fartypix")
     async def fartypix(self, interaction: discord.Interaction):
-        file_bytes, alt = await scrape_astropix()
-        file_bytes = file_bytes.read()
-        ext = file_helper.get_file_extension(file_bytes)
-        print(ext)
+        file_bytes, ext, alt = await scrape_astropix()
         await interaction.channel.send(
             content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(file_bytes, filename="astropix.png"),
+            file=discord.File(file_bytes, filename=f"astropix.{ext}"),
         )
 
-    @tasks.loop(time=time(hour=17))
+    @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
 
         channel = await self.bot.fetch_channel(constants.Channels.general)
 
-        file_bytes, alt = await scrape_astropix()
+        file_bytes, ext, alt = await scrape_astropix()
         await channel.send(
             content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(file_bytes, filename="astropix.png"),
+            file=discord.File(file_bytes, filename=f"astropix.{ext}"),
         )
         log.info("Sent scheduled message")
 
 
-async def scrape_astropix() -> tuple[BytesIO, str]:
+async def scrape_astropix() -> tuple[BytesIO, str, str]:
     """Scrapes and sends the astronomy picture of the day."""
 
     # Grabs the page with a static link (literally has not changed since the 90s)
@@ -76,17 +73,15 @@ async def scrape_astropix() -> tuple[BytesIO, str]:
         images.append(img.get("src"))
         alt = img.get("alt")
 
-    file_bytes = await file_helper.grab_file_bytes(f"http://apod.nasa.gov/{images[0]}")
-    return file_bytes, alt
+    file_bytes, ext = await file_helper.grab_file_bytes(f"http://apod.nasa.gov/{images[0]}")
+    return file_bytes, ext, alt
 
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 
     if constants.Channels.general is None:
-        log.error(
-            "General channel has not been specified in the environment variables. Aborting loading astrpix."
-        )
+        log.error("General channel has not been specified in the environment variables. Aborting loading astrpix.")
         return
 
     await bot.add_cog(Astropix(bot))

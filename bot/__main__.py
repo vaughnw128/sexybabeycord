@@ -1,9 +1,9 @@
 """
-    __main__
+__main__
 
-    Initializes the discord client object and runs the async main function
+Initializes the discord client object and runs the async main function
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in

@@ -1,9 +1,9 @@
 """
-    File_helper
+File_helper
 
-    Custom bot class to implement some useful stuff
+Custom bot class to implement some useful stuff
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -17,6 +17,7 @@ import types
 # external
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 # project modules
 from bot import constants, exts
@@ -45,9 +46,7 @@ class Sexybabeycord(commands.Bot):
         """Load all cogs by walking the packages in exts."""
 
         logging.info("Loading extensions")
-        for module_info in pkgutil.walk_packages(
-            module.__path__, f"{module.__name__}."
-        ):
+        for module_info in pkgutil.walk_packages(module.__path__, f"{module.__name__}."):
             if module_info.ispkg:
                 imported = importlib.import_module(module_info.name)
                 if not inspect.isfunction(getattr(imported, "setup", None)):
@@ -60,14 +59,13 @@ class Sexybabeycord(commands.Bot):
 
         await self.load_extensions(exts)
         await self.sync_app_commands()
-        file_helper.setup()
+        self.tree.on_error = self.global_app_command_error
         log.info("Started")
 
-    async def on_error(self, event: str, *args, **kwargs) -> None:
-        """Handles exts errors"""
-
-        message = args[0]
-        log.warning("ERROR CAUGHT")
-        log.warning(f"Event: {event}")
-        log.warning(f"Message: {message}")
-        log.warning(traceback.format_exc())
+    async def global_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+        """Handles app command errors"""
+        if isinstance(error, discord.app_commands.CommandInvokeError):
+            log.error(traceback.format_exc())
+            await interaction.followup.send("An unexpected error has occurred.")
+        elif isinstance(error, app_commands.AppCommandError):
+            await interaction.followup.send(error)

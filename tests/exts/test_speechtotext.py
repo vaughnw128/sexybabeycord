@@ -1,9 +1,9 @@
 """
-    Test_gabonganized
+Test_gabonganized
 
-    Tests the distort cog
+Tests the distort cog
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # external
@@ -28,9 +28,7 @@ async def test_no_voice_message(bot):
 
     message = await dpytest.message(
         content="",
-        attachments=[
-            "https://download.havecamerawilltravel.com/sample-images/webp/webp-example.webp"
-        ],
+        attachments=["https://download.havecamerawilltravel.com/sample-images/webp/webp-example.webp"],
     )
     assert await speech_to_text_helper(message) == "Not a voice message"
 

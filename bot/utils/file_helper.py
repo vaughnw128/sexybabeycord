@@ -1,20 +1,20 @@
 """
-    File_helper
+File_helper
 
-    Handles some useful stuff for working with files from discord
+Handles some useful stuff for working with files from discord
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
 import logging
 import os
-import shutil
 from pathlib import Path
 from io import BytesIO
 
 # external
 import discord
+from discord.app_commands import errors as discord_errors
 import requests
 import validators
 from magika import Magika
@@ -24,101 +24,65 @@ import aiohttp
 from bot import constants
 
 log = logging.getLogger("file_helper")
+magika = Magika()
 
-
-def setup() -> None:
-    """Remove file if it exists"""
-
-    if not os.path.exists(constants.Bot.file_cache):
-        os.makedirs(constants.Bot.file_cache)
-
-
-def get_file_extension(file: BytesIO | str) -> str:
-    magika = Magika()
+def get_file_extension(file: BytesIO | str) -> str | None:
     if isinstance(file, BytesIO):
-        return magika.identify_bytes(file.read()).dl.ct_label
+        filetype = magika.identify_bytes(file.read()).dl.ct_label
+        file.seek(0)
+        return filetype
     elif isinstance(file, str):
         return magika.identify_path(Path(file)).dl.ct_label
     return None
 
 
-def grab(message: discord.Message) -> str | None:
+async def grab_file(message: discord.Message) -> tuple[BytesIO, str]:
     """Grabs files from various types of discord messages"""
-
-    url = None
-    # Finds the URL that the image is at
+    # Grab all possible URLs
+    urls = []
+    if message.attachments:
+        urls.append(message.attachments[0].url)
     if message.embeds:
-        # Checks if the embed itself is an image and grabs the url
-        if "tenor" in message.embeds[0].url:
-            url = message.embeds[0].url
-        elif message.embeds[0].thumbnail.proxy_url:
-            url = message.embeds[0].thumbnail.proxy_url
-    # Checks to see if the image is a message attachment
-    elif message.attachments:
-        url = message.attachments[0].url
-
-    # Otherwise just grab URL
-    else:
+        urls += [
+            message.embeds[0].url,
+            message.embeds[0].image.proxy_url,
+            message.embeds[0].thumbnail.proxy_url,
+        ]
+    if message.content:
         for item in message.content.split(" "):
             if validators.url(item):
-                url = item
+                urls.append(item)
 
-    # If there isn't a url, return None
-    if url is None:
-        return None
-
-    # Remove the trailing modifiers at the end of the link
-    return download_url(url)
-
-
-def download_url(url: str) -> str | None:
-    # Handle tenor gifs
+    if len(urls) == 0:
+        raise discord_errors.AppCommandError("No file found in the message.")
+    url = [url for url in urls if url is not None][0]
+    # Grabs tenor specific URL
     if "tenor" in url and ".gif" not in url:
-        if constants.Bot.tenor is None:
-            log.error(f"No tenor token has been found in .env")
-            return None
-        try:
-            id = url.split("-")[-1]
-            resp = requests.get(
-                f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1"
-            )
-            data = resp.json()
-            url = data["results"][0]["media_formats"]["mediumgif"]["url"]
-        except KeyError:
-            log.error(f"Unable to get gif from tenor: {url}")
-            return None
+        url = _get_tenor_url(url)
+    return await grab_file_bytes(url)
 
-    fname = None
-    if validators.url(url):
-        try:
-            fname = requests.utils.urlparse(url)
-            fname = f"{constants.Bot.file_cache}{(os.path.basename(fname.path))}"
 
-            # Downloads the file
-            with requests.get(url, stream=True) as r:
-                with open(fname, "wb") as f:
-                    shutil.copyfileobj(r.raw, f)
+def _get_tenor_url(url: str) -> str:
+    if constants.Bot.tenor is None:
+        log.error("No tenor token has been found in .env")
+        raise discord_errors.AppCommandError("No tenor token was supplied. Please fix!")
+    try:
+        id = url.split("-")[-1]
+        resp = requests.get(f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1")
+        data = resp.json()
+        url = data["results"][0]["media_formats"]["mediumgif"]["url"]
+    except KeyError:
+        log.error(f"Unable to get gif from tenor: {url}")
+        raise discord_errors.AppCommandError("Unable to get gif from tenor.")
+    return url
 
-            # Adds a mime-type based file extension if it doesn't have one
-            ext = os.path.splitext(fname)[-1].lower()
-            if len(ext) == 0:
-                new_fname = f"{fname}.{get_file_extension(fname)}"
-                os.rename(fname, new_fname)
-                fname = new_fname
 
-            return fname
-        except Exception:
-            log.error(f"Unable to download file: {url}")
-            return None
-    else:
-        log.error(f"Could not find a valid URL: {url}")
-        return None
-
-async def grab_file_bytes(url: str) -> BytesIO:
+async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             buffer = BytesIO(await resp.read())
-            return buffer
+            ext = get_file_extension(buffer)
+            return buffer, ext
 
 
 def remove(fname: str) -> None:

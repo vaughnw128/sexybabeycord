@@ -1,9 +1,9 @@
 """
-    Test_file_helper
+Test_file_helper
 
-    Tests bot/utils/file_helper
+Tests bot/utils/file_helper
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # external
@@ -43,9 +43,7 @@ async def test_grab_file_broken_mime_url(bot):
 async def test_grab_file_gif_url(bot):
     """Test gif url"""
 
-    message = await dpytest.message(
-        "https://media.tenor.com/2roX3uxz_68AAAAM/cat-space.gif"
-    )
+    message = await dpytest.message("https://media.tenor.com/2roX3uxz_68AAAAM/cat-space.gif")
     fname = file_helper.grab(message)
     assert fname == f"{constants.Bot.file_cache}cat-space.gif"
     file_helper.remove(fname)
@@ -79,9 +77,7 @@ async def test_grab_file_attachment_gif(bot):
 
     message = await dpytest.message(
         content="",
-        attachments=[
-            "https://media.discordapp.net/attachments/644752766736138241/1136141577467723989/nyan.gif"
-        ],
+        attachments=["https://media.discordapp.net/attachments/644752766736138241/1136141577467723989/nyan.gif"],
     )
     fname = file_helper.grab(message)
     assert fname == f"{constants.Bot.file_cache}nyan.gif"

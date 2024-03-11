@@ -1,10 +1,10 @@
 """
-    Gabonganized
+Gabonganized
 
-    Allows users to right click face pictures and
-    gabonganize them, and also has random gabonganizing effects
+Allows users to right click face pictures and
+gabonganize them, and also has random gabonganizing effects
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -30,14 +30,10 @@ class Gabonga(commands.Cog):
         """Intializes the 'bonga class and assigns the command tree for the 'bonga menu"""
         self.bot = bot
 
-        self.gabonga_menu = app_commands.ContextMenu(
-            name="gabonga", callback=self.gabonga_menu
-        )
+        self.gabonga_menu = app_commands.ContextMenu(name="gabonga", callback=self.gabonga_menu)
         self.bot.tree.add_command(self.gabonga_menu)
 
-    async def gabonga_menu(
-        self, interaction: discord.Interaction, message: discord.Message
-    ) -> None:
+    async def gabonga_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Controls the bonga menu"""
 
         await interaction.response.defer()
@@ -64,9 +60,7 @@ class Gabonga(commands.Cog):
                 return
 
         log.info(f"Image was succesfully gabonganized: {response})")
-        await interaction.followup.send(
-            content="I have two words...", file=discord.File(response)
-        )
+        await interaction.followup.send(content="I have two words...", file=discord.File(response))
         file_helper.remove(response)
 
 
@@ -116,13 +110,12 @@ async def gabonga(fname: str, face_locations: list) -> str:
             face.save(filename=fname)
     return fname
 
+
 async def get_faces(fname: str) -> list[tuple]:
     """Gets the faces using opencv-python"""
 
     # Load the cascade
-    face_cascade = cv2.CascadeClassifier(
-        "bot/resources/haarcascade_frontalface_default.xml"
-    )
+    face_cascade = cv2.CascadeClassifier("bot/resources/haarcascade_frontalface_default.xml")
 
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -135,6 +128,7 @@ async def get_faces(fname: str) -> list[tuple]:
         faces.append((x, y, w, h))
 
     return faces
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

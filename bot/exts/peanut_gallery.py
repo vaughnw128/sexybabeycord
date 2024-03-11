@@ -1,10 +1,10 @@
 """
-    Peanut Gallery
+Peanut Gallery
 
-    Automatically grabs a comment from whatever youtube link is sent,
-    then sends it to chat
+Automatically grabs a comment from whatever youtube link is sent,
+then sends it to chat
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 import json

@@ -1,10 +1,10 @@
 """
-    ytdl
+ytdl
 
-    Automatically converts youtube videos under 20 seconds
-    to mp4 files
+Automatically converts youtube videos under 20 seconds
+to mp4 files
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -26,6 +26,7 @@ from bot.utils import file_helper
 log = logging.getLogger("ytdl")
 
 link_regex = r"https:\/\/(www.|)youtu(be.com|.be)([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+
 
 class Ytdl(commands.Cog):
     """Ytdl class to handle ytdl-ing"""
@@ -86,9 +87,7 @@ class Ytdl(commands.Cog):
 
         await ytdl_helper(interaction, url.group(0), optional_arguments)
 
-    async def ytdl_menu(
-        self, interaction: discord.Interaction, message: discord.Message
-    ) -> None:
+    async def ytdl_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Controls the ytdl menu"""
 
         await interaction.response.defer()
@@ -117,9 +116,7 @@ def convert_to_seconds(minutes: str) -> int:
         return int(minutes)
 
 
-async def ytdl_helper(
-    interaction: discord.Interaction, url: str, optional_args: dict | None
-):
+async def ytdl_helper(interaction: discord.Interaction, url: str, optional_args: dict | None):
     """Helper method for YTDL"""
     try:
         response = await ytdl(url, optional_args)
@@ -129,9 +126,7 @@ async def ytdl_helper(
     match response:
         case "Size limit exceeded":
             log.error(f"File size exceeded")
-            await interaction.followup.send(
-                "The resulting video exceeded Discord filesize limits"
-            )
+            await interaction.followup.send("The resulting video exceeded Discord filesize limits")
             return
         case "Ytdl failure":
             log.error(f"Failure while trying to run Ytdl")

@@ -1,9 +1,9 @@
 """
-    Conftest
+Conftest
 
-    Sets up everything for bot testing to occur
+Sets up everything for bot testing to occur
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 import glob
@@ -23,9 +23,7 @@ async def bot():
     """Initializes a bot instance for the testing functions to use"""
 
     intents = discord.Intents.all()
-    client = Sexybabeycord(
-        mongo_client=None, intents=intents, command_prefix=constants.Bot.prefix
-    )
+    client = Sexybabeycord(mongo_client=None, intents=intents, command_prefix=constants.Bot.prefix)
 
     await client._async_setup_hook()  # setup the loop
     file_helper.setup()

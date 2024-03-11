@@ -1,9 +1,9 @@
 """
-    Test_gabonganized
+Test_gabonganized
 
-    Tests the distort cog
+Tests the distort cog
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # external
@@ -29,9 +29,7 @@ async def test_no_file(bot):
 async def test_invalid_filetype(bot):
     """Test gabonganizing with wrong filetype"""
 
-    message = await dpytest.message(
-        "https://download.havecamerawilltravel.com/sample-images/webp/webp-example.webp"
-    )
+    message = await dpytest.message("https://download.havecamerawilltravel.com/sample-images/webp/webp-example.webp")
     assert await gabonga_helper(message) == "Invalid filetype"
 
 
