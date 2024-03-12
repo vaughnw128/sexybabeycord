@@ -69,3 +69,13 @@ class Sexybabeycord(commands.Bot):
             await interaction.followup.send("An unexpected error has occurred.")
         elif isinstance(error, app_commands.AppCommandError):
             await interaction.followup.send(error)
+        else:
+            log.error(traceback.format_exc())
+    async def on_error(self, event: str, *args, **kwargs) -> None:
+        """Handles exts errors"""
+
+        message = args[0]
+        log.warning("ERROR CAUGHT")
+        log.warning(f"Event: {event}")
+        log.warning(f"Message: {message}")
+        log.warning(traceback.format_exc())

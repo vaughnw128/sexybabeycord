@@ -11,7 +11,6 @@ Made with love and care by Vaughn Woerpel
 import logging
 from io import BytesIO
 import re
-import shutil
 import textwrap
 
 # external

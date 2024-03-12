@@ -7,8 +7,13 @@ gabonganize them, and also has random gabonganizing effects
 Made with love and care by Vaughn Woerpel
 """
 
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+
 # built-in
 import logging
+from io import BytesIO
 
 # external
 import discord
@@ -16,9 +21,15 @@ from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
 import cv2
+from PIL import Image
+import numpy as np
 
 # project modules
 from bot.utils import file_helper
+
+base_options = python.BaseOptions(model_asset_path='./bot/resources/blaze_face_short_range.tflite')
+options = vision.FaceDetectorOptions(base_options=base_options)
+detector = vision.FaceDetector.create_from_options(options)
 
 log = logging.getLogger("gabonganized")
 
@@ -37,62 +48,17 @@ class Gabonga(commands.Cog):
         """Controls the bonga menu"""
 
         await interaction.response.defer()
-        response = await gabonga_helper(message)
+        file, ext = await file_helper.grab_file(message)
+        face_locations = get_faces(file)
+        # if len(face_locations) == 0:
+        #     await interaction.followup.send("No faces to 'bonga, bro!")
+        # try:
+        #     gabonganized = await gabonganize(file, face_locations)
+        # except Exception:
+        #     await interaction.followup.send("Unexpected 'bonga error : (")
+        # await interaction.followup.send(content="I have two words...", file=discord.File(fp=gabonganized, filename=f"gabonganized.{ext}"))
 
-        match response:
-            case "Message had no file":
-                await interaction.followup.send("That message didn't have a file!!")
-                return
-            case "Invalid filetype":
-                await interaction.followup.send(
-                    "Silly fool! 'bonga only works on portable network graphics and and joint photographic experts group :nerd:"
-                )
-                return
-            case "No faces in image":
-                log.info(f"No faces in bonga request")
-                await interaction.followup.send(
-                    "Egads!!! There are no faces in that 'bonga request! Why don't you try another :smirk_cat:"
-                )
-                return
-            case "Gabonga failure":
-                log.error(f"Failure while trying to gabonganize image/gif")
-                await interaction.followup.send("Gabonga has mysteriously failed")
-                return
-
-        log.info(f"Image was succesfully gabonganized: {response})")
-        await interaction.followup.send(content="I have two words...", file=discord.File(response))
-        file_helper.remove(response)
-
-
-async def gabonga_helper(message: discord.Message) -> str:
-    """Helper method to help with gabonga requests"""
-
-    # Grabs and checks file
-    fname = file_helper.grab(message)
-    if fname is None:
-        return "Message had no file"
-
-    # Checks filetype
-    if not fname.endswith((".png", ".jpg", ".jpeg")):
-        file_helper.remove(fname)
-        return "Invalid filetype"
-
-    # Uses face rec to grab the face and get the location
-    face_locations = await get_faces(fname)
-    if len(face_locations) == 0:
-        file_helper.remove(fname)
-        return "No faces in image"
-
-    gabonganized = await gabonga(fname, face_locations)
-
-    if gabonganized is not None:
-        return gabonganized
-    else:
-        file_helper.remove(fname)
-        return "Gabonga failure"
-
-
-async def gabonga(fname: str, face_locations: list) -> str:
+async def gabonganize(fname: str, face_locations: list) -> BytesIO:
     """Handles the actual editing work of gabonga"""
 
     with Image(filename=fname) as face:
@@ -107,27 +73,17 @@ async def gabonga(fname: str, face_locations: list) -> str:
 
                 # Composites gabonga on top
                 face.composite(gabonga, left=x, top=y)
-            face.save(filename=fname)
-    return fname
+            buf = BytesIO()
+            face.save(file=buf)
+            buf.seek(0)
+            return buf
 
-
-async def get_faces(fname: str) -> list[tuple]:
-    """Gets the faces using opencv-python"""
-
-    # Load the cascade
-    face_cascade = cv2.CascadeClassifier("bot/resources/haarcascade_frontalface_default.xml")
-
-    img = cv2.imread(fname)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    found_faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-
-    faces = []
-
-    for x, y, w, h in found_faces:
-        faces.append((x, y, w, h))
-
-    return faces
+def get_faces(file: BytesIO) -> None:
+    pil_img = Image.open(file)
+    image = mp.Image(
+        image_format=mp.ImageFormat.SRGB, data=np.asarray(pil_img))
+    detection_result = detector.detect(image)
+    print(detection_result)
 
 
 async def setup(bot: commands.Bot) -> None:
