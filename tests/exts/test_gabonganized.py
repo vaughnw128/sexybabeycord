@@ -13,7 +13,7 @@ import pytest
 from bot import constants
 
 # project modules
-from bot.exts.gabonganized import gabonga_helper
+from archived_cogs.gabonganized import gabonga_helper
 from bot.utils import file_helper
 
 

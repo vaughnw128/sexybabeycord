@@ -13,12 +13,16 @@ import json
 import logging
 import random
 import re
-import subprocess
+from contextlib import redirect_stdout
 
 # external
 import discord
 import yt_dlp
 from discord.ext import commands
+
+# project
+from bot.utils.wrappers import suppress
+
 
 # project modules
 log = logging.getLogger("peanut-gallery")
@@ -43,8 +47,8 @@ class PeanutGallery(commands.Cog):
             await message.reply(embed=comment)
 
 
-async def peanut(message: discord.Message) -> str:
-    """Helper method for grabbing commentsa"""
+async def peanut(message: discord.Message) -> discord.Embed:
+    """Helper method for grabbing comments"""
 
     # Searches for the link regex from the message
     link = re.search(
@@ -54,28 +58,40 @@ async def peanut(message: discord.Message) -> str:
 
     if link is None:
         return None
-    try:
-        info = subprocess.check_output(
-            f"yt-dlp --skip-download --write-comments --extractor-args \"youtube:max_comments='100,100,0,0'\" {link.group(0)} -j",
-            shell=True,
-        ).decode()
-        info = json.loads(info)
 
-        if info["comments"] is None:
-            return None
+    ydl_opts = {
+        'extract_flat': 'discard_in_playlist',
+         'forcejson': True,
+         'fragment_retries': 10,
+         'getcomments': True,
+         'ignoreerrors': 'only_download',
+         'noprogress': True,
+         'postprocessors': [{'key': 'FFmpegConcat',
+                             'only_multi_video': True,
+                             'when': 'playlist'}],
+         'quiet': True,
+         'retries': 10,
+         'simulate': True,
+         'skip_download': True,
+         'extractor_args': {'youtube': {'max_comments': ['100']}}
+    }
 
-        comment = random.choice(info["comments"])
-
-        embed = discord.Embed(title="", description=comment["text"])
-        embed.set_author(
-            name=comment["author"],
-            url=comment["author_url"],
-            icon_url=comment["author_thumbnail"],
-        )
-
-        return embed
-    except Exception:
+    info = ""
+    with redirect_stdout(info):
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download(link.group(0))
+    info = json.loads(info)
+    if info["comments"] is None:
         return None
+    comment = random.choice(info["comments"])
+
+    embed = discord.Embed(title="", description=comment["text"])
+    embed.set_author(
+        name=comment["author"],
+        url=comment["author_url"],
+        icon_url=comment["author_thumbnail"],
+    )
+    return embed
 
 
 async def setup(bot: commands.Bot) -> None:
