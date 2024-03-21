@@ -21,7 +21,6 @@ import yt_dlp
 from discord.ext import commands
 
 # project
-from bot.utils.wrappers import suppress
 
 
 # project modules
@@ -60,20 +59,18 @@ async def peanut(message: discord.Message) -> discord.Embed:
         return None
 
     ydl_opts = {
-        'extract_flat': 'discard_in_playlist',
-         'forcejson': True,
-         'fragment_retries': 10,
-         'getcomments': True,
-         'ignoreerrors': 'only_download',
-         'noprogress': True,
-         'postprocessors': [{'key': 'FFmpegConcat',
-                             'only_multi_video': True,
-                             'when': 'playlist'}],
-         'quiet': True,
-         'retries': 10,
-         'simulate': True,
-         'skip_download': True,
-         'extractor_args': {'youtube': {'max_comments': ['100']}}
+        "extract_flat": "discard_in_playlist",
+        "forcejson": True,
+        "fragment_retries": 10,
+        "getcomments": True,
+        "ignoreerrors": "only_download",
+        "noprogress": True,
+        "postprocessors": [{"key": "FFmpegConcat", "only_multi_video": True, "when": "playlist"}],
+        "quiet": True,
+        "retries": 10,
+        "simulate": True,
+        "skip_download": True,
+        "extractor_args": {"youtube": {"max_comments": ["100"]}},
     }
 
     info = ""

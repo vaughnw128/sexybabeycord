@@ -6,7 +6,6 @@ Adds captions to gifs and images with the old iFunny font
 Made with love and care by Vaughn Woerpel
 """
 
-
 # built-in
 import logging
 from io import BytesIO
@@ -215,6 +214,7 @@ class Caption(commands.Cog):
         captioned = await caption(file, caption_text, ext)
         await message.reply(file=discord.File(fp=captioned, filename=f"captioned.{ext}"))
 
+
 async def caption(
     file: BytesIO,
     caption_text: str | None = None,
@@ -314,6 +314,7 @@ def get_frame_durations(PIL_Image_object: PILImage, playback_speed: float):
                     duration = 1000
                 durations[i] = int(round(duration))
             return durations
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

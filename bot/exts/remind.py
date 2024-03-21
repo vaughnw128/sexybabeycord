@@ -21,7 +21,6 @@ import croniter
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from wand.image import Image
 
 log = logging.getLogger("remind")
 
@@ -255,11 +254,11 @@ class Remind(commands.Cog):
 
         now = datetime.datetime.now()
 
-        if later == None:
+        if later is None:
             interaction.followup.send("Wrong date format! Please enter in MM-DD-YYYY format.")
             return
 
-        if time != None:
+        if time is not None:
             if ":" in time:
                 time = time.split(":")
                 hours = int(time[0])

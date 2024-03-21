@@ -15,7 +15,6 @@ from io import BytesIO
 
 
 # external
-import aiohttp
 import bs4 as bs
 import discord
 from discord import app_commands

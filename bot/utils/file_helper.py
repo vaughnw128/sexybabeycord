@@ -26,6 +26,7 @@ from bot import constants
 log = logging.getLogger("file_helper")
 magika = Magika()
 
+
 def get_file_extension(file: BytesIO | str) -> str | None:
     if isinstance(file, BytesIO):
         filetype = magika.identify_bytes(file.read()).dl.ct_label

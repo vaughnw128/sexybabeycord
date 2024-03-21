@@ -21,7 +21,6 @@ from discord import app_commands
 
 # project modules
 from bot import constants, exts
-from bot.utils import file_helper
 
 log = logging.getLogger("bot")
 
@@ -62,7 +61,9 @@ class Sexybabeycord(commands.Bot):
         self.tree.on_error = self.global_app_command_error
         log.info("Started")
 
-    async def global_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+    async def global_app_command_error(
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
+    ) -> None:
         """Handles app command errors"""
         if isinstance(error, discord.app_commands.CommandInvokeError):
             log.error(traceback.format_exc())
@@ -71,6 +72,7 @@ class Sexybabeycord(commands.Bot):
             await interaction.followup.send(error)
         else:
             log.error(traceback.format_exc())
+
     async def on_error(self, event: str, *args, **kwargs) -> None:
         """Handles exts errors"""
 

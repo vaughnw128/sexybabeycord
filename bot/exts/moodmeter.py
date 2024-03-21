@@ -112,6 +112,7 @@ async def drop_pin(mood: str, user: discord.User) -> BytesIO:
             buf.seek(0)
             return buf
 
+
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
 

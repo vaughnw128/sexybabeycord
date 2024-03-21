@@ -26,7 +26,7 @@ import numpy as np
 # project modules
 from bot.utils import file_helper
 
-base_options = python.BaseOptions(model_asset_path='./bot/resources/blaze_face_short_range.tflite')
+base_options = python.BaseOptions(model_asset_path="./bot/resources/blaze_face_short_range.tflite")
 options = vision.FaceDetectorOptions(base_options=base_options)
 detector = vision.FaceDetector.create_from_options(options)
 
@@ -50,7 +50,10 @@ class Gabonga(commands.Cog):
         file, ext = await file_helper.grab_file(message)
         face_locations = get_faces(file)
         gabonganized = await gabonganize(file, ext, face_locations)
-        await interaction.followup.send(content="I have two words...", file=discord.File(fp=gabonganized, filename=f"gabonganized.{ext}"))
+        await interaction.followup.send(
+            content="I have two words...", file=discord.File(fp=gabonganized, filename=f"gabonganized.{ext}")
+        )
+
 
 async def gabonganize(file: BytesIO, ext: str, face_locations: list) -> BytesIO:
     """Handles the actual editing work of gabonga"""
@@ -66,16 +69,16 @@ async def gabonganize(file: BytesIO, ext: str, face_locations: list) -> BytesIO:
                 gabonga.resize((w, h))
 
                 # Composites gabonga on top
-                face.paste(gabonga,(x, y))
+                face.paste(gabonga, (x, y))
             buf = BytesIO()
             face.save(buf, format=ext)
             buf.seek(0)
             return buf
 
+
 def get_faces(file: BytesIO) -> list[tuple[int, int, int, int]] | None:
     pil_img = Image.open(file)
-    image = mp.Image(
-        image_format=mp.ImageFormat.SRGB, data=np.asarray(pil_img))
+    image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.asarray(pil_img))
     detection_result = detector.detect(image).detections
     if not detection_result:
         raise discord_errors.AppCommandError("No faces to 'bonga!")
@@ -84,6 +87,7 @@ def get_faces(file: BytesIO) -> list[tuple[int, int, int, int]] | None:
         box = detection.bounding_box
         boxes.append((box.origin_x, box.origin_y, box.width, box.height))
     return boxes
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""

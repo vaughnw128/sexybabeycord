@@ -56,9 +56,10 @@ class SpeechToText(commands.Cog):
             audio_text = recognizer.listen(source)
             try:
                 text = recognizer.recognize_google(audio_text)
-            except:
+            except Exception:
                 raise discord_errors.AppCommandError("Voice message was unable to be transcribed")
         await interaction.followup.send(text)
+
 
 async def setup(bot: commands.Bot):
     """Sets up the cog."""
