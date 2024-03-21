@@ -1,5 +1,4 @@
-"""
-__main__
+"""__main__
 
 Initializes the discord client object and runs the async main function
 
@@ -21,7 +20,6 @@ from bot.bot import Sexybabeycord
 
 async def main() -> None:
     """Define bot parameters and initialize the client object"""
-
     intents = discord.Intents.all()
 
     try:

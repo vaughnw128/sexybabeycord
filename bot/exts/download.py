@@ -1,5 +1,4 @@
-"""
-ytdl
+"""ytdl
 
 Automatically converts youtube videos under 20 seconds
 to mp4 files
@@ -35,7 +34,6 @@ class Download(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize Download"""
-
         self.bot = bot
         self.download_menu = app_commands.ContextMenu(name="download", callback=self.download_menu)
         self.bot.tree.add_command(self.download_menu)
@@ -49,7 +47,6 @@ class Download(commands.Cog):
         end: str | None,
     ):
         """Allows for downloading with commands"""
-
         await interaction.response.defer()
 
         # Searches for the link regex from the message
@@ -92,7 +89,6 @@ class Download(commands.Cog):
 
     async def download_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Controls the download menu"""
-
         await interaction.response.defer()
 
         # Searches for the link regex from the message
@@ -111,7 +107,6 @@ class Download(commands.Cog):
 
 def convert_to_seconds(minutes: str) -> int:
     """Converting XX:XX notation to seconds"""
-
     if ":" in minutes:
         split = minutes.split(":")
         seconds = int(split[0]) * 60 + int(split[1])
@@ -127,7 +122,6 @@ def filename_hook(d):
 
 async def download(url, optional_args: dict | None) -> BytesIO:
     """Helper method for fixing links"""
-
     # Optional arguments for yt-dlp
     ydl_opts = {"format": "mp4", "outtmpl": "-", "logger": logging.getLogger()}
 
@@ -146,6 +140,5 @@ async def download(url, optional_args: dict | None) -> BytesIO:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(Download(bot))
     log.info("Loaded")

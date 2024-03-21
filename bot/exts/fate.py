@@ -1,5 +1,4 @@
-"""
-Fate
+"""Fate
 
 Automatically posts @JamesCageWhite's tweets in our
 #fate channel. Love this guy. Very cool very swag I like it
@@ -35,7 +34,6 @@ class Fate(commands.Cog):
 
     def __init__(self, bot: commands.Bot, accounts: list) -> None:
         """Initializes the cog."""
-
         self.bot = bot
         self.accounts = accounts
         self.fate_task.start()
@@ -50,13 +48,11 @@ class Fate(commands.Cog):
     @tasks.loop(time=time(hour=0))
     async def relogin_task(self) -> None:
         """Handles reloading accounts once per day to prevent de-auth issues"""
-
         await api.pool.relogin(self.accounts)
         log.info("Accounts re-logged in")
 
     async def fate(self) -> None:
         """Handles grabbing the tweets from twitter using twscrape"""
-
         fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
 
         # Reads messages in channel history to know what tweets can be sent
@@ -71,14 +67,14 @@ class Fate(commands.Cog):
                     recents.append(int(link.group(0).split("/")[-1]))
         except Exception:
             log.warning("Unable to gather message history")
-            return None
+            return
 
         # Gathers tweets
         try:
             tweets = await gather(api.user_tweets(449700739, limit=20))
         except Exception:
             log.warning("Unable to gather tweets")
-            return None
+            return
 
         # Sends tweets that aren't in the recents
         num_tweets = 0
@@ -93,7 +89,6 @@ class Fate(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     # Loads all accounts from json and adds them to the pool
     if not os.path.exists(constants.Fate.accounts):
         log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")

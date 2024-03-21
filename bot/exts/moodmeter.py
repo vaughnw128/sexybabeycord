@@ -1,5 +1,4 @@
-"""
-MoodMeter
+"""MoodMeter
 
 Allows users to set their mood using a command
 and dropdown menus
@@ -28,7 +27,7 @@ log = logging.getLogger("moodmeter")
 class SelectNumber(discord.ui.Select):
     def __init__(self):
         options = []
-        for i in range(0, 10):
+        for i in range(10):
             options.append(discord.SelectOption(label=i, emoji=constants.MoodMeter.number_emojis[i]))
         super().__init__(placeholder="Select an option", max_values=1, min_values=1, options=options)
 
@@ -40,7 +39,7 @@ class SelectNumber(discord.ui.Select):
 class SelectLetter(discord.ui.Select):
     def __init__(self):
         options = []
-        for i in range(0, 10):
+        for i in range(10):
             options.append(discord.SelectOption(label=chr(i + 65), emoji=constants.MoodMeter.letter_emojis[i]))
         super().__init__(placeholder="Select an option", max_values=1, min_values=1, options=options)
 
@@ -86,7 +85,6 @@ class MoodMeter(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Allows users to do moods from a message regex"""
-
         match = re.search(r"MOOD\s([A-J][0-9])\b", message.content.upper())
 
         if match is not None:
@@ -115,6 +113,5 @@ async def drop_pin(mood: str, user: discord.User) -> BytesIO:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(MoodMeter(bot))
     log.info("Loaded")

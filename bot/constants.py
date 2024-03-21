@@ -1,5 +1,4 @@
-"""
-Constants
+"""Constants
 
 Holds some constant values that need to be reused
 
@@ -8,6 +7,7 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()

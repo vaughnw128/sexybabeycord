@@ -1,5 +1,4 @@
-"""
-Distort
+"""Distort
 
 Allows for users to right click on images to distort them
 I like this one a lot.
@@ -29,14 +28,12 @@ class Distort(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize the command context menu"""
-
         self.bot = bot
         self.distort_menu = app_commands.ContextMenu(name="distort", callback=self.distort_ctx)
         self.bot.tree.add_command(self.distort_menu)
 
     async def distort_ctx(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Build the distort context menu"""
-
         await interaction.response.defer()
         file, ext = await file_helper.grab_file(message)
         distorted = await distort(file, ext)
@@ -78,6 +75,5 @@ async def distort(file: BytesIO, ext: str) -> BytesIO:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(Distort(bot))
     log.info("Loaded")

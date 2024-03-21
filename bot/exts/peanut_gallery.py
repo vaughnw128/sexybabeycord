@@ -1,5 +1,4 @@
-"""
-Peanut Gallery
+"""Peanut Gallery
 
 Automatically grabs a comment from whatever youtube link is sent,
 then sends it to chat
@@ -34,13 +33,11 @@ class PeanutGallery(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize peanut_gallery"""
-
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Grab comment on link matching the regex"""
-
         comment = await peanut(message)
         if comment is not None:
             await message.reply(embed=comment)
@@ -48,7 +45,6 @@ class PeanutGallery(commands.Cog):
 
 async def peanut(message: discord.Message) -> discord.Embed:
     """Helper method for grabbing comments"""
-
     # Searches for the link regex from the message
     link = re.search(
         link_regex,
@@ -93,6 +89,5 @@ async def peanut(message: discord.Message) -> discord.Embed:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(PeanutGallery(bot))
     log.info("Loaded")

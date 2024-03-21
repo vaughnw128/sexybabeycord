@@ -1,5 +1,4 @@
-"""
-Conftest
+"""Conftest
 
 Sets up everything for bot testing to occur
 
@@ -20,7 +19,6 @@ from bot.bot import Sexybabeycord
 @pytest_asyncio.fixture
 async def bot():
     """Initializes a bot instance for the testing functions to use"""
-
     intents = discord.Intents.all()
     client = Sexybabeycord(database=None, intents=intents, command_prefix=constants.Bot.prefix)
 
@@ -36,7 +34,6 @@ async def bot():
 
 def pytest_sessionfinish(session, exitstatus):
     """Code to execute after all tests."""
-
     # dat files are created when using attachements
     print("\n-------------------------\nClean dpytest_*.dat files")
     fileList = glob.glob("./dpytest_*.dat")

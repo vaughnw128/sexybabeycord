@@ -1,5 +1,4 @@
-"""
-Gabonganized
+"""Gabonganized
 
 Allows users to right click face pictures and
 gabonganize them, and also has random gabonganizing effects
@@ -7,21 +6,20 @@ gabonganize them, and also has random gabonganizing effects
 Made with love and care by Vaughn Woerpel
 """
 
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
-
 # built-in
 import logging
 from io import BytesIO
 
 # external
 import discord
+import discord.app_commands.errors as discord_errors
+import mediapipe as mp
+import numpy as np
 from discord import app_commands
 from discord.ext import commands
-import discord.app_commands.errors as discord_errors
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
 from PIL import Image
-import numpy as np
 
 # project modules
 from bot.utils import file_helper
@@ -45,19 +43,17 @@ class Gabonga(commands.Cog):
 
     async def gabonga_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Controls the bonga menu"""
-
         await interaction.response.defer()
         file, ext = await file_helper.grab_file(message)
         face_locations = get_faces(file)
         gabonganized = await gabonganize(file, ext, face_locations)
         await interaction.followup.send(
-            content="I have two words...", file=discord.File(fp=gabonganized, filename=f"gabonganized.{ext}")
+            content="I have two words...", file=discord.File(fp=gabonganized, filename=f"gabonganized.{ext}"),
         )
 
 
 async def gabonganize(file: BytesIO, ext: str, face_locations: list) -> BytesIO:
     """Handles the actual editing work of gabonga"""
-
     with Image.open(fp=file) as face:
         with Image.open(fp="bot/resources/gabonga.png") as gabonga:
             # Tries to do multiple faces... might not work
@@ -91,6 +87,5 @@ def get_faces(file: BytesIO) -> list[tuple[int, int, int, int]] | None:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(Gabonga(bot))
     log.info("Loaded")
