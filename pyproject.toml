@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sexybabeycord"
-version = "0.1.0"
+version = "0.1.1"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = ["Vaughn Woerpel"]
 readme = "README.md"
@@ -17,14 +17,9 @@ requests = "^2.31.0"
 validators = "^0.20.0"
 speechrecognition = "^3.10.0"
 twscrape = "^0.6.0"
-black = "^23.7.0"
-isort = "^5.12.0"
 coloredlogs = "^15.0.1"
-flakeheaven = "^3.3.0"
 dpytest = "^0.7.0"
 pre-commit = "^3.3.3"
-pre-commit-hooks = "^4.4.0"
-pyupgrade = "^3.10.1"
 deptry = "^0.12.0"
 pynacl = "^1.5.0"
 opencv-python = "^4.8.0.74"
@@ -37,16 +32,14 @@ numpy = "^1.26.1"
 rembg = "^2.0.52"
 magika = "^0.5.0"
 python-dotenv = "^1.0.1"
+ruff = "^0.3.2"
+mediapipe = "^0.10.11"
+pytest-dotenv = "^0.5.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-target-version = ["py310"]
-
-[tool.isort]
-profile = "black"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -55,3 +48,43 @@ filterwarnings = [
 testpaths = [
     "tests"
 ]
+env_files=[".env.test"]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 120
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+#select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"**/{tests,docs,tools}/*" = ["E402"]

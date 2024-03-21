@@ -1,9 +1,8 @@
-"""
-    Constants
+"""Constants
 
-    Holds some constant values that need to be reused
+Holds some constant values that need to be reused
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -18,7 +17,11 @@ class _Bot:
     prefix = "~"
     token = os.getenv("DISCORD_TOKEN")
     tenor = os.getenv("TENOR_TOKEN")
-    file_cache = "bot/resources/file_cache/"
+
+    if token is None or token == "":
+        raise ValueError("DISCORD_TOKEN is not set.")
+    if tenor is None or tenor == "":
+        raise ValueError("TENOR_TOKEN is not set.")
 
 
 Bot = _Bot()
@@ -36,12 +39,18 @@ class _Channels:
     general = os.getenv("GENERAL_CHANNEL_ID")
     fate = os.getenv("FATE_CHANNEL_ID")
 
+    if general is None or general == "":
+        raise ValueError("TENOR_TOKEN is not set.")
+
 
 Channels = _Channels()
 
 
 class _Guild:
     id = os.getenv("GUILD_ID")
+
+    if id is None or id == "":
+        raise ValueError("GUILD_ID is not set.")
 
 
 Guild = _Guild()

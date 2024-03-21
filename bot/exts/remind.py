@@ -1,11 +1,9 @@
+"""Remind
+
+Lets users set reminders for the future
+
+Made with love and care by Vaughn Woerpel
 """
-    Remind
-
-    Lets users set reminders for the future
-
-    Made with love and care by Vaughn Woerpel
-"""
-
 
 import datetime
 
@@ -22,7 +20,6 @@ import croniter
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from wand.image import Image
 
 log = logging.getLogger("remind")
 
@@ -37,16 +34,12 @@ class DeleteReminderView(discord.ui.View):
         self.document = document
 
     @discord.ui.button(label="Confirm Deletion", style=discord.ButtonStyle.red, row=1)
-    async def delete_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def delete_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         if interaction.user.id == self.document["user"]:
             self.db.Reminders.delete_one(filter=self.document)
 
-            await interaction.message.edit(
-                content="Reminder deleted.", embed=None, view=None
-            )
+            await interaction.message.edit(content="Reminder deleted.", embed=None, view=None)
             button.disabled = True
 
 
@@ -57,9 +50,7 @@ class ReminderView(discord.ui.View):
         self.loc = 0
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.green, row=1)
-    async def left_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def left_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         try:
             if self.loc != 0:
@@ -71,9 +62,7 @@ class ReminderView(discord.ui.View):
             log.error("Button error")
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.green, row=1)
-    async def right_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def right_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         try:
             if self.loc != len(self.embeds) - 1:
@@ -89,25 +78,15 @@ class ReminderView(discord.ui.View):
 
 
 class DateTransformer(app_commands.Transformer):
-    async def transform(
-        self, interaction: discord.Interaction, date: str
-    ) -> datetime.datetime | None:
-        redate = re.compile(
-            r"^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$"
-        )
+    async def transform(self, interaction: discord.Interaction, date: str) -> datetime.datetime | None:
+        redate = re.compile(r"^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$")
         if redate.match(date):
             if "-" in date:
-                return datetime.datetime.strptime(date, "%m-%d-%Y").replace(
-                    hour=12, second=0, microsecond=0
-                )
+                return datetime.datetime.strptime(date, "%m-%d-%Y").replace(hour=12, second=0, microsecond=0)
             elif "/" in date:
-                return datetime.datetime.strptime(date, "%m/%d/%Y").replace(
-                    hour=12, second=0, microsecond=0
-                )
+                return datetime.datetime.strptime(date, "%m/%d/%Y").replace(hour=12, second=0, microsecond=0)
             else:
-                return datetime.datetime.strptime(date, "%m.%d.%Y").replace(
-                    hour=12, second=0, microsecond=0
-                )
+                return datetime.datetime.strptime(date, "%m.%d.%Y").replace(hour=12, second=0, microsecond=0)
         return None
 
 
@@ -123,7 +102,6 @@ class Remind(commands.Cog):
     @tasks.loop(seconds=5)
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
-
         cursor = self.db.Reminders.find()
         for document in cursor:
             if document["later"] < datetime.datetime.now():
@@ -158,9 +136,7 @@ class Remind(commands.Cog):
                         value=f"**Prawntab:** `{document['prawntab']}`",
                         inline=False,
                     )
-                embed.add_field(
-                    name="", value=f"\n\n{document['message_url']}", inline=False
-                )
+                embed.add_field(name="", value=f"\n\n{document['message_url']}", inline=False)
                 if "url" in document.keys() and document["url"]:
                     embed.set_image(url=document["url"])
                 # Send message to user and originating channel
@@ -169,23 +145,23 @@ class Remind(commands.Cog):
                     await user.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                 try:
                     channel = await self.bot.fetch_channel(document["channel"])
                     await channel.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted.",
                     )
                     continue
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                     continue
 
@@ -198,7 +174,6 @@ class Remind(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Checks to see if someone wants to be reminded"""
-
         # Searches for the link regex from the message
         is_reminder = re.search(
             "remind me",
@@ -207,13 +182,9 @@ class Remind(commands.Cog):
 
         # If the regex matched send a reminder to use remind
         if is_reminder is not None:
-            await message.reply(
-                "Hey buddy! You know there's a feature for that... Why don't you try `/remind`?"
-            )
+            await message.reply("Hey buddy! You know there's a feature for that... Why don't you try `/remind`?")
 
-    @app_commands.command(
-        name="remindmein", description="Set a reminder for later! (In a duration)"
-    )
+    @app_commands.command(name="remindmein", description="Set a reminder for later! (In a duration)")
     @app_commands.describe(
         reason="reminder reason",
         duration="in how long",
@@ -240,9 +211,7 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-        embed.add_field(
-            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
-        )
+        embed.add_field(name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False)
         embed.add_field(
             name="",
             value=f"**Time:** `{later.replace(microsecond=0)}`",
@@ -263,9 +232,7 @@ class Remind(commands.Cog):
 
         self.db.Reminders.insert_one(reminder)
 
-    @app_commands.command(
-        name="remindmeon", description="Set a reminder for later! (On a date)"
-    )
+    @app_commands.command(name="remindmeon", description="Set a reminder for later! (On a date)")
     @app_commands.describe(
         reason="reminder reason",
         later="what date",
@@ -284,13 +251,11 @@ class Remind(commands.Cog):
 
         now = datetime.datetime.now()
 
-        if later == None:
-            interaction.followup.send(
-                "Wrong date format! Please enter in MM-DD-YYYY format."
-            )
+        if later is None:
+            interaction.followup.send("Wrong date format! Please enter in MM-DD-YYYY format.")
             return
 
-        if time != None:
+        if time is not None:
             if ":" in time:
                 time = time.split(":")
                 hours = int(time[0])
@@ -300,9 +265,7 @@ class Remind(commands.Cog):
                 minutes = 0
 
             if hours > 23 or minutes > 59:
-                interaction.followup.send(
-                    "Wrong time format! Please enter in HH:MM format."
-                )
+                interaction.followup.send("Wrong time format! Please enter in HH:MM format.")
                 return
 
             later = later.replace(hour=hours, minute=minutes, second=0, microsecond=0)
@@ -313,9 +276,7 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-        embed.add_field(
-            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
-        )
+        embed.add_field(name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False)
         embed.add_field(
             name="",
             value=f"**Time:** `{later.replace(microsecond=0)}`",
@@ -361,7 +322,7 @@ class Remind(commands.Cog):
             later = prawn.get_next(datetime.datetime)
         except Exception:
             await interaction.followup.send(
-                "Wrong format!!! Krill issue!!! Check this site, bozo: https://crontab.guru/"
+                "Wrong format!!! Krill issue!!! Check this site, bozo: https://crontab.guru/",
             )
             return
 
@@ -371,9 +332,7 @@ class Remind(commands.Cog):
             color=0xFB0DA8,
         )
         embed.add_field(name="", value=f"**Reason:** `{reason}`", inline=False)
-        embed.add_field(
-            name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False
-        )
+        embed.add_field(name="", value=f"**URL:** `{'True' if url else 'False'}`", inline=False)
         embed.add_field(
             name="",
             value=f"**Prawntab:** `{prawntab}`",
@@ -416,9 +375,7 @@ class Remind(commands.Cog):
         count = 1
         for document in cursor:
             embed = discord.Embed(title="Reminder", color=0xFB0DA8)
-            embed.add_field(
-                name="", value=f"**Reason:** `{document['reason']}`", inline=False
-            )
+            embed.add_field(name="", value=f"**Reason:** `{document['reason']}`", inline=False)
             if "url" in document.keys():
                 embed.add_field(
                     name="",
@@ -436,9 +393,7 @@ class Remind(commands.Cog):
                     value=f"**Prawntab:** `{document['prawntab']}`",
                     inline=False,
                 )
-            embed.add_field(
-                name="", value=f"\n\n{document['message_url']}", inline=False
-            )
+            embed.add_field(name="", value=f"\n\n{document['message_url']}", inline=False)
             embed.set_footer(text=f"{count}/{cursor_length}")
             count += 1
             embeds.append(embed)
@@ -450,9 +405,7 @@ class Remind(commands.Cog):
         else:
             await interaction.followup.send(embed=embeds[0])
 
-    @app_commands.command(
-        name="delreminder", description="Delete a reminder that matches a reason"
-    )
+    @app_commands.command(name="delreminder", description="Delete a reminder that matches a reason")
     @app_commands.describe(reason="reminder reason")
     async def delreminder(self, interaction: discord.Interaction, reason: str) -> None:
         await interaction.response.defer()
@@ -469,9 +422,7 @@ class Remind(commands.Cog):
 
         document = docs[0]
         embed = discord.Embed(title="Reminder", color=0xFB0DA8)
-        embed.add_field(
-            name="", value=f"**Reason:** `{document['reason']}`", inline=False
-        )
+        embed.add_field(name="", value=f"**Reason:** `{document['reason']}`", inline=False)
         embed.add_field(
             name="",
             value=f"**Time:** `{document['later']}`",
@@ -488,7 +439,6 @@ class Remind(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     if bot.database is None:
         log.error("No database found. Aborting loading remind.")
         return

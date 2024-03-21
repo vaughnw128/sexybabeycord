@@ -1,10 +1,9 @@
-"""
-    Fixlink
+"""Fixlink
 
-    Automatically corrects twitter, instagram, and tiktok link
-    to their safe-embedded counterparts (vx, dd)
+Automatically corrects twitter, instagram, and tiktok link
+to their safe-embedded counterparts (vx, dd)
 
-    Made with love and care by Vaughn Woerpel
+Made with love and care by Vaughn Woerpel
 """
 
 # built-in
@@ -18,7 +17,9 @@ from discord.ext import commands
 # project modules
 log = logging.getLogger("fixlink")
 
-link_regex = r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram|(www.|)x).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+link_regex = (
+    r"https:\/\/((www.|)tiktok|(www.|)twitter|(www.|)instagram|(www.|)x).com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+)
 
 
 class FixLink(commands.Cog):
@@ -26,13 +27,11 @@ class FixLink(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize fixlink"""
-
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Fix links on message if they match the regex"""
-
         new_message = await fixlink(message)
         if new_message is not None:
             await message.delete()
@@ -41,7 +40,6 @@ class FixLink(commands.Cog):
 
 async def fixlink(message: discord.Message) -> str:
     """Helper method for fixing links"""
-
     # Searches for the link regex from the message
     link = re.search(
         link_regex,
@@ -62,14 +60,11 @@ async def fixlink(message: discord.Message) -> str:
     else:
         return None
 
-    new_message = (
-        f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{link}"
-    )
+    new_message = f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{link}"
     return new_message
 
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(FixLink(bot))
     log.info("Loaded")
