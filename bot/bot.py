@@ -23,7 +23,6 @@ from bot import constants, exts
 
 log = logging.getLogger("bot")
 
-
 class Sexybabeycord(commands.Bot):
     """Discord bot subclass for Sexybabeycord"""
 
