@@ -1,4 +1,4 @@
-FROM python:3.11.5
+FROM python:3.12.2-bookworm
 WORKDIR /bot
 
 RUN apt-get -y update
@@ -9,13 +9,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         docker.io
 
 
-RUN pip install poetry yt-dlp
-COPY pyproject.toml poetry.lock ./
+RUN pip install poetry
+COPY . .
 
 RUN poetry install
-USER sexybabeycord:sexybabeycord
-
-COPY . .
 
 ENTRYPOINT ["poetry"]
 CMD ["run", "python", "-m", "bot"]

@@ -4,37 +4,41 @@ version = "0.1.1"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = ["Vaughn Woerpel"]
 readme = "README.md"
-packages = [{ include = "**/*" }]
+packages = [{ include = "./bot" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.12,<3.13"
 Wand = "^0.6.11"
 aiohttp = "^3.9.3"
 beautifulsoup4 = "^4.12.2"
-"discord.py" = "^2.3.1"
 pydub = "^0.25.1"
 requests = "^2.31.0"
-validators = "^0.20.0"
+validators = "^0.23.2"
 speechrecognition = "^3.10.0"
-twscrape = "^0.6.0"
+twscrape = "^0.11.1"
 coloredlogs = "^15.0.1"
-dpytest = "^0.7.0"
-pre-commit = "^3.3.3"
-deptry = "^0.12.0"
-pynacl = "^1.5.0"
-opencv-python = "^4.8.0.74"
-yt-dlp = "^2023.12.30"
+#pynacl = "^1.5.0"
+yt-dlp = "^2024.3.10"
 pymongo = "^4.6.1"
 croniter = "^2.0.1"
-dnspython = "^2.4.2"
+#dnspython = "^2.4.2"
 pillow = "^10.2.0"
 numpy = "^1.26.1"
 rembg = "^2.0.52"
 magika = "^0.5.0"
+discord-py = "^2.3.2"
 python-dotenv = "^1.0.1"
-ruff = "^0.3.2"
-mediapipe = "^0.10.11"
+opencv-python = "^4.9.0.80"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^6.0.0"
 pytest-dotenv = "^0.5.2"
+dpytest = "^0.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.3"
+ruff = "^0.3.2"
+
 
 [build-system]
 requires = ["poetry-core"]
@@ -88,3 +92,14 @@ fixable = ["ALL"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402"]
 "**/{tests,docs,tools}/*" = ["E402"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["pytest-dotenv", "ruff", "opencv-python"] # largely dev depends
+
+[tool.deptry.package_module_name_map]
+discord-py = "discord"
+pillow = "PIL"
+beautifulsoup4 = "bs4"
+speechrecognition = "speech_recognition"
+python-dotenv = "dotenv"
+opencv-python = "cv2"
