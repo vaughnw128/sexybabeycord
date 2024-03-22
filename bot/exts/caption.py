@@ -205,7 +205,7 @@ class Caption(commands.Cog):
             await message.reply("Looks like there was an error grabbing the file :/")
             return
         # Checks filetype
-        if ext not in ("png", "jpg", "gif", "jpeg"):
+        if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
             await message.reply("Wrong filetype, bozo!!")
             return
 
