@@ -1,5 +1,4 @@
-"""
-SpeechToText
+"""SpeechToText
 
 Allows users to right click voice messages and
 output them to the text channel
@@ -31,14 +30,12 @@ class SpeechToText(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         """Initializes class with context menu"""
-
         self.bot = bot
         self.speech_to_text_menu = app_commands.ContextMenu(name="Speech to text", callback=self.stt_menu)
         self.bot.tree.add_command(self.speech_to_text_menu)
 
     async def stt_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         """Handles action of converting speech to text"""
-
         await interaction.response.defer()
 
         file, ext = await file_helper.grab_file(message)
@@ -56,9 +53,10 @@ class SpeechToText(commands.Cog):
             audio_text = recognizer.listen(source)
             try:
                 text = recognizer.recognize_google(audio_text)
-            except:
+            except Exception:
                 raise discord_errors.AppCommandError("Voice message was unable to be transcribed")
         await interaction.followup.send(text)
+
 
 async def setup(bot: commands.Bot):
     """Sets up the cog."""

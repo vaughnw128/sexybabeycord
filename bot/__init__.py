@@ -1,5 +1,4 @@
-"""
-__init__
+"""__init__
 
 Just handles some logging stuff, mostly
 

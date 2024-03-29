@@ -1,5 +1,5 @@
-from contextlib import redirect_stdout, contextmanager
 import os
+from contextlib import contextmanager, redirect_stdout
 
 
 @contextmanager

@@ -1,5 +1,4 @@
-"""
-File_helper
+"""File_helper
 
 Handles some useful stuff for working with files from discord
 
@@ -9,22 +8,24 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import os
-from pathlib import Path
 from io import BytesIO
+from pathlib import Path
+
+import aiohttp
 
 # external
 import discord
-from discord.app_commands import errors as discord_errors
 import requests
 import validators
+from discord.app_commands import errors as discord_errors
 from magika import Magika
-import aiohttp
 
 # project modules
 from bot import constants
 
 log = logging.getLogger("file_helper")
 magika = Magika()
+
 
 def get_file_extension(file: BytesIO | str) -> str | None:
     if isinstance(file, BytesIO):
@@ -87,7 +88,6 @@ async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
 
 def remove(fname: str) -> None:
     """Remove file if it exists"""
-
     if os.path.exists(fname):
         os.remove(fname)
 

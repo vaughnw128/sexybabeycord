@@ -1,5 +1,4 @@
-"""
-Fixlink
+"""Fixlink
 
 Automatically corrects twitter, instagram, and tiktok link
 to their safe-embedded counterparts (vx, dd)
@@ -28,13 +27,11 @@ class FixLink(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize fixlink"""
-
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Fix links on message if they match the regex"""
-
         new_message = await fixlink(message)
         if new_message is not None:
             await message.delete()
@@ -43,7 +40,6 @@ class FixLink(commands.Cog):
 
 async def fixlink(message: discord.Message) -> str:
     """Helper method for fixing links"""
-
     # Searches for the link regex from the message
     link = re.search(
         link_regex,
@@ -70,6 +66,5 @@ async def fixlink(message: discord.Message) -> str:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(FixLink(bot))
     log.info("Loaded")

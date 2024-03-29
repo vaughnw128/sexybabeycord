@@ -1,5 +1,4 @@
-"""
-Remind
+"""Remind
 
 Lets users set reminders for the future
 
@@ -21,7 +20,6 @@ import croniter
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from wand.image import Image
 
 log = logging.getLogger("remind")
 
@@ -104,7 +102,6 @@ class Remind(commands.Cog):
     @tasks.loop(seconds=5)
     async def check_reminders(self) -> None:
         """Handles the looping of the checking reminders"""
-
         cursor = self.db.Reminders.find()
         for document in cursor:
             if document["later"] < datetime.datetime.now():
@@ -148,23 +145,23 @@ class Remind(commands.Cog):
                     await user.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                 try:
                     channel = await self.bot.fetch_channel(document["channel"])
                     await channel.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted.",
                     )
                     continue
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion."
+                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion.",
                     )
                     continue
 
@@ -177,7 +174,6 @@ class Remind(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Checks to see if someone wants to be reminded"""
-
         # Searches for the link regex from the message
         is_reminder = re.search(
             "remind me",
@@ -255,11 +251,11 @@ class Remind(commands.Cog):
 
         now = datetime.datetime.now()
 
-        if later == None:
+        if later is None:
             interaction.followup.send("Wrong date format! Please enter in MM-DD-YYYY format.")
             return
 
-        if time != None:
+        if time is not None:
             if ":" in time:
                 time = time.split(":")
                 hours = int(time[0])
@@ -326,7 +322,7 @@ class Remind(commands.Cog):
             later = prawn.get_next(datetime.datetime)
         except Exception:
             await interaction.followup.send(
-                "Wrong format!!! Krill issue!!! Check this site, bozo: https://crontab.guru/"
+                "Wrong format!!! Krill issue!!! Check this site, bozo: https://crontab.guru/",
             )
             return
 
@@ -443,7 +439,6 @@ class Remind(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     if bot.database is None:
         log.error("No database found. Aborting loading remind.")
         return

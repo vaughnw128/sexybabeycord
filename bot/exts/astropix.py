@@ -1,5 +1,4 @@
-"""
-Astropix
+"""Astropix
 
 Scrapes and sends the NASA picture of the day to our
 server's general chat. It's usually quite beautiful :>
@@ -13,12 +12,9 @@ import urllib
 from datetime import time
 from io import BytesIO
 
-
 # external
-import aiohttp
 import bs4 as bs
 import discord
-from discord import app_commands
 from discord.ext import commands, tasks
 
 # project modules
@@ -33,14 +29,12 @@ class Astropix(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """Initializes the cog."""
-
         self.bot = bot
         self.schedule_send.start()
 
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""
-
         channel = await self.bot.fetch_channel(constants.Channels.general)
 
         file_bytes, ext, alt = await scrape_astropix()
@@ -53,7 +47,6 @@ class Astropix(commands.Cog):
 
 async def scrape_astropix() -> tuple[BytesIO, str, str]:
     """Scrapes and sends the astronomy picture of the day."""
-
     # Grabs the page with a static link (literally has not changed since the 90s)
     html_page = urllib.request.urlopen("https://apod.nasa.gov/apod/astropix.html")
     soup = bs.BeautifulSoup(html_page, features="html.parser")
@@ -71,7 +64,6 @@ async def scrape_astropix() -> tuple[BytesIO, str, str]:
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     if constants.Channels.general is None:
         log.error("General channel has not been specified in the environment variables. Aborting loading astrpix.")
         return

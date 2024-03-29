@@ -4,6 +4,7 @@ accounts.db
 bot/resources/file_cache/*
 logs/*
 moodmeter.json
+data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

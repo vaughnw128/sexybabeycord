@@ -1,24 +1,22 @@
-"""
-Caption
+"""Caption
 
 Adds captions to gifs and images with the old iFunny font
 
 Made with love and care by Vaughn Woerpel
 """
 
-
 # built-in
 import logging
-from io import BytesIO
 import re
 import textwrap
+from io import BytesIO
 
 # external
 import discord
 import numpy
 from discord import app_commands
-from discord.ext import commands
 from discord.app_commands import errors as discord_errors
+from discord.ext import commands
 from PIL import Image as PILImage
 from PIL import ImageSequence
 from rembg import remove
@@ -188,7 +186,6 @@ class Caption(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'caption' it adds the caption to the image it's replying to"""
-
         if not message.content.startswith("caption") or message.author.id == self.bot.user.id:
             return
 
@@ -208,12 +205,13 @@ class Caption(commands.Cog):
             await message.reply("Looks like there was an error grabbing the file :/")
             return
         # Checks filetype
-        if ext not in ("png", "jpg", "gif", "jpeg"):
+        if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
             await message.reply("Wrong filetype, bozo!!")
             return
 
         captioned = await caption(file, caption_text, ext)
         await message.reply(file=discord.File(fp=captioned, filename=f"captioned.{ext}"))
+
 
 async def caption(
     file: BytesIO,
@@ -315,8 +313,8 @@ def get_frame_durations(PIL_Image_object: PILImage, playback_speed: float):
                 durations[i] = int(round(duration))
             return durations
 
+
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(Caption(bot))
     log.info("Loaded")
