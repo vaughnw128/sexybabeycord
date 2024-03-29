@@ -37,14 +37,6 @@ class Astropix(commands.Cog):
         self.bot = bot
         self.schedule_send.start()
 
-    @app_commands.command(name="fartypix")
-    async def fartypix(self, interaction: discord.Interaction):
-        file_bytes, ext, alt = await scrape_astropix()
-        await interaction.channel.send(
-            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(file_bytes, filename=f"astropix.{ext}"),
-        )
-
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
         """Handles the looping of the scrape_and_send() function."""

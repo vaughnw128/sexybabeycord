@@ -33,7 +33,6 @@ rembg = "^2.0.52"
 magika = "^0.5.0"
 python-dotenv = "^1.0.1"
 ruff = "^0.3.2"
-mediapipe = "^0.10.11"
 
 [build-system]
 requires = ["poetry-core"]

@@ -37,9 +37,9 @@ class Sexybabeycord(commands.Bot):
     async def sync_app_commands(self) -> None:
         """Sync the command tree to the guild"""
 
-        await self.tree.sync()
-        await self.tree.sync(guild=discord.Object(constants.Guild.id))
-
+        out = await self.tree.sync()
+        # await self.tree.sync(guild=discord.Object(740341628694298778))
+        out = await self.tree.sync(guild=discord.Object(id=740341628694298778))
         logging.info("Command tree synced")
 
     async def load_extensions(self, module: types.ModuleType) -> None:
