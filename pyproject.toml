@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sexybabeycord"
-version = "0.1.1"
+version = "0.1.2"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = ["Vaughn Woerpel"]
 readme = "README.md"
@@ -17,11 +17,10 @@ validators = "^0.23.2"
 speechrecognition = "^3.10.0"
 twscrape = "^0.11.1"
 coloredlogs = "^15.0.1"
-#pynacl = "^1.5.0"
 yt-dlp = "^2024.3.10"
 pymongo = "^4.6.1"
 croniter = "^2.0.1"
-#dnspython = "^2.4.2"
+dnspython = "^2.4.2"
 pillow = "^10.2.0"
 numpy = "^1.26.1"
 rembg = "^2.0.52"
@@ -39,7 +38,7 @@ dpytest = "^0.7.0"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.3.3"
 ruff = "^0.3.2"
-
+deptry = "^0.15.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -95,7 +94,7 @@ fixable = ["ALL"]
 "**/{tests,docs,tools}/*" = ["E402"]
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["pytest-dotenv", "ruff", "opencv-python"] # largely dev depends
+DEP002 = ["pytest-dotenv", "ruff", "opencv-python", "dnspython", "pynacl"] # largely dev depends
 
 [tool.deptry.package_module_name_map]
 discord-py = "discord"

@@ -23,6 +23,7 @@ from bot import constants, exts
 
 log = logging.getLogger("bot")
 
+
 class Sexybabeycord(commands.Bot):
     """Discord bot subclass for Sexybabeycord"""
 
@@ -57,7 +58,9 @@ class Sexybabeycord(commands.Bot):
         log.info("Started")
 
     async def global_app_command_error(
-        self, interaction: discord.Interaction, error: app_commands.AppCommandError,
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
     ) -> None:
         """Handles app command errors"""
         if isinstance(error, discord.app_commands.CommandInvokeError):

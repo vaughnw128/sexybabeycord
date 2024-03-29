@@ -15,7 +15,6 @@ from io import BytesIO
 # external
 import bs4 as bs
 import discord
-from discord import app_commands
 from discord.ext import commands, tasks
 
 # project modules
@@ -32,14 +31,6 @@ class Astropix(commands.Cog):
         """Initializes the cog."""
         self.bot = bot
         self.schedule_send.start()
-
-    @app_commands.command(name="fartypix")
-    async def fartypix(self, interaction: discord.Interaction):
-        file_bytes, ext, alt = await scrape_astropix()
-        await interaction.channel.send(
-            content=f"Astronomy Picture of the Day!\n\n{alt}\n\nhttps://apod.nasa.gov/apod/astropix.html",
-            file=discord.File(file_bytes, filename=f"astropix.{ext}"),
-        )
 
     @tasks.loop(time=time(hour=16))
     async def schedule_send(self) -> None:
