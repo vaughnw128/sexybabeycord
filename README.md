@@ -15,7 +15,7 @@ chaotic groupchat than a high-functioning Discord 'community,' as we all have Ad
 permissions, and we don't particularly care for rules. I love making bots for our server, and my
 friends seem to as well.
 
-Special thanks to @cowzix for creating the `asher` cog. He is a truly elite contributor.
+Special thanks to [@CowZix](https://github.com/CowZix) for creating the `asher` cog. He is a truly elite contributor.
 
 ## Simple Setup
 
