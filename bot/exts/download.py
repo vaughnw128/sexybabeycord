@@ -1,6 +1,6 @@
 """ytdl
 
-Automatically converts youtube videos under 20 seconds
+Automatically converts Youtube videos under 20 seconds
 to mp4 files
 
 Made with love and care by Vaughn Woerpel

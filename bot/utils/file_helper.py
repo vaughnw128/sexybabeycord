@@ -79,6 +79,7 @@ def _get_tenor_url(url: str) -> str:
 
 
 async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
+    """Grabs the bytes of a file from the URL."""
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             buffer = BytesIO(await resp.read())
@@ -86,14 +87,15 @@ async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
             return buffer, ext
 
 
-def remove(fname: str) -> None:
+def remove(filename: str) -> None:
     """Remove file if it exists"""
-    if os.path.exists(fname):
-        os.remove(fname)
+    if os.path.exists(filename):
+        os.remove(filename)
 
 
-def size_limit_exceeded(fname: str) -> bool:
-    stats = os.stat(fname)
+def size_limit_exceeded(filename: str) -> bool:
+    """Checks for exceeded size limit"""
+    stats = os.stat(filename)
     file_size = stats.st_size / (1024 * 1024)
 
     if file_size > 24.9:

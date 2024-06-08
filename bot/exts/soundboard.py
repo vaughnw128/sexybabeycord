@@ -1,5 +1,4 @@
-"""
-Soundboard cog
+"""Soundboard cog
 
 Made with love and care by Vaughn Woerpel
 """
@@ -15,10 +14,11 @@ from discord.ext import commands
 
 log = logging.getLogger("soundboard")
 
+
 class SelectSound(discord.ui.Select):
     def __init__(self):
         options = []
-        for path in list(Path('./bot/resources/sounds').iterdir()):
+        for path in list(Path("./bot/resources/sounds").iterdir()):
             options.append(discord.SelectOption(label=path.name.replace(".mp3", ""), value=str(path)))
         super().__init__(placeholder="Select a sound", max_values=1, min_values=1, options=options)
 
@@ -38,6 +38,7 @@ class SoundboardView(discord.ui.View):
         await interaction.message.edit("Soundboard has timed out!")
         await interaction.message.edit(view=None)
 
+
 class Soundboard(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -47,8 +48,8 @@ class Soundboard(commands.Cog):
         """Creates a soundboard selection menu to select a sound with."""
         await interaction.response.send_message(view=SoundboardView(interaction.user.id))
 
+
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-
     await bot.add_cog(Soundboard(bot))
     log.info("Loaded")
