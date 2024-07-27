@@ -43,7 +43,10 @@ class Fate(commands.Cog):
     @tasks.loop(minutes=5)
     async def fate_task(self) -> None:
         """Task loop just calling fate()"""
-        await self.fate()
+        fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
+        await self.fate(fate_channel, 449700739)
+        vx_underground_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.vx_underground)
+        await self.fate(vx_underground_channel, 1158139840866791424)
 
     @tasks.loop(time=time(hour=0))
     async def relogin_task(self) -> None:
@@ -51,14 +54,13 @@ class Fate(commands.Cog):
         await api.pool.relogin(self.accounts)
         log.info("Accounts re-logged in")
 
-    async def fate(self) -> None:
+    async def fate(self, channel: discord.TextChannel, twitter_user: int) -> None:
         """Handles grabbing the tweets from twitter using twscrape"""
-        fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
 
         # Reads messages in channel history to know what tweets can be sent
         try:
             recents = []
-            async for message in fate_channel.history(limit=300):
+            async for message in channel.history(limit=300):
                 link = re.search(
                     r"https:\/\/(fx|vx|)twitter.com([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
                     message.content,
@@ -71,7 +73,7 @@ class Fate(commands.Cog):
 
         # Gathers tweets
         try:
-            tweets = await gather(api.user_tweets(449700739, limit=20))
+            tweets = await gather(api.user_tweets(twitter_user, limit=20))
         except Exception:
             log.warning("Unable to gather tweets")
             return
@@ -80,7 +82,7 @@ class Fate(commands.Cog):
         num_tweets = 0
         for tweet in reversed(tweets):
             if tweet.id not in recents:
-                await fate_channel.send(tweet.url.replace("twitter", "vxtwitter"))
+                await channel.send(tweet.url.replace("twitter", "vxtwitter"))
                 num_tweets += 1
 
         if num_tweets > 0:
