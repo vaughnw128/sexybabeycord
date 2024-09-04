@@ -6,6 +6,7 @@ then sends it to chat
 Made with love and care by Vaughn Woerpel
 """
 
+import io
 import json
 
 # built-in
@@ -69,11 +70,11 @@ async def peanut(message: discord.Message) -> discord.Embed:
         "extractor_args": {"youtube": {"max_comments": ["100"]}},
     }
 
-    info = ""
-    with redirect_stdout(info):
+    with io.StringIO() as buf, redirect_stdout(buf):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download(link.group(0))
-    info = json.loads(info)
+            output = buf.getvalue()
+    info = json.loads(output)
     if info["comments"] is None:
         return None
     comment = random.choice(info["comments"])

@@ -27,14 +27,21 @@ log = logging.getLogger("file_helper")
 magika = Magika()
 
 
-def get_file_extension(file: BytesIO | str) -> str | None:
+def get_file_extension_from_bytes(file: BytesIO | str) -> str:
     if isinstance(file, BytesIO):
-        filetype = magika.identify_bytes(file.read()).dl.ct_label
+        filetype = magika.identify_bytes(file.read()).filetype.dl.ct_label
         file.seek(0)
         return filetype
     elif isinstance(file, str):
         return magika.identify_path(Path(file)).dl.ct_label
-    return None
+    raise ValueError
+
+
+def get_file_extension_from_url(url: str) -> str | None:
+    try:
+        return url.split("?")[0].split(".")[-1]
+    except IndexError:
+        return None
 
 
 async def grab_file(message: discord.Message) -> tuple[BytesIO, str]:
@@ -44,11 +51,14 @@ async def grab_file(message: discord.Message) -> tuple[BytesIO, str]:
     if message.attachments:
         urls.append(message.attachments[0].url)
     if message.embeds:
-        urls += [
-            message.embeds[0].url,
-            message.embeds[0].image.proxy_url,
-            message.embeds[0].thumbnail.proxy_url,
-        ]
+        if message.embeds[0].url.startswith("https://cdn.discordapp.com"):
+            urls += [message.embeds[0].thumbnail.proxy_url]
+        else:
+            urls += [
+                message.embeds[0].url,
+                message.embeds[0].thumbnail.proxy_url,
+                message.embeds[0].image.proxy_url,
+            ]
     if message.content:
         for item in message.content.split(" "):
             if validators.url(item):
@@ -78,22 +88,40 @@ def _get_tenor_url(url: str) -> str:
     return url
 
 
+def check_discord_file_timeout(buffer):
+    if buffer.read() == b"This content is no longer available.":
+        raise ValueError("The Discord file has timed out.")
+    else:
+        buffer.seek(0)
+
+
 async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
+    """Grabs the bytes of a file from the URL."""
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             buffer = BytesIO(await resp.read())
-            ext = get_file_extension(buffer)
-            return buffer, ext
+
+            # Handle if the discord file has timed out due to discord file timing query headers
+            try:
+                check_discord_file_timeout(buffer)
+            except ValueError:
+                raise discord_errors.AppCommandError("Unable to pull the filetype from the buffer.")
+            # First checks the URL file extension, then pulls it from the file buffer
+            try:
+                return buffer, get_file_extension_from_url(url)
+            except ValueError:
+                return buffer, get_file_extension_from_bytes(buffer)
 
 
-def remove(fname: str) -> None:
+def remove(filename: str) -> None:
     """Remove file if it exists"""
-    if os.path.exists(fname):
-        os.remove(fname)
+    if os.path.exists(filename):
+        os.remove(filename)
 
 
-def size_limit_exceeded(fname: str) -> bool:
-    stats = os.stat(fname)
+def size_limit_exceeded(filename: str) -> bool:
+    """Checks for exceeded size limit"""
+    stats = os.stat(filename)
     file_size = stats.st_size / (1024 * 1024)
 
     if file_size > 24.9:
