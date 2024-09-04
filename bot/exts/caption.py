@@ -186,7 +186,10 @@ class Caption(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'caption' it adds the caption to the image it's replying to"""
-        if not message.content.startswith("caption") or message.author.id == self.bot.user.id:
+        if (
+            not (message.content.startswith("caption") or message.content.startswith("reverse"))
+            or message.author.id == self.bot.user.id
+        ):
             return
 
         # Get original message if it is actually a message reply
@@ -194,23 +197,32 @@ class Caption(commands.Cog):
             original_message = await message.channel.fetch_message(message.reference.message_id)
         except AttributeError:
             return
-        # Gets caption text
-        caption_text = re.sub(r"^caption", "", message.content).strip()
-        if caption_text is None or len(caption_text) == 0:
-            raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
 
         try:
             file, ext = await file_helper.grab_file(original_message)
         except discord_errors.AppCommandError:
             await message.reply("Looks like there was an error grabbing the file :/")
             return
+
         # Checks filetype
         if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
             await message.reply("Wrong filetype, bozo!!")
             return
 
-        captioned = await caption(file, caption_text, ext)
-        await message.reply(file=discord.File(fp=captioned, filename=f"captioned.{ext}"))
+        if message.content.startswith("reverse") and ext != "gif":
+            await message.reply("You can only reverse gifs, silly ;p.")
+            return
+
+        if message.content.startswith("caption"):
+            # Gets caption text
+            caption_text = re.sub(r"^caption", "", message.content).strip()
+            if caption_text is None or len(caption_text) == 0:
+                raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
+
+            edited = await caption(file, caption_text, ext)
+        elif message.content.startswith("reverse"):
+            edited = await caption(file, ext=ext, reversed=True)
+        await message.reply(file=discord.File(fp=edited, filename=f"edited.{ext}"))
 
 
 async def caption(
