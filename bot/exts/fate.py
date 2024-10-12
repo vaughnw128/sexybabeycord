@@ -45,8 +45,8 @@ class Fate(commands.Cog):
         """Task loop just calling fate()"""
         fate_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.fate)
         await self.fate(fate_channel, 449700739)
-        vx_underground_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.vx_underground)
-        await self.fate(vx_underground_channel, 1158139840866791424)
+        # vx_underground_channel: discord.TextChannel = await self.bot.fetch_channel(constants.Channels.vx_underground)
+        # await self.fate(vx_underground_channel, 1158139840866791424)
 
     @tasks.loop(time=time(hour=0))
     async def relogin_task(self) -> None:
@@ -82,7 +82,7 @@ class Fate(commands.Cog):
         num_tweets = 0
         for tweet in reversed(tweets):
             if tweet.id not in recents:
-                await channel.send(tweet.url.replace("twitter", "vxtwitter"))
+                await channel.send(tweet.url.replace("https://twitter.com", "https://vxtwitter.com").replace("https://x.com", "https://vxtwitter.com"))
                 num_tweets += 1
 
         if num_tweets > 0:
@@ -91,19 +91,13 @@ class Fate(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-    # Loads all accounts from json and adds them to the pool
-    if not os.path.exists(constants.Fate.accounts):
-        log.error(f"{constants.Fate.accounts} not found. Aborting loading fate.")
-        return
-
     if constants.Channels.fate is None:
         log.error("Fate channel has not been specified in the environment variables. Aborting loading fate.")
         return
 
-    with open(constants.Fate.accounts) as f:
-        accounts = json.load(f)
-
-    for count, account in enumerate(accounts):
+    db = bot.database.TwitterAccounts
+    cursor = db.find()
+    for count, account in enumerate(cursor):
         await api.pool.add_account(
             account["username"],
             account["password"],
