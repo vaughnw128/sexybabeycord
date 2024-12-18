@@ -146,13 +146,16 @@ The current components (cogs) of the bot are as follows:
 - Distort: Grabs images from messages then uses liquid rescaling to distort and resend them.
 - fixlink: Takes any link to twitter, instagram, or tiktok, and fixes it with either the 'vx' or 'dd' prefix for proper embed formatting.
 - fate: Uses twscrape to grab @JamesCageWhite's tweets and send them in our #fate channel. Love that guy.
-- gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
 - caption: Adds captions to images when you reply with the 'caption' keyword.
 - Mood Meter: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
 - Ytdl: Downloads youtube videos and clips with a command or menu button.
 - Peanut gallery: Whenever someone sends a youtube link, a random comment from the video is automatically sent to chat
 - Remind: Uses mongodb and crontab formatting to generate one-time reminders and recurring reminders
+
+
+Archived Components:
 - Wrench: A small utility cog just for getting the JSON of a message
+- gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
 
 
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>
