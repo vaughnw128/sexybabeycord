@@ -40,6 +40,19 @@ class Distort(commands.Cog):
 
         await interaction.followup.send(file=discord.File(fp=distorted, filename=f"distort.{ext}"))
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """On message if someone says 'distort' it adds the caption to the image it's replying to"""
+        if (
+                message.content.lower().startswith("distort")
+                or message.author.id != self.bot.user.id
+        ):
+            return
+
+        file, ext = await file_helper.grab_file(message)
+        distorted = await distort(file, ext)
+
+        await message.reply(file=discord.File(fp=distorted, filename=f"distort.{ext}"))
 
 async def distort(file: BytesIO, ext: str) -> BytesIO:
     """Handles the distortion using ImageMagick"""
