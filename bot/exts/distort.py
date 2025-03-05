@@ -52,7 +52,7 @@ class Distort(commands.Cog):
         file, ext = await file_helper.grab_file(message)
         distorted = await distort(file, ext)
 
-        await message.reply(file=discord.File(fp=distorted, filename=f"distort.{ext}"))
+        await message.reply(file=discord.File(fp=distorted, filename=f"edited.{ext}"))
 
 async def distort(file: BytesIO, ext: str) -> BytesIO:
     """Handles the distortion using ImageMagick"""
