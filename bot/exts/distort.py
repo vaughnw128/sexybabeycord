@@ -44,8 +44,8 @@ class Distort(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'distort' it adds the caption to the image it's replying to"""
         if (
-                message.content.lower().startswith("distort")
-                or message.author.id != self.bot.user.id
+                not message.content.lower().startswith("distort")
+                or message.author.id == self.bot.user.id
         ):
             return
 
