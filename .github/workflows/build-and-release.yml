@@ -13,6 +13,7 @@ jobs:
   create-tag:
     name: "Create Git Tag"
     runs-on: "ubuntu-latest"
+    needs: test
     outputs:
       tag: ${{ steps.git-tag.outputs.tag }}
     steps:
@@ -73,7 +74,9 @@ jobs:
   release:
     name: "Release to Immanent Grove"
     runs-on: ubuntu-latest
-    needs: create-tag
+    needs:
+      - build
+      - create-tag
     steps:
       - name: Open Immanent Grove PR
         env:

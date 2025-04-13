@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sexybabeycord"
-version = "0.1.3-6"
+version = "0.1.3-7"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = ["Vaughn Woerpel"]
 readme = "README.md"
