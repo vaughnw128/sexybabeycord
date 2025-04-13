@@ -1,4 +1,4 @@
-name: Main Release
+name: Test and Tag
 
 on:
   push:
@@ -18,16 +18,4 @@ jobs:
     uses: ./.github/workflows/tag.yml
     needs:
       - test
-    secrets: inherit
-
-  build:
-    uses: ./.github/workflows/build.yml
-    needs:
-      - tag
-    secrets: inherit
-
-  release:
-    uses: ./.github/workflows/release.yml
-    needs:
-      - build
     secrets: inherit

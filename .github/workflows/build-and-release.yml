@@ -3,7 +3,7 @@ on:
 
 jobs:
   build:
-    name: "Build Application"
+    name: "Build and Release Application"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,9 +25,20 @@ jobs:
           context: .
           file: Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          cache-from: type=registry,ref=ghcr.io/vaughnw128/sexybabeycord:${{ GITHUB_REF##*/ }}
+          cache-from: type=registry,ref=ghcr.io/vaughnw128/sexybabeycord:${{github.ref_name}}
           cache-to: type=inline
           tags: |
-            ghcr.io/vaughnw128/sexybabeycord:${{ GITHUB_REF##*/ }}
+            ghcr.io/vaughnw128/sexybabeycord:${{github.ref_name}}
           build-args: |
             git_sha=${{ github.sha }}
+
+      - name: Open Immanent Grove PR
+        env:
+          ENV_REPO: ${{ github.event.repository.owner.name }}/immanent-grove
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          workflow: application-update.yml
+          repo: ${{ env.ENV_REPO }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          inputs: '{"tag_name": "${{github.ref_name}}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ github.event.repository.full_name }}:${{github.ref_name}}"}'
+          ref: refs/heads/main
