@@ -14,5 +14,5 @@ jobs:
           workflow: application-update.yml
           repo: ${{ env.ENV_REPO }}
           token: ${{ secrets.RELEASE_TOKEN }}
-          inputs: '{"tag_name": "${GITHUB_REF##*/}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ github.event.repository.full_name }}:${GITHUB_REF##*/}"}'
+          inputs: '{"tag_name": "${{ GITHUB_REF##*/ }}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ github.event.repository.full_name }}:${{ GITHUB_REF##*/ }}"}'
           ref: refs/heads/main
