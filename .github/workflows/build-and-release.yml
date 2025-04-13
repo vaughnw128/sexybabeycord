@@ -1,9 +1,13 @@
+name: Build and Release
+
 on:
-  workflow_call
+  push:
+    tags:
+      - '**'
 
 jobs:
   build:
-    name: "Build and Release Application"
+    name: "Build Image"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -32,6 +36,10 @@ jobs:
           build-args: |
             git_sha=${{ github.sha }}
 
+  release:
+    name: "Release to Immanent Grove"
+    runs-on: ubuntu-latest
+    steps:
       - name: Open Immanent Grove PR
         env:
           ENV_REPO: ${{ github.event.repository.owner.name }}/immanent-grove
