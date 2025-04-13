@@ -8,7 +8,7 @@ jobs:
     name: "Create tag"
     runs-on: "ubuntu-latest"
     steps:
-      - name: "Check out the repo"
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -16,14 +16,13 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: "Get tag"
+      - name: Get Poetry Version
         id: "get-tag"
         shell: "bash"
         run: |
           echo PKG_VERSION=$(poetry version --short) >> $GITHUB_OUTPUT
 
-      - name: "Set Tag"
+      - name: Set Tag
         shell: "bash"
         run: |
           git tag v${{ steps.get-tag.outputs.PKG_VERSION }} && git push --tags
-

@@ -5,8 +5,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Add TAG_NAME env property
-        run:  echo "TAG_NAME=`echo ${GITHUB_REF#refs/tags/}`" >> $GITHUB_ENV
       - name: Open PR in Environment Repository for new App Version
         env:
           ENV_REPO: ${{ github.event.repository.owner.name }}/immanent-grove
@@ -15,5 +13,5 @@ jobs:
           workflow: application-update.yml
           repo: ${{ env.ENV_REPO }}
           token: ${{ secrets.RELEASE_TOKEN }}
-          inputs: '{"tag_name": "${{ env.TAG_NAME }}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ github.event.repository.full_name }}:${{ env.TAG_NAME }}"}'
+          inputs: '{"tag_name": "${{ github.ref_name }}", "app_repo": "${{ github.event.repository.name }}", "image": "${{ github.event.repository.full_name }}:${{ github.ref_name }}"}'
           ref: refs/heads/main
