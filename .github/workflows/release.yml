@@ -3,6 +3,7 @@ on:
 
 jobs:
   release:
+    name: "Release to Immanent Grove Environment"
     runs-on: ubuntu-latest
     steps:
       - name: Open PR in Environment Repository for new App Version
