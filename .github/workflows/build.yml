@@ -2,7 +2,7 @@ on:
   workflow_call
 
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
