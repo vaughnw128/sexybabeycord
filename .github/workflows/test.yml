@@ -7,32 +7,32 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+      - uses: actions/checkout@v1
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.12.2
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12.2
 
-    - name: Install and configure Poetry
-      uses: snok/install-poetry@v1
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        installer-parallel: true
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
 
-    - name: Cache the virtualenv
-      uses: actions/cache@v3
-      with:
-        path: ./.venv
-        key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+      - name: Cache the virtualenv
+        uses: actions/cache@v3
+        with:
+          path: ./.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
 
-    - uses: FedericoCarboni/setup-ffmpeg@v2
-      id: setup-ffmpeg
+      - uses: FedericoCarboni/setup-ffmpeg@v2
+        id: setup-ffmpeg
 
-    - name: Install dependencies
-      run: |
-        poetry install
+      - name: Install dependencies
+        run: |
+          poetry install
 
 #    - name: Run tests
 #      env:
