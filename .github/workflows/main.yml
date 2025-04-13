@@ -9,7 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-
 jobs:
   test:
     uses: ./.github/workflows/test.yml
@@ -28,7 +27,7 @@ jobs:
     secrets: inherit
 
   release:
-    uses: ./.github/workflows/docker-image.yml
+    uses: ./.github/workflows/release.yml
     needs:
       - build
     secrets: inherit
