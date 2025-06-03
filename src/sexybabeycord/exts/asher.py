@@ -18,7 +18,7 @@ from discord import app_commands
 
 
 # project modules
-from bot.utils import file_helper
+from sexybabeycord.utils import file_helper
 
 log = logging.getLogger("present")
 
@@ -57,12 +57,7 @@ async def present(
                 (0, present_image.height),
                 (present_image.width, present_image.height),
             )
-            destination_points = (
-                (1600, 460), 
-                (3240, 0), 
-                (1600, 2000), 
-                (3240, 1980)
-            )
+            destination_points = ((1600, 460), (3240, 0), (1600, 2000), (3240, 1980))
 
             order = chain.from_iterable(zip(source_points, destination_points))
             arguments = list(chain.from_iterable(order))

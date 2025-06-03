@@ -18,8 +18,8 @@ from discord.ext import commands
 from wand.image import Image
 
 # project
-from bot import constants
-from bot.utils import file_helper
+from sexybabeycord import constants
+from sexybabeycord.utils import file_helper
 
 log = logging.getLogger("moodmeter")
 

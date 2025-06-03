@@ -17,8 +17,8 @@ from discord.ext import commands
 from wand.image import Image
 
 # project modules
-from bot import constants
-from bot.utils import file_helper
+from sexybabeycord import constants
+from sexybabeycord.utils import file_helper
 
 log = logging.getLogger("distort")
 
@@ -43,16 +43,14 @@ class Distort(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'distort' it adds the caption to the image it's replying to"""
-        if (
-                not message.content.lower().startswith("distort")
-                or message.author.id == self.bot.user.id
-        ):
+        if not message.content.lower().startswith("distort") or message.author.id == self.bot.user.id:
             return
 
         file, ext = await file_helper.grab_file(message)
         distorted = await distort(file, ext)
 
         await message.reply(file=discord.File(fp=distorted, filename=f"edited.{ext}"))
+
 
 async def distort(file: BytesIO, ext: str) -> BytesIO:
     """Handles the distortion using ImageMagick"""

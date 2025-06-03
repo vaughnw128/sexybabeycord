@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ lower .Values.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: {{ lower .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ lower .Values.name }}
+    spec:
+      containers:
+      - name: {{ lower .Values.name }}
+        image: "{{ .Values.image }}:{{ .Chart.AppVersion }}"
+        imagePullPolicy: Always
+        {{- include "synkronized.pod.resources" . | nindent 8 -}}
+        env:
+        {{- range $v := .Values.secrets }}
+        - name: {{$v.name}}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Chart.Name }}-secrets
+              key: value
+        {{- end}}
+        {{- range $v := .Values.env }}
+        - name: {{$v.name}}
+          value: {{ quote $v.value }}
+        {{- end -}}

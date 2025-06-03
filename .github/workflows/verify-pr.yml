@@ -1,0 +1,28 @@
+name: Verify PR
+on:
+  pull_request:
+    branches:
+      - 'main' # We only need to verify PR quality if pushing to the main branch
+
+jobs:
+  verify-pr:
+    name: "PR Quality"
+    runs-on: "ubuntu-latest"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check Semantic Release
+      uses: cycjimmy/semantic-release-action@v4
+      id: tag
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        dry_run: true
+
+    - name: Check version number
+      if: ${{ steps.tag.outputs.new_release_version != steps.tag.outputs.last_release_version }}
+      uses: actions/github-script@v3
+      with:
+        script: |
+          core.setFailed('The version failed to increment, please fix the PR title and rerun jobs.')

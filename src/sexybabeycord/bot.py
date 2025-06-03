@@ -19,7 +19,7 @@ from discord import app_commands
 from discord.ext import commands
 
 # project modules
-from bot import constants, exts
+from sexybabeycord import constants, exts
 
 log = logging.getLogger("bot")
 

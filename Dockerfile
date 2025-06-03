@@ -1,18 +1,14 @@
-FROM python:3.12.2-bookworm
-WORKDIR /bot
+FROM python:3.12-slim
 
-RUN apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        ffmpeg \
-        libmagic-dev \
-        libmagickwand-dev \
-        docker.io
+# Install uv.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# Copy the application into the container.
+COPY . /app
 
-RUN pip install poetry
-COPY . .
+# Install the application dependencies.
+WORKDIR /app
+RUN uv sync --frozen --no-cache
 
-RUN poetry install
-
-ENTRYPOINT ["poetry"]
-CMD ["run", "python", "-m", "bot"]
+# Run the application.
+CMD ["/app/.venv/bin/python3", "run", "src/sexybabeycord/main.py"]

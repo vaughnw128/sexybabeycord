@@ -7,9 +7,7 @@ Made with love and care by Vaughn Woerpel
 """
 
 # built-in
-import json
 import logging
-import os
 import re
 from datetime import time
 
@@ -20,7 +18,7 @@ from twscrape import API, gather
 from twscrape.logger import set_log_level
 
 # project modules
-from bot import constants
+from sexybabeycord import constants
 
 # Setting stuff for twscrape
 api = API()
@@ -82,7 +80,11 @@ class Fate(commands.Cog):
         num_tweets = 0
         for tweet in reversed(tweets):
             if tweet.id not in recents:
-                await channel.send(tweet.url.replace("https://twitter.com", "https://vxtwitter.com").replace("https://x.com", "https://vxtwitter.com"))
+                await channel.send(
+                    tweet.url.replace("https://twitter.com", "https://vxtwitter.com").replace(
+                        "https://x.com", "https://vxtwitter.com"
+                    )
+                )
                 num_tweets += 1
 
         if num_tweets > 0:

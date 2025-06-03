@@ -21,7 +21,7 @@ from discord.app_commands import errors as discord_errors
 from magika import Magika
 
 # project modules
-from bot import constants
+from sexybabeycord import constants
 
 log = logging.getLogger("file_helper")
 magika = Magika()

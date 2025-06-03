@@ -1,0 +1,118 @@
+name: Build and Release
+on:
+  workflow_run:
+    workflows: [ 'Code Quality & Tests' ]
+    types: [ completed ]
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'synkronizedcd[bot]' }}
+    outputs:
+      new_version: ${{ steps.tag.outputs.new_release_version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Tag
+        uses: cycjimmy/semantic-release-action@v4
+        id: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.ref == 'refs/heads/main' }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.new_release_version }}
+          cache-to: type=inline
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.new_release_version }}
+          build-args: |
+            git_sha=${{ github.sha }}
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+            
+  bump:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Bump uv package version
+        run: uv version ${{ needs.build.outputs.new_version }}
+
+      - name: Update Helm chart
+        uses: mikefarah/yq@v4.45.4
+        with:
+          cmd: |
+            yq -i '.version = "${{ needs.build.outputs.new_version }}"' ./helm/Chart.yaml
+            yq -i '.appVersion = "${{ needs.build.outputs.new_version }}"' ./helm/Chart.yaml
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "195056476+synkronizedcd[bot]@users.noreply.github.com"
+          git config --local user.name "synkronizedcd[bot]"
+          git commit -am "Bump verison to ${{ needs.build.outputs.new_version }} [no ci]"
+
+      - name: Get app token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ github.event.repository.default_branch }}
+          github_token: ${{ steps.app-token.outputs.token }}
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.3.0
+
+      - name: Package and push helm chart
+        run: |
+          helm package ./helm --version ${{ needs.build.outputs.new_version }}
+          helm push ./${{ github.event.repository.name }}-${{ needs.build.outputs.new_version }}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts          
+

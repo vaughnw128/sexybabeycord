@@ -19,7 +19,7 @@ from discord.ext import commands
 from pydub import AudioSegment
 
 # project modules
-from bot.utils import file_helper
+from sexybabeycord.utils import file_helper
 
 recognizer = sr.Recognizer()
 log = logging.getLogger("speech_to_text")

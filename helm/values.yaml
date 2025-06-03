@@ -1,0 +1,19 @@
+name: "sexybabeycord"
+image: "ghcr.io/vaughnw128/sexybabeycord"
+size: small
+secrets:
+  - name: "DISCORD_TOKEN"
+    path: "sexybabeycord-discord-token/credential"
+  - name: "TENOR_TOKEN"
+    path: "tenor-token/credential"
+  - name: "MONGO_URI"
+    path: "sexybabeycord-mongo-uri/credential"
+env:
+  - name: "GUILD_ID"
+    value: "644752766241341460"
+  - name: "GENERAL_CHANNEL_ID"
+    value: "644752766736138241"
+  - name: "FATE_CHANNEL_ID"
+    value: "1021214119141064755"
+  - name: "DATABASE_NAME"
+    value: "SexybabeyDB"

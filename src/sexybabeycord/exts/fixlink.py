@@ -12,7 +12,7 @@ import re
 
 # external
 import discord
-from discord.ext import commands
+from sexybabeycord.ext import commands
 
 # project modules
 log = logging.getLogger("fixlink")

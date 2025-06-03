@@ -24,10 +24,10 @@ from wand.drawing import Drawing
 from wand.font import Font
 from wand.image import Image
 
-from bot import constants
+from sexybabeycord import constants
 
 # project modules
-from bot.utils import file_helper
+from sexybabeycord.utils import file_helper
 
 log = logging.getLogger("caption")
 
