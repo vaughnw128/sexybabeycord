@@ -17,15 +17,15 @@ spec:
       - name: {{ lower .Values.name }}
         image: "{{ .Values.image }}:{{ .Chart.AppVersion }}"
         imagePullPolicy: Always
-        {{- include "synkronized.pod.resources" . | nindent 8 -}}
+        {{- include "synkronized.pod.resources" . | nindent 8 }}
         env:
-        {{- range $v := .Values.secrets }}
+        {{ range $v := .Values.secrets }}
         - name: {{$v.name}}
           valueFrom:
             secretKeyRef:
-              name: {{ .Chart.Name }}-secrets
-              key: value
-        {{- end}}
+              name: sexybabeycord-secrets
+              key: {{$v.name}}
+        {{ end }}
         {{- range $v := .Values.env }}
         - name: {{$v.name}}
           value: {{ quote $v.value }}

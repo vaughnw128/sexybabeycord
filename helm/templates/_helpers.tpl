@@ -1,6 +1,6 @@
 {{- define "synkronized.pod.resources" }}
 
-{{- if eq .Values.size "micro" }}
+{{- if eq .Values.size "micro" -}}
 resources:
   requests:
     memory: "64Mi"
@@ -8,7 +8,7 @@ resources:
   limits:
     memory: "512Mi"
     cpu: "250m"
-{{- else if eq .Values.size "small" }}
+{{- else if eq .Values.size "small" -}}
 resources:
   requests:
     memory: "128Mi"
@@ -16,7 +16,7 @@ resources:
   limits:
     memory: "1024Mi"
     cpu: "500m"
-{{- else if eq .Values.size "medium" }}
+{{- else if eq .Values.size "medium" -}}
 resources:
   requests:
     memory: "256Mi"
@@ -24,7 +24,7 @@ resources:
   limits:
     memory: "2048Mi"
     cpu: "1"
-{{- else if eq .Values.size "large" }}
+{{- else if eq .Values.size "large" -}}
 resources:
   requests:
     memory: "512Mi"
@@ -32,7 +32,7 @@ resources:
   limits:
     memory: "4096Mi"
     cpu: "2"
-{{- else }}
+{{- else -}}
 resources:
   requests:
     memory: "128Mi"
