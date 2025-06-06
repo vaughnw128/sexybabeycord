@@ -79,7 +79,7 @@ Distort = _Distort()
 
 
 class _Caption:
-    fontdir = "bot/resources/fonts/"
+    fontdir = "src/sexybabeycord/resources/fonts/"
     fonts = {
         "default": f"{fontdir}ifunny.otf",
         "sans": f"{fontdir}sans.ttf",
@@ -92,7 +92,7 @@ Caption = _Caption()
 
 
 class _MoodMeter:
-    image = "bot/resources/MoodMeter.png"
+    image = "src/sexybabeycord/resources/MoodMeter.png"
 
     number_emojis = (
         "0️⃣",

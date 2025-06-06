@@ -50,7 +50,7 @@ async def present(
     buf = BytesIO()
 
     with Image(file=file) as present_image:
-        with Image(filename="bot/resources/asher.jpg") as background:
+        with Image(filename="src/sexybabeycord/resources/asher.jpg") as background:
             source_points = (
                 (0, 0),
                 (present_image.width, 0),
