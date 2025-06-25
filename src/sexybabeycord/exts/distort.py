@@ -38,7 +38,8 @@ class Distort(commands.Cog):
         file, ext = await file_helper.grab_file(message)
         distorted = await distort(file, ext)
 
-        await interaction.followup.send(file=discord.File(fp=distorted, filename=f"distort.{ext}"))
+        location = file_helper.cdn_upload(distorted, ext)
+        await interaction.followup.send(content=location)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -49,7 +50,8 @@ class Distort(commands.Cog):
         file, ext = await file_helper.grab_file(message)
         distorted = await distort(file, ext)
 
-        await message.reply(file=discord.File(fp=distorted, filename=f"edited.{ext}"))
+        location = file_helper.cdn_upload(distorted, ext)
+        await message.reply(content=location)
 
 
 async def distort(file: BytesIO, ext: str) -> BytesIO:

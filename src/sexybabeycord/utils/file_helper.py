@@ -8,6 +8,7 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import os
+import uuid
 from io import BytesIO
 from pathlib import Path
 
@@ -19,6 +20,7 @@ import requests
 import validators
 from discord.app_commands import errors as discord_errors
 from magika import Magika
+from minio import Minio
 
 # project modules
 from sexybabeycord import constants
@@ -26,6 +28,10 @@ from sexybabeycord import constants
 log = logging.getLogger("file_helper")
 magika = Magika()
 
+minio_client = Minio("s3.vaughn.sh",
+    access_key=os.getenv("MINIO_ACCESS_KEY_ID"),
+    secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY")
+)
 
 def get_file_extension_from_bytes(file: BytesIO | str) -> str:
     if isinstance(file, BytesIO):
@@ -118,12 +124,9 @@ def remove(filename: str) -> None:
     if os.path.exists(filename):
         os.remove(filename)
 
-
-def size_limit_exceeded(filename: str) -> bool:
-    """Checks for exceeded size limit"""
-    stats = os.stat(filename)
-    file_size = stats.st_size / (1024 * 1024)
-
-    if file_size > 24.9:
-        return True
-    return False
+def cdn_upload(bytes: BytesIO, ext: str) -> str:
+    bytes_size = bytes.getbuffer().nbytes
+    bytes.seek(0)
+    fname = str(uuid.uuid4()) + "." + ext
+    response = minio_client.put_object("cdn", fname, bytes, bytes_size)
+    return response.location

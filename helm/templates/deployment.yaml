@@ -1,32 +1,50 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ lower .Values.name }}
+  name: {{ lower .Chart.Name }}
 spec:
-  replicas: 1
-  revisionHistoryLimit: 1
+  replicas: {{ .Values.replicas | default 1 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 1 }}
   selector:
     matchLabels:
-      app: {{ lower .Values.name }}
+      app: {{ lower .Chart.Name }}
   template:
     metadata:
       labels:
-        app: {{ lower .Values.name }}
+        app: {{ lower .Chart.Name }}
     spec:
       containers:
-      - name: {{ lower .Values.name }}
-        image: "{{ .Values.image }}:{{ .Chart.AppVersion }}"
+      - name: {{ lower .Chart.Name }}
+        image: {{ .Values.image }}:{{ .Chart.AppVersion }} # This is auto updated by the release mechanism
         imagePullPolicy: Always
-        {{- include "synkronized.pod.resources" . | nindent 8 }}
+        ports:
+        - containerPort: {{ .Values.containerPort | default 8080 }}
+        {{ if or (.Values.secretVars) (.Values.envVars) -}}
         env:
-        {{ range $v := .Values.secrets }}
-        - name: {{$v.name}}
+        {{- range $secret, $value := .Values.secretVars }}
+        - name: {{ $secret }}
           valueFrom:
             secretKeyRef:
-              name: sexybabeycord-secrets
-              key: {{$v.name}}
-        {{ end }}
-        {{- range $v := .Values.env }}
-        - name: {{$v.name}}
-          value: {{ quote $v.value }}
-        {{- end -}}
+              name: {{ $.Chart.Name }}-secrets
+              key: {{ $secret }}
+        {{- end}}
+        {{- range $var, $value := .Values.envVars }}
+        - name: {{ $var }}
+          value: {{ quote $value }}
+        {{ end -}}
+        {{ end -}}
+        {{- if .Values.volumeMounts -}}
+        volumeMounts:
+        {{- range $volume := .Values.volumeMounts }}
+          - mountPath: {{ $volume.mountPath }}
+            name: {{ $volume.name }}
+            readOnly: {{ $volume.readOnly | default "true" }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.volumeMounts }}
+      volumes:
+      {{- range $volume := .Values.volumeMounts }}
+        - name: {{ $volume.name }}
+        {{- toYaml $volume.source | nindent 10}}
+      {{- end }}
+      {{- end }}

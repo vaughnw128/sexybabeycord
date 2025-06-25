@@ -6,10 +6,9 @@ then sends it to chat
 Made with love and care by Vaughn Woerpel
 """
 
+# built-in
 import io
 import json
-
-# built-in
 import logging
 import random
 import re
@@ -19,9 +18,6 @@ from contextlib import redirect_stdout
 import discord
 import yt_dlp
 from discord.ext import commands
-
-# project
-
 
 # project modules
 log = logging.getLogger("peanut-gallery")
