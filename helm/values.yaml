@@ -1,7 +1,7 @@
 name: "sexybabeycord"
 image: "ghcr.io/vaughnw128/sexybabeycord"
 size: small
-secrets:
+secretVars:
   - name: "DISCORD_TOKEN"
     path: "sexybabeycord-discord-token/credential"
   - name: "TENOR_TOKEN"
@@ -12,7 +12,7 @@ secrets:
     path: "minio-sexybabeycord/username"
   - name: "MINIO_SECRET_ACCESS_KEY"
     path: "minio-sexybabeycord/password"
-env:
+envVars:
   - name: "GUILD_ID"
     value: "644752766241341460"
   - name: "GENERAL_CHANNEL_ID"
