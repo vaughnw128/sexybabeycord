@@ -128,5 +128,5 @@ async def cdn_upload(bytes: BytesIO, ext: str) -> str:
     bytes_size = bytes.getbuffer().nbytes
     bytes.seek(0)
     fname = str(uuid.uuid4()) + "." + ext
-    response = minio_client.put_object("cdn", fname, bytes, bytes_size)
+    response = await minio_client.put_object("cdn", fname, bytes, bytes_size)
     return response.location
