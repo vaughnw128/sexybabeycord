@@ -167,9 +167,9 @@ async def advanced_edit_menu(interaction: discord.Interaction, message: discord.
     if ext not in ("png", "jpg", "gif", "jpeg"):
         await interaction.response.send_message("That message has an invalid filetype", ephemeral=True)
         return
-    embed = file_helper.cdn_upload(file, ext)
+    location = file_helper.cdn_upload(file, ext)
     await interaction.response.send_message(
-        embed=embed,
+        content=location,
         view=AdvancedCaptionView(file, ext),
     )
 
@@ -222,8 +222,8 @@ class Caption(commands.Cog):
             edited = await caption(file, caption_text, ext)
         elif message.content.lower().startswith("reverse"):
             edited = await caption(file, ext=ext, reversed=True)
-        embed = await file_helper.cdn_upload(edited, ext)
-        await message.reply(embed=embed)
+        location = file_helper.cdn_upload(edited, ext)
+        await message.reply(content=location)
 
 
 async def caption(
