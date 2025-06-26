@@ -124,9 +124,9 @@ def remove(filename: str) -> None:
     if os.path.exists(filename):
         os.remove(filename)
 
-async def cdn_upload(bytes: BytesIO, ext: str) -> str:
+def cdn_upload(bytes: BytesIO, ext: str) -> str:
     bytes_size = bytes.getbuffer().nbytes
     bytes.seek(0)
     fname = str(uuid.uuid4()) + "." + ext
-    response = await minio_client.put_object("cdn", fname, bytes, bytes_size)
+    response = minio_client.put_object("cdn", fname, bytes, bytes_size)
     return response.location
