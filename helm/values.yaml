@@ -8,6 +8,10 @@ secrets:
     path: "tenor-token/credential"
   - name: "MONGO_URI"
     path: "sexybabeycord-mongo-uri/credential"
+  - name: "MINIO_ACCESS_KEY_ID"
+    path: "minio-sexybabeycord/username"
+  - name: "MINIO_SECRET_ACCESS_KEY"
+    path: "minio-sexybabeycord/password"
 env:
   - name: "GUILD_ID"
     value: "644752766241341460"

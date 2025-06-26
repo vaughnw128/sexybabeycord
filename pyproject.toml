@@ -26,6 +26,7 @@ dependencies = [
     "python-dotenv",
     "opencv-python",
     "pynacl",
+    "minio>=7.2.15",
 ]
 
 [dependency-groups]
