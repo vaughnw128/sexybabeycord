@@ -1,6 +1,6 @@
 [project]
 name = "sexybabeycord"
-version = "0.3.3"
+version = "0.3.4"
 description = "Sexybabeycord is a multi-purpose discord bot that handles many different features in the form of cogs. The list of cogs grows and shrinks with the activities of the server."
 authors = [{ name = "Vaughn Woerpel" }]
 requires-python = ">=3.12,<3.13"
