@@ -81,7 +81,7 @@ Distort = _Distort()
 class _Caption:
     fontdir = "src/sexybabeycord/resources/fonts/"
     fonts = {
-        "default": f"{fontdir}ifunny.otf",
+        "default": f"{fontdir}ifunny.ttf",
         "sans": f"{fontdir}sans.ttf",
         "papyrus": f"{fontdir}papyrus.ttf",
         "viz": f"{fontdir}WhizBangRoman.ttf",

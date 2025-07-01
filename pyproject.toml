@@ -29,6 +29,9 @@ dependencies = [
     "minio>=7.2.15",
 ]
 
+[project.scripts]
+sexybabeycord = "sexybabeycord:main"
+
 [dependency-groups]
 test = [
     "pytest",
@@ -40,6 +43,11 @@ dev = [
     "ruff",
     "deptry",
 ]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.uv]
 package = true

@@ -5,6 +5,7 @@ bot/resources/file_cache/*
 logs/*
 moodmeter.json
 data
+test.py
 logs
 
 # Byte-compiled / optimized / DLL files

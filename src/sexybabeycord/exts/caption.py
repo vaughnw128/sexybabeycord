@@ -7,22 +7,21 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import logging
+import os
 import re
-import textwrap
+from enum import Enum
 from io import BytesIO
+import itertools
 
 # external
 import discord
-import numpy
+from PIL.ImageFont import FreeTypeFont
 from discord import app_commands
 from discord.app_commands import errors as discord_errors
 from discord.ext import commands
-from PIL import Image as PILImage
+from PIL import Image as Image, ImageFont, ImageDraw
 from PIL import ImageSequence
 from rembg import remove
-from wand.drawing import Drawing
-from wand.font import Font
-from wand.image import Image
 
 from sexybabeycord import constants
 
@@ -30,6 +29,179 @@ from sexybabeycord import constants
 from sexybabeycord.utils import file_helper
 
 log = logging.getLogger("caption")
+
+
+class CharacterType(Enum):
+    English = (1,)
+    Japanese = (2,)
+    Emoji = (3,)
+
+
+japanese_ranges = [
+    (0x3040, 0x309F),  # Hiragana
+    (0x30A0, 0x30FF),  # Katakana
+    (0x31F0, 0x31FF),  # Katakana Phonetic Extensions
+    (0x4E00, 0x9FFF),  # Common and uncommon Kanji
+    (0x3400, 0x4DBF),  # CJK Unified Ideographs Extension A
+    (0xF900, 0xFAFF),  # CJK Compatibility Ideographs
+    (0xFF66, 0xFF9F),  # Half-width Katakana
+]
+
+emoji_ranges = [
+    (0x1F600, 0x1F64F),  # Emoticons
+    (0x1F300, 0x1F5FF),  # Misc Symbols and Pictographs
+    (0x1F680, 0x1F6FF),  # Transport and Map
+    (0x1F1E6, 0x1F1FF),  # Regional country flags
+    (0x2600, 0x26FF),  # Misc symbols
+    (0x2700, 0x27BF),  # Dingbats
+    (0x1F900, 0x1F9FF),  # Supplemental Symbols and Pictographs
+    (0x1FA70, 0x1FAFF),  # Symbols and Pictographs Extended-A
+    (0x1F700, 0x1F77F),  # Alchemical Symbols
+    (0x2300, 0x23FF),  # Miscellaneous Technical
+    (0x2B00, 0x2BFF),  # Miscellaneous Symbols and Arrows
+]
+
+
+def wrap_text(text, font, max_width, draw):
+    lines = []  # Holds each line in the text box
+    current_line = []  # Holds the current line under evaluation.
+
+    words = split_by_character_class(text)
+
+    for word in words:
+        # Check the width of the current line with the new word added
+        test_line = " ".join(current_line + [word])
+        width = draw.textlength(test_line, font=font)
+        if width <= max_width:
+            current_line.append(word)
+        else:
+            # If the line is too wide, finalize the current line and start a new one
+            lines.append(" ".join(current_line))
+            current_line = [word]
+
+    # Add the last line
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    stripped = [string for string in lines if string.strip("") != ""]
+
+    return stripped
+
+
+def get_character_class(char):
+    code = ord(char)
+
+    if any(start <= code <= end for start, end in emoji_ranges):
+        return CharacterType.Emoji
+    if any(start <= code <= end for start, end in japanese_ranges):
+        return CharacterType.Japanese
+    return CharacterType.English
+
+
+def split_by_character_class(text: str) -> list[str]:
+    # Create a list of (char, character_class) tuples
+    char_tuples = [(char, get_character_class(char)) for char in text]
+
+    # Group consecutive characters of the same type, but handle emojis individually
+    result = []
+    for character_class, group in itertools.groupby(char_tuples, key=lambda x: x[1]):
+        group_list = list(group)
+        if character_class == CharacterType.English:
+            # Group consecutive non-emoji characters
+            chars = "".join(char for char, _ in group_list)
+            words = [word.strip() for word in chars.split(" ")]
+            result.extend(words)
+        else:
+            # Add each emoji / Japanese as a separate element
+            for char, _ in group_list:
+                result.append(char)
+
+    stripped = [string for string in result if string.strip("") != ""]
+
+    return stripped
+
+
+def get_text_dimensions(text, font) -> tuple[int, int]:
+    bbox = font.getbbox(text)
+    return (bbox[2] - bbox[0]), (bbox[3] - bbox[1])
+
+
+def get_fonted_text(multiline_text: list[str], font_size: int = 32):
+    # Define the base path for fonts
+    fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
+
+    # Load different fonts
+    font_files = {
+        CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
+        CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
+        CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
+    }
+
+    # Create char tuples
+    char_tuples = [[(char, get_character_class(char)) for char in line] for line in multiline_text]
+
+    classed_multiline_text = []
+    for line in char_tuples:
+        classed_text = []
+        for character_class, group in itertools.groupby(line, key=lambda x: x[1]):
+            chars = "".join(char for char, _ in group)
+            classed_text.append((chars, character_class))
+        classed_multiline_text.append(classed_text)
+
+    fonted_text = [
+        [(string, font_files[character_class]) for string, character_class in line] for line in classed_multiline_text
+    ]
+
+    return fonted_text
+
+
+def draw_caption_background(
+    bar_height: int,
+    image_dimension: tuple[int, int],
+    fonted_text: list[list[tuple[str, FreeTypeFont]]],
+    line_spacing: int = 4,
+) -> Image:
+    width, height = (image_dimension[0], bar_height + image_dimension[1])
+    image = Image.new("RGBA", (width, height), color="white")
+    draw = ImageDraw.Draw(image)
+
+    # Calculate total text height including line spacing
+    total_text_height = 0
+    for line in fonted_text:
+        max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
+        total_text_height += max_height + line_spacing
+
+    # Remove the extra line spacing after the last line
+    if fonted_text:
+        total_text_height -= line_spacing
+
+    # Calculate starting_y to center all text vertically in the bar
+    starting_y = (bar_height - total_text_height) // 2
+
+    for line in fonted_text:
+        # Calculate the total width of the line
+        total_width = sum(get_text_dimensions(text, font)[0] for text, font in line)
+
+        # Calculate the starting x position to center the line
+        x_position = (width - total_width) / 2
+
+        # Calculate the maximum height of any text segment in this line
+        max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
+
+        # Calculate vertical center of the line
+        y_center = starting_y + max_height / 2
+
+        # Draw each text segment in the line
+        for text, font in line:
+            text_width, text_height = get_text_dimensions(text, font)
+            text_center_x = x_position + text_width / 2
+            draw.text((text_center_x, y_center), text, font=font, fill="black", embedded_color=True, anchor="mm")
+            x_position += text_width
+
+        # Move to the next line
+        starting_y += max_height + line_spacing
+
+    return image
 
 
 class SelectFont(discord.ui.Select):
@@ -237,41 +409,19 @@ async def caption(
 ) -> BytesIO:
     """Adds a caption to images and gifs with image_magick"""
     buf = BytesIO()
-    foreground = PILImage.open(file)
+    foreground = Image.open(file)
 
-    x, y = foreground.size
+    font_size = foreground.size[0] // 8
 
-    bar_height = 0
-    if caption_text:
-        wrapper = textwrap.TextWrapper(width=50)
-        wrapper_split_length = len(wrapper.wrap(text=caption_text))
-        bar_height = wrapper_split_length * round(y / 5)
+    with Image.new(mode="RGB", size=foreground.size) as sizing_im:
+        draw = ImageDraw.Draw(sizing_im)
+        test_font = ImageFont.truetype("src/sexybabeycord/resources/fonts/ifunny.ttf", font_size)
+        multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] // 2, draw)
 
-        with Image(width=x, height=y + bar_height) as template_image:
-            with Drawing() as context:
-                context.fill_color = "white"
-                context.rectangle(left=0, top=0, width=x, height=bar_height)
-
-                if font is None:
-                    font = "default"
-                font = Font(path=constants.Caption.fonts[font])
-
-                context(template_image)
-                template_image.caption(
-                    caption_text,
-                    left=0,
-                    top=0,
-                    width=x,
-                    height=bar_height,
-                    font=font,
-                    gravity="center",
-                )
-
-            img_buffer = numpy.asarray(bytearray(template_image.make_blob(format="png")), dtype="uint8")
-            bytesio = BytesIO(img_buffer)
-            background = PILImage.open(bytesio).convert("RGBA")
-    else:
-        background = PILImage.new("RGBA", (x, y), (255, 255, 255))
+    text_height = get_text_dimensions(caption_text, test_font)[1]
+    fonted_text = get_fonted_text(multiline_text, font_size)
+    bar_height = (text_height * len(multiline_text)) + text_height
+    background = draw_caption_background(bar_height, foreground.size, fonted_text)
 
     if ext == "gif":
         frames = []
@@ -302,16 +452,16 @@ async def caption(
     return buf
 
 
-def get_frame_durations(PIL_Image_object: PILImage, playback_speed: float):
+def get_frame_durations(image: Image, playback_speed: float):
     """Returns the average framerate of a PIL Image object"""
-    PIL_Image_object.seek(0)
+    image.seek(0)
     frames = 0
     durations = []
     while True:
         try:
             frames += 1
-            durations.append(PIL_Image_object.info["duration"])
-            PIL_Image_object.seek(PIL_Image_object.tell() + 1)
+            durations.append(image.info["duration"])
+            image.seek(image.tell() + 1)
         except EOFError:
             for i in range(len(durations)):
                 duration = durations[i]

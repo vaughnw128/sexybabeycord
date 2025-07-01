@@ -28,10 +28,10 @@ from sexybabeycord import constants
 log = logging.getLogger("file_helper")
 magika = Magika()
 
-minio_client = Minio("s3.vaughn.sh",
-    access_key=os.getenv("MINIO_ACCESS_KEY_ID"),
-    secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY")
+minio_client = Minio(
+    "s3.vaughn.sh", access_key=os.getenv("MINIO_ACCESS_KEY_ID"), secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY")
 )
+
 
 def get_file_extension_from_bytes(file: BytesIO | str) -> str:
     if isinstance(file, BytesIO):
@@ -123,6 +123,7 @@ def remove(filename: str) -> None:
     """Remove file if it exists"""
     if os.path.exists(filename):
         os.remove(filename)
+
 
 def cdn_upload(bytes: BytesIO, ext: str) -> str:
     bytes_size = bytes.getbuffer().nbytes

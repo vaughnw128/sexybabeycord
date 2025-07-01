@@ -145,23 +145,23 @@ class Remind(commands.Cog):
                     await user.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion.",
+                        f'Unable to send reminder "{document["reason"]}" in the specified DM due to insufficient permissions. Allowing attempt at channel send for eventual reminder deletion.',
                     )
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion.",
+                        f'Unable to send reminder "{document["reason"]}" in the specified DM due to user not found. Allowing attempt at channel send for eventual reminder deletion.',
                     )
                 try:
                     channel = await self.bot.fetch_channel(document["channel"])
                     await channel.send(embed=embed, content=f"<@{document['user']}>")
                 except discord.errors.Forbidden:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to insufficient permissions. Reminder will not be deleted.",
+                        f'Unable to send reminder "{document["reason"]}" in the specified channel due to insufficient permissions. Reminder will not be deleted.',
                     )
                     continue
                 except AttributeError:
                     log.error(
-                        f"Unable to send reminder \"{document['reason']}\" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion.",
+                        f'Unable to send reminder "{document["reason"]}" in the specified channel due to channel not found. Allowing attempt at channel send for eventual reminder deletion.',
                     )
                     continue
 
