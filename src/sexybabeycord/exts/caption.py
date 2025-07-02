@@ -65,23 +65,48 @@ emoji_ranges = [
 def wrap_text(text, font, max_width, draw):
     lines = []  # Holds each line in the text box
     current_line = []  # Holds the current line under evaluation.
+    current_line_types = []  # Holds the character types for the current line
 
-    words = split_by_character_class(text)
+    words_with_types = split_by_character_class(text)
 
-    for word in words:
-        # Check the width of the current line with the new word added
-        test_line = " ".join(current_line + [word])
+    for word, char_type in words_with_types:
+        # Create a test line by joining words with appropriate spacing
+        test_line = ""
+        test_words = current_line + [word]
+        test_types = current_line_types + [char_type]
+
+        for i, (w, t) in enumerate(zip(test_words, test_types)):
+            if i > 0 and t == CharacterType.English and test_types[i-1] == CharacterType.English:
+                test_line += " " + w
+            else:
+                test_line += w
+
         width = draw.textlength(test_line, font=font)
         if width <= max_width:
             current_line.append(word)
+            current_line_types.append(char_type)
         else:
-            # If the line is too wide, finalize the current line and start a new one
-            lines.append(" ".join(current_line))
+            if current_line:
+                final_line = ""
+                for i, (w, t) in enumerate(zip(current_line, current_line_types)):
+                    if i > 0 and t == CharacterType.English and current_line_types[i-1] == CharacterType.English:
+                        final_line += " " + w
+                    else:
+                        final_line += w
+                lines.append(final_line)
             current_line = [word]
+            current_line_types = [char_type]
 
     # Add the last line
     if current_line:
-        lines.append(" ".join(current_line))
+        final_line = ""
+        for i, (w, t) in enumerate(zip(current_line, current_line_types)):
+            # Only add space before English words that follow another word
+            if i > 0 and t == CharacterType.English and current_line_types[i-1] == CharacterType.English:
+                final_line += " " + w
+            else:
+                final_line += w
+        lines.append(final_line)
 
     stripped = [string for string in lines if string.strip("") != ""]
 
@@ -98,7 +123,7 @@ def get_character_class(char):
     return CharacterType.English
 
 
-def split_by_character_class(text: str) -> list[str]:
+def split_by_character_class(text: str) -> list[tuple[str, CharacterType]]:
     # Create a list of (char, character_class) tuples
     char_tuples = [(char, get_character_class(char)) for char in text]
 
@@ -110,15 +135,17 @@ def split_by_character_class(text: str) -> list[str]:
             # Group consecutive non-emoji characters
             chars = "".join(char for char, _ in group_list)
             words = [word.strip() for word in chars.split(" ")]
-            result.extend(words)
+            # Add each English word with its character type
+            for word in words:
+                if word:  # Skip empty strings
+                    result.append((word, CharacterType.English))
         else:
-            # Add each emoji / Japanese as a separate element
+            # Add each emoji / Japanese as a separate element with its character type
             for char, _ in group_list:
-                result.append(char)
+                if char.strip():  # Skip empty strings
+                    result.append((char, character_class))
 
-    stripped = [string for string in result if string.strip("") != ""]
-
-    return stripped
+    return result
 
 
 def get_text_dimensions(text, font) -> tuple[int, int]:
