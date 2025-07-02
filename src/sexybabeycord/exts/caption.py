@@ -445,9 +445,21 @@ async def caption(
         test_font = ImageFont.truetype("src/sexybabeycord/resources/fonts/ifunny.ttf", font_size)
         multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] // 2, draw)
 
-    text_height = get_text_dimensions(caption_text, test_font)[1]
     fonted_text = get_fonted_text(multiline_text, font_size)
-    bar_height = (text_height * len(multiline_text)) + text_height
+
+    # Calculate total text height including line spacing
+    line_spacing = 4  # Same as in draw_caption_background
+    total_text_height = 0
+    for line in fonted_text:
+        max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
+        total_text_height += max_height + line_spacing
+
+    # Remove the extra line spacing after the last line
+    if fonted_text:
+        total_text_height -= line_spacing
+
+    # Add some padding to ensure there's enough room
+    bar_height = total_text_height + (font_size // 2)
     background = draw_caption_background(bar_height, foreground.size, fonted_text)
 
     if ext == "gif":
