@@ -153,7 +153,7 @@ def get_text_dimensions(text, font) -> tuple[int, int]:
     return (bbox[2] - bbox[0]), (bbox[3] - bbox[1])
 
 
-def get_fonted_text(multiline_text: list[str], font_size: int = 32):
+def get_fonted_text(multiline_text: list[str], font_size: int = 24):
     # Define the base path for fonts
     fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
 
@@ -438,12 +438,12 @@ async def caption(
     buf = BytesIO()
     foreground = Image.open(file)
 
-    font_size = foreground.size[0] // 8
+    font_size = foreground.size[0] // 10
 
     with Image.new(mode="RGB", size=foreground.size) as sizing_im:
         draw = ImageDraw.Draw(sizing_im)
         test_font = ImageFont.truetype("src/sexybabeycord/resources/fonts/ifunny.ttf", font_size)
-        multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] // 2, draw)
+        multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] * .7, draw)
 
     fonted_text = get_fonted_text(multiline_text, font_size)
 
