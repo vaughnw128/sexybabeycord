@@ -6,7 +6,6 @@ Made with love and care by Vaughn Woerpel
 """
 
 # built-in
-import asyncio
 
 # external
 import discord
@@ -35,9 +34,3 @@ async def main() -> None:
     )
 
     await client.start(constants.Bot.token)
-
-
-if __name__ == "__main__":
-    """Run the bot"""
-
-    asyncio.run(main())

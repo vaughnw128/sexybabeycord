@@ -7,6 +7,7 @@ secretVars:
   MONGO_URI: "sexybabeycord-mongo-uri/credential"
   MINIO_ACCESS_KEY_ID: "minio-sexybabeycord/username"
   MINIO_SECRET_ACCESS_KEY: "minio-sexybabeycord/password"
+  LOGFIRE_TOKEN: "logfire-token/credential"
 envVars:
   GUILD_ID: "644752766241341460"
   GENERAL_CHANNEL_ID: "644752766736138241"

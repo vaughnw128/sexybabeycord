@@ -76,7 +76,7 @@ def wrap_text(text, font, max_width, draw):
         test_types = current_line_types + [char_type]
 
         for i, (w, t) in enumerate(zip(test_words, test_types)):
-            if i > 0 and t == CharacterType.English and test_types[i-1] == CharacterType.English:
+            if i > 0 and t == CharacterType.English and test_types[i - 1] == CharacterType.English:
                 test_line += " " + w
             else:
                 test_line += w
@@ -89,7 +89,7 @@ def wrap_text(text, font, max_width, draw):
             if current_line:
                 final_line = ""
                 for i, (w, t) in enumerate(zip(current_line, current_line_types)):
-                    if i > 0 and t == CharacterType.English and current_line_types[i-1] == CharacterType.English:
+                    if i > 0 and t == CharacterType.English and current_line_types[i - 1] == CharacterType.English:
                         final_line += " " + w
                     else:
                         final_line += w
@@ -102,7 +102,7 @@ def wrap_text(text, font, max_width, draw):
         final_line = ""
         for i, (w, t) in enumerate(zip(current_line, current_line_types)):
             # Only add space before English words that follow another word
-            if i > 0 and t == CharacterType.English and current_line_types[i-1] == CharacterType.English:
+            if i > 0 and t == CharacterType.English and current_line_types[i - 1] == CharacterType.English:
                 final_line += " " + w
             else:
                 final_line += w
@@ -443,7 +443,7 @@ async def caption(
     with Image.new(mode="RGB", size=foreground.size) as sizing_im:
         draw = ImageDraw.Draw(sizing_im)
         test_font = ImageFont.truetype("src/sexybabeycord/resources/fonts/ifunny.ttf", font_size)
-        multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] * .7, draw)
+        multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] * 0.7, draw)
 
     fonted_text = get_fonted_text(multiline_text, font_size)
 

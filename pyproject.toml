@@ -27,6 +27,7 @@ dependencies = [
     "opencv-python",
     "pynacl",
     "minio>=7.2.15",
+    "logfire>=3.24.0",
 ]
 
 [project.scripts]
