@@ -18,4 +18,4 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache
 
 # Run the application.
-CMD ["/app/.venv/bin/python3", "src/sexybabeycord/main.py"]
+CMD ["/app/.venv/bin/python3", "tracing.py"]
