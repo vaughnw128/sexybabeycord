@@ -1,6 +1,6 @@
 # Sexybabeycord (A Sexybabeycord Production)
 
-[![Build](https://github.com/vaughnw128/sexybabeycord/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml)
+[![Build](https://github.com/vaughnw128/sexybabeycord/actions/workflows/build.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 This is the newest iteration/amalgam of the many discord bots I've made over the years.
@@ -17,145 +17,220 @@ friends seem to as well.
 
 Special thanks to [@CowZix](https://github.com/CowZix) for creating the `asher` cog. He is a truly elite contributor.
 
-## Simple Setup
+## Prerequisites
 
-Sexybabeycord uses poetry to manage most dependencies, so it should be fairly easy to set up on a new host.
+Before setting up Sexybabeycord, make sure you have the following installed:
 
-### 1. Clone the repository
+- **Python 3.12**
+- **uv**
+- **FFmpeg** 
+- **ImageMagick**
+
+## Quick Setup
+
+### 1. Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### 2. Clone the repository
+
 ```bash
 git clone https://github.com/vaughnw128/sexybabeycord
 cd sexybabeycord/
 ```
 
-### 2. Install and initialize pyenv
+### 3. Install dependencies
+
+Sexybabeycord uses uv to manage dependencies. Install them with:
 
 ```bash
-$ curl https://pyenv.run | bash
+uv sync
 ```
 
-Add the following lines to ~/.bashrc and ~/.profile:
-```bash
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-```
-
-Then, add the following like to ~/.bashrc to automatically initialize the virtual environment:
-```bash
-eval "$(pyenv virtualenv-init -)"
-```
-
-Finally, restart your shell and use pyenv to set the version. Currently, this version of Sexybabeycord uses Python 3.11.5.
-```bash
-$ pyenv install 3.11.5
-$ pyenv local 3.11.5
-```
-
-### 3. Install poetry
-```bash
-$ curl -sSL https://install.python-poetry.org | python3 -
-$ poetry self add poetry-dotenv-plugin
-$ poetry install
-```
-
-### 4. Install final dependencies
-
-MacOS:
-```bash
-$ brew install ffmpeg magickwand pre-commit
-```
-
-Unix:
-```bash
-$ apt get install ffmpeg libmagickwand-dev pre-commit
-```
-
-### 5. Set up your .env file
-In order to pass in some of the variables for Sexybabeycord, the .env file should be set up.
-
-Then, it's necessary to create a `.env` file to match the one in `bot/resources/templates/env_template` in the root directory of the project. The tenor token is required to grab certain gifs posted from tenor, and can be obtained for free by following the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
-
-Additionally, some features require the use of a database, and some are supplemented by one. These features will be automatically disabled on startup of the bot if a database is not used. Finally, this bot is suited to only be used in a single guild at a time, therefore, the guild ID, general channel, and 'fate' channel must be passed in. If general or fate is not passed in, the corresponding features will not be available.
+### 4. Install system dependencies
 
 ```bash
-# TOKENS
-DISCORD_TOKEN=
-TENOR_TOKEN=
-
-# DATABASE INFORMATION
-MONGO_URI=
-DATABASE_NAME=
-
-# GUILD/CHANNEL INFORMATION
-GUILD_ID=
-GENERAL_CHANNEL_ID=
-FATE_CHANNEL_ID=
+sudo apt update
+sudo apt install ffmpeg libmagickwand-dev
 ```
 
-### 6. Test feature functionality
+### 5. Set up environment variables
 
-Some cogs and utilities have build in unit tests. These features can be tested via pytest.
+Create a `.env` file in the project root with the following variables:
 
 ```bash
-$ poetry run python -m pytest
+# REQUIRED: Discord Bot Token
+DISCORD_TOKEN=your_discord_bot_token_here
+
+# REQUIRED: Tenor API Token (for GIF functionality)
+TENOR_TOKEN=your_tenor_token_here
+
+# REQUIRED: Guild/Server Information
+GUILD_ID=your_guild_id_here
+GENERAL_CHANNEL_ID=your_general_channel_id_here
+
+# OPTIONAL: Database Configuration (MongoDB)
+MONGO_URI=mongodb://localhost:27017/
+DATABASE_NAME=sexybabeycord
+
+# OPTIONAL: Fate Channel (for Twitter integration)
+FATE_CHANNEL_ID=your_fate_channel_id_here
 ```
 
-### 7. Running the bot
+#### Getting the required tokens:
 
-Finally, once tests pass, the bot can be run
+1. **Discord Bot Token**: 
+   - Go to [Discord Developer Portal](https://discord.com/developers/applications)
+   - Create a new application
+   - Go to the "Bot" section
+   - Copy the token
+
+2. **Tenor Token**: 
+   - Follow the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
+   - It's free and only requires a Google Cloud account
+
+3. **Guild and Channel IDs**: 
+   - Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
+   - Right-click on your server and channels to copy their IDs
+
+### 6. Test the installation
+
+Run the test suite to ensure everything is working:
 
 ```bash
-$ poetry run -m bot
+uv run pytest
 ```
 
-## Dockerizing
+### 7. Run the bot
 
-Included with the bot is the ability to deploy it with Docker. The most recent image can be found under `packages` on Github. If you desire to build the container yourself, it can be easily built.
+Start the bot with:
 
 ```bash
-$ docker build .
+uv run sexybabeycord
 ```
 
-If you desire to use twitter accounts, they must be added to an attached docker volume. First make the volume and copy over the data:
+Or run the module directly:
 
 ```bash
-$ docker volume create sexybabeycord_data
-$ cp accounts.json /var/lib/docker/volumes/sexybabeycord_data/_data/accounts.json
+uv run python -m sexybabeycord
 ```
 
-Then to run the container:
+## Development Setup
+
+For development work, install the additional development dependencies:
+
 ```bash
-$ docker run -d \
---name sexybabeycord \
--v sexybabeycord_data:/bot/data \
--e "DISCORD_TOKEN=" \
--e "TENOR_TOKEN=" \
--e "MONGO_URI=" \
--e "DATABASE_NAME=" \
--e "GUILD_ID=" \
--e "GENERAL_CHANNEL_ID=" \
--e "FATE_CHANNEL_ID=" \
---restart always \
-ghcr.io/vaughnw128/sexybabeycord:latest
+uv sync --group dev
 ```
 
-## Components
+### Code Quality Tools
 
-The current components (cogs) of the bot are as follows:
-- Distort: Grabs images from messages then uses liquid rescaling to distort and resend them.
-- fixlink: Takes any link to twitter, instagram, or tiktok, and fixes it with either the 'vx' or 'dd' prefix for proper embed formatting.
-- fate: Uses twscrape to grab @JamesCageWhite's tweets and send them in our #fate channel. Love that guy.
-- caption: Adds captions to images when you reply with the 'caption' keyword.
-- Mood Meter: Allows users to select a coordinate from a drop down and then puts their profile photo on a mood matrix.
-- Peanut gallery: Whenever someone sends a youtube link, a random comment from the video is automatically sent to chat
+The project uses several tools for code quality:
 
+- **ruff**: Fast Python linter and formatter
+- **pre-commit**: Git hooks for code quality
+- **pytest**: Testing framework
 
-Archived Components:
-- Wrench: A small utility cog just for getting the JSON of a message
-- gabonganized: Gabonganizes all face pics sent. This adds a gabonga where someone's face is supposed to be.
-- Astropix: Scrapes and sends the NASA picture of the day every day at noon.
-- Ytdl: Downloads youtube videos and clips with a command or menu button.
-- Remind: Uses mongodb and crontab formatting to generate one-time reminders and recurring reminders
+Run the linter:
+```bash
+uv run ruff check .
+```
 
+Format code:
+```bash
+uv run ruff format .
+```
+
+Run tests:
+```bash
+uv run pytest
+```
+
+## Docker Deployment
+
+### Quick Start with Docker
+
+The easiest way to run Sexybabeycord is using the pre-built Docker image:
+
+```bash
+docker run -d \
+  --name sexybabeycord \
+  -e DISCORD_TOKEN=your_token \
+  -e TENOR_TOKEN=your_tenor_token \
+  -e GUILD_ID=your_guild_id \
+  -e GENERAL_CHANNEL_ID=your_channel_id \
+  --restart always \
+  ghcr.io/vaughnw128/sexybabeycord:latest
+```
+
+### Building from Source
+
+If you want to build the Docker image yourself:
+
+```bash
+docker build -t sexybabeycord .
+```
+
+### Using Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+services:
+  sexybabeycord:
+    image: ghcr.io/vaughnw128/sexybabeycord:latest
+    container_name: sexybabeycord
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - TENOR_TOKEN=${TENOR_TOKEN}
+      - GUILD_ID=${GUILD_ID}
+      - GENERAL_CHANNEL_ID=${GENERAL_CHANNEL_ID}
+      - MONGO_URI=${MONGO_URI}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - FATE_CHANNEL_ID=${FATE_CHANNEL_ID}
+    restart: always
+    volumes:
+      - sexybabeycord_data:/bot/data
+```
+
+Then run:
+```bash
+docker-compose up -d
+```
+
+## Bot Features
+
+### Current Components (Cogs)
+
+- **Caption**: Adds captions to images when you reply with the 'caption' keyword
+- **Distort**: Grabs images from messages and uses liquid rescaling to distort them
+- **FixLink**: Automatically fixes Twitter, Instagram, and TikTok links for proper embed formatting
+- **Fate**: Uses twscrape to grab @JamesCageWhite's tweets and send them in the #fate channel
+- **MoodMeter**: Allows users to select coordinates from dropdown menus and places their profile photo on a mood matrix
+- **SpeechToText**: Converts voice messages to text via right-click context menu
+- **Asher**: Makes Asher present on images via right-click context menu
+- **Mogged**: Reacts with emojis when certain keywords are detected
+- **Gabonganized**: Adds a gabonga where someone's face is supposed to be
+- **Peanut Gallery**: Sends random comments from YouTube videos when links are shared
+
+### Archived Components
+
+- **Wrench**: Utility cog for getting JSON of messages
+- **Astropix**: Scrapes and sends NASA picture of the day daily at noon
+- **Ytdl**: Downloads YouTube videos and clips with commands or menu buttons
+- **Remind**: Uses MongoDB and crontab formatting for one-time and recurring reminders
+
+## Contributing
+
+I'm absolutely happy to have any contributions to this project, and please feel free to open a pull request!
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 <sub><sup>Made with love and care by Vaughn Woerpel</sub></sup>

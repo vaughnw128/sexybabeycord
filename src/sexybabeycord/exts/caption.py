@@ -12,6 +12,7 @@ import re
 from enum import Enum
 from io import BytesIO
 import itertools
+from typing import List, Optional, Tuple, Union
 
 # external
 import discord
@@ -62,15 +63,15 @@ emoji_ranges = [
 ]
 
 
-def wrap_text(text, font, max_width, draw):
-    lines = []  # Holds each line in the text box
-    current_line = []  # Holds the current line under evaluation.
-    current_line_types = []  # Holds the character types for the current line
+def wrap_text(text: str, font: FreeTypeFont, max_width: int, draw: ImageDraw.Draw) -> List[str]:
+    """Wrap text considering different character types and their respective fonts"""
+    lines = []
+    current_line = []
+    current_line_types = []
 
     words_with_types = split_by_character_class(text)
 
     for word, char_type in words_with_types:
-        # Create a test line by joining words with appropriate spacing
         test_line = ""
         test_words = current_line + [word]
         test_types = current_line_types + [char_type]
@@ -81,7 +82,7 @@ def wrap_text(text, font, max_width, draw):
             else:
                 test_line += w
 
-        width = draw.textlength(test_line, font=font)
+        width = calculate_line_width(test_words, test_types, font)
         if width <= max_width:
             current_line.append(word)
             current_line_types.append(char_type)
@@ -97,11 +98,9 @@ def wrap_text(text, font, max_width, draw):
             current_line = [word]
             current_line_types = [char_type]
 
-    # Add the last line
     if current_line:
         final_line = ""
         for i, (w, t) in enumerate(zip(current_line, current_line_types)):
-            # Only add space before English words that follow another word
             if i > 0 and t == CharacterType.English and current_line_types[i - 1] == CharacterType.English:
                 final_line += " " + w
             else:
@@ -113,7 +112,32 @@ def wrap_text(text, font, max_width, draw):
     return stripped
 
 
-def get_character_class(char):
+def calculate_line_width(words: List[str], types: List[CharacterType], base_font: FreeTypeFont) -> int:
+    """Calculate the width of a line considering different character types"""
+    total_width = 0
+    fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
+    font_size = base_font.size
+    
+    fonts = {
+        CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
+        CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
+        CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
+    }
+    
+    for i, (word, char_type) in enumerate(zip(words, types)):
+        font = fonts[char_type]
+        word_width = get_text_dimensions(word, font)[0]
+        
+        if i > 0 and char_type == CharacterType.English and types[i - 1] == CharacterType.English:
+            space_width = get_text_dimensions(" ", font)[0]
+            total_width += space_width
+        
+        total_width += word_width
+    
+    return total_width
+
+
+def get_character_class(char: str) -> CharacterType:
     code = ord(char)
 
     if any(start <= code <= end for start, end in emoji_ranges):
@@ -123,48 +147,101 @@ def get_character_class(char):
     return CharacterType.English
 
 
-def split_by_character_class(text: str) -> list[tuple[str, CharacterType]]:
-    # Create a list of (char, character_class) tuples
+def split_by_character_class(text: str) -> List[Tuple[str, CharacterType]]:
     char_tuples = [(char, get_character_class(char)) for char in text]
 
-    # Group consecutive characters of the same type, but handle emojis individually
     result = []
     for character_class, group in itertools.groupby(char_tuples, key=lambda x: x[1]):
         group_list = list(group)
         if character_class == CharacterType.English:
-            # Group consecutive non-emoji characters
             chars = "".join(char for char, _ in group_list)
             words = [word.strip() for word in chars.split(" ")]
-            # Add each English word with its character type
             for word in words:
-                if word:  # Skip empty strings
+                if word:
                     result.append((word, CharacterType.English))
         else:
-            # Add each emoji / Japanese as a separate element with its character type
             for char, _ in group_list:
-                if char.strip():  # Skip empty strings
+                if char.strip():
                     result.append((char, character_class))
 
     return result
 
 
-def get_text_dimensions(text, font) -> tuple[int, int]:
+def calculate_optimal_font_size(image_width: int, text: str) -> int:
+    """Calculate the optimal font size that ensures all character types fit within the image width"""
+    if not text:
+        return image_width // 10
+    
+    fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
+    
+    base_font_size = image_width // 10
+    max_width = image_width * 0.7
+    
+    min_size = max(base_font_size // 4, 12)
+    max_size = base_font_size
+    
+    optimal_size = min_size
+    
+    while min_size <= max_size:
+        font_size = (min_size + max_size) // 2
+        
+        try:
+            fonts = {
+                CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
+                CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
+                CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
+            }
+            
+            words_with_types = split_by_character_class(text)
+            current_line_width = 0
+            fits = True
+            
+            for word, char_type in words_with_types:
+                font = fonts[char_type]
+                word_width = get_text_dimensions(word, font)[0]
+                
+                if char_type == CharacterType.English and current_line_width > 0:
+                    space_width = get_text_dimensions(" ", font)[0]
+                    if current_line_width + space_width + word_width <= max_width:
+                        current_line_width += space_width + word_width
+                    else:
+                        current_line_width = word_width
+                else:
+                    if current_line_width + word_width <= max_width:
+                        current_line_width += word_width
+                    else:
+                        current_line_width = word_width
+                
+                if word_width > max_width:
+                    fits = False
+                    break
+            
+            if fits:
+                optimal_size = font_size
+                min_size = font_size + 1
+            else:
+                max_size = font_size - 1
+                
+        except Exception:
+            max_size = font_size - 1
+    
+    return optimal_size
+
+
+def get_text_dimensions(text: str, font: FreeTypeFont) -> Tuple[int, int]:
     bbox = font.getbbox(text)
     return (bbox[2] - bbox[0]), (bbox[3] - bbox[1])
 
 
-def get_fonted_text(multiline_text: list[str], font_size: int = 24):
-    # Define the base path for fonts
+def get_fonted_text(multiline_text: List[str], font_size: int = 24) -> List[List[Tuple[str, FreeTypeFont]]]:
     fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
 
-    # Load different fonts
     font_files = {
         CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
         CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
         CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
     }
 
-    # Create char tuples
     char_tuples = [[(char, get_character_class(char)) for char in line] for line in multiline_text]
 
     classed_multiline_text = []
@@ -184,193 +261,53 @@ def get_fonted_text(multiline_text: list[str], font_size: int = 24):
 
 def draw_caption_background(
     bar_height: int,
-    image_dimension: tuple[int, int],
-    fonted_text: list[list[tuple[str, FreeTypeFont]]],
+    image_dimension: Tuple[int, int],
+    fonted_text: List[List[Tuple[str, FreeTypeFont]]],
     line_spacing: int = 4,
 ) -> Image:
     width, height = (image_dimension[0], bar_height + image_dimension[1])
-    image = Image.new("RGBA", (width, height), color="white")
+    image = Image.new("RGBA", (width, height), color=(0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
+    
+    draw.rectangle([0, 0, width, bar_height], fill="white")
 
-    # Calculate total text height including line spacing
     total_text_height = 0
     for line in fonted_text:
         max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
         total_text_height += max_height + line_spacing
 
-    # Remove the extra line spacing after the last line
     if fonted_text:
         total_text_height -= line_spacing
 
-    # Calculate starting_y to center all text vertically in the bar
     starting_y = (bar_height - total_text_height) // 2
 
     for line in fonted_text:
-        # Calculate the total width of the line
         total_width = sum(get_text_dimensions(text, font)[0] for text, font in line)
-
-        # Calculate the starting x position to center the line
         x_position = (width - total_width) / 2
-
-        # Calculate the maximum height of any text segment in this line
         max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
-
-        # Calculate vertical center of the line
         y_center = starting_y + max_height / 2
 
-        # Draw each text segment in the line
         for text, font in line:
             text_width, text_height = get_text_dimensions(text, font)
             text_center_x = x_position + text_width / 2
             draw.text((text_center_x, y_center), text, font=font, fill="black", embedded_color=True, anchor="mm")
             x_position += text_width
 
-        # Move to the next line
         starting_y += max_height + line_spacing
 
     return image
 
 
-class SelectFont(discord.ui.Select):
-    def __init__(self):
-        options = []
-        for font in constants.Caption.fonts.keys():
-            options.append(discord.SelectOption(label=font))
-        super().__init__(placeholder="Select a font", max_values=1, min_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        self.view.font = self.values[0]
-        await interaction.response.defer()
 
 
-class AdvancedCaptionView(discord.ui.View):
-    def __init__(self, file, ext, *, timeout=180):
-        self.file = file
-        self.ext = ext
-        self.font = None
-        self.reversed = False
-        self.caption_text = None
-        self.playback_speed = float(1)
-        self.remove_bg = False
-        super().__init__(timeout=timeout)
-        self.speed_display_button.disabled = True
-        if ext == "gif":
-            self.remove_item(self.remove_bg_button)
-        else:
-            self.remove_item(self.slow_down_button)
-            self.remove_item(self.speed_display_button)
-            self.remove_item(self.speed_up_button)
-            self.remove_item(self.reverse_button)
-
-    @discord.ui.button(label="Preview", style=discord.ButtonStyle.blurple, row=4)
-    async def preview_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        await self.edit_helper(interaction)
-
-    @discord.ui.button(label="Caption", style=discord.ButtonStyle.blurple, row=1)
-    async def caption_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(AdvancedCaptionModal(self))
-
-        if "SelectFont" not in "".join(str(self.children)):
-            self.add_item(SelectFont())
-            await interaction.message.edit(view=self)
-
-    @discord.ui.button(label="🌁", style=discord.ButtonStyle.gray, row=1)
-    async def remove_bg_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.remove_bg:
-            self.remove_bg = False
-            button.style = discord.ButtonStyle.gray
-            await interaction.response.edit_message(view=self)
-        else:
-            self.remove_bg = True
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="⏪", style=discord.ButtonStyle.blurple, row=2)
-    async def slow_down_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        self.playback_speed /= 2
-        self.speed_display_button.label = f"{self.playback_speed}x"
-        await interaction.message.edit(view=self)
-
-    @discord.ui.button(label="1.0x", style=discord.ButtonStyle.gray, row=2)
-    async def speed_display_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        return
-
-    @discord.ui.button(label="⏩", style=discord.ButtonStyle.blurple, row=2)
-    async def speed_up_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        self.playback_speed *= 2
-        self.speed_display_button.label = f"{self.playback_speed}x"
-        await interaction.message.edit(view=self)
-
-    @discord.ui.button(label="🔁", style=discord.ButtonStyle.gray, row=2)
-    async def reverse_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.reversed:
-            self.reversed = False
-            button.style = discord.ButtonStyle.gray
-            await interaction.response.edit_message(view=self)
-        else:
-            self.reversed = True
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="Done", style=discord.ButtonStyle.green, row=4)
-    async def go_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        await interaction.message.edit(view=None)
-        await self.edit_helper(interaction)
-
-    async def on_timeout(self, interaction: discord.Interaction):
-        await interaction.message.edit("AdvancedCaption has timed out!")
-        await interaction.message.edit(view=None)
-
-    async def edit_helper(self, interaction: discord.Interaction):
-        self.file.seek(0)
-        captioned_file = await caption(
-            file=self.file,
-            caption_text=self.caption_text,
-            ext=self.ext,
-            font=self.font,
-            reversed=self.reversed,
-            playback_speed=self.playback_speed,
-            remove_bg=self.remove_bg,
-        )
-        await interaction.message.edit(attachments=[discord.File(fp=captioned_file, filename=f"captioned.{self.ext}")])
 
 
-class AdvancedCaptionModal(discord.ui.Modal, title="Caption"):
-    def __init__(self, view, timeout=180):
-        self.view = view
-        super().__init__(timeout=timeout)
-
-    caption = discord.ui.TextInput(
-        label="Caption",
-        placeholder="Your caption here...",
-    )
-
-    async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.view.caption_text = self.caption.value
-
-    async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
-        log.error("Advanced caption modal unexpectedly errored out")
-        await interaction.response.send_message("Oops! Something went wrong.", ephemeral=True)
 
 
-async def advanced_edit_menu(interaction: discord.Interaction, message: discord.Message) -> None:
-    # Grabs and checks file
-    file, ext = await file_helper.grab_file(message)
 
-    # Checks filetype
-    if ext not in ("png", "jpg", "gif", "jpeg"):
-        await interaction.response.send_message("That message has an invalid filetype", ephemeral=True)
-        return
-    location = file_helper.cdn_upload(file, ext)
-    await interaction.response.send_message(
-        content=location,
-        view=AdvancedCaptionView(file, ext),
-    )
+
+
+
 
 
 class Caption(commands.Cog):
@@ -379,8 +316,7 @@ class Caption(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Initializes the caption class"""
         self.bot = bot
-        self.advanced_edit = app_commands.ContextMenu(name="Advanced Edit", callback=advanced_edit_menu)
-        self.bot.tree.add_command(self.advanced_edit)
+        log.info("Caption cog initialized")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -391,86 +327,103 @@ class Caption(commands.Cog):
         ):
             return
 
-        # Get original message if it is actually a message reply
+        log.debug(f"Caption/reverse command from {message.author} in {message.channel}")
+
         try:
             original_message = await message.channel.fetch_message(message.reference.message_id)
         except AttributeError:
+            log.debug(f"No message reference found for caption command from {message.author}")
             return
 
         try:
             file, ext = await file_helper.grab_file(original_message)
-        except discord_errors.AppCommandError:
+            log.debug(f"Retrieved file with extension: {ext}")
+        except discord_errors.AppCommandError as e:
+            log.error(f"Failed to grab file for caption command from {message.author}: {e}")
             await message.reply("Looks like there was an error grabbing the file :/")
             return
 
-        # Checks filetype
         if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
+            log.warning(f"Invalid file type for caption: {ext} from {message.author}")
             await message.reply("Wrong filetype, bozo!!")
             return
 
         if message.content.lower().startswith("reverse") and ext != "gif":
+            log.warning(f"Reverse command used on non-GIF file: {ext} from {message.author}")
             await message.reply("You can only reverse gifs, silly ;p.")
             return
 
-        if message.content.lower().startswith("caption"):
-            # Gets caption text
-            caption_text = re.sub(r"^caption", "", message.content).strip()
-            if caption_text is None or len(caption_text) == 0:
-                raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
+        try:
+            if message.content.lower().startswith("caption"):
+                caption_text = re.sub(r"^caption", "", message.content).strip()
+                if caption_text is None or len(caption_text) == 0:
+                    raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
 
-            edited = await caption(file, caption_text, ext)
-        elif message.content.lower().startswith("reverse"):
-            edited = await caption(file, ext=ext, reversed=True)
-        location = file_helper.cdn_upload(edited, ext)
-        await message.reply(content=location)
+                log.debug(f"Processing caption: '{caption_text[:50]}...' for {message.author}")
+                edited = await caption(file, caption_text, ext)
+            elif message.content.lower().startswith("reverse"):
+                log.debug(f"Processing reverse for {message.author}")
+                edited = await caption(file, ext=ext, reversed=True)
+                
+            location = file_helper.cdn_upload(edited, ext)
+            await message.reply(content=location)
+            log.info(f"Successfully processed caption command for {message.author}")
+            
+        except Exception as e:
+            log.error(f"Failed to process caption command for {message.author}: {e}")
+            await message.reply("Failed to process caption")
 
 
 async def caption(
     file: BytesIO,
-    caption_text: str | None = None,
-    ext: str | None = None,
-    font: str | None = None,
-    reversed: bool | None = False,
-    playback_speed: float | None = 1.0,
-    remove_bg: bool | None = False,
+    caption_text: Optional[str] = None,
+    ext: Optional[str] = None,
+    font: Optional[str] = None,
+    reversed: bool = False,
+    playback_speed: float = 1.0,
+    remove_bg: bool = False,
 ) -> BytesIO:
     """Adds a caption to images and gifs with image_magick"""
+    log.debug(f"Starting caption processing - ext: {ext}, reversed: {reversed}, speed: {playback_speed}, remove_bg: {remove_bg}")
     buf = BytesIO()
     foreground = Image.open(file)
 
-    font_size = foreground.size[0] // 10
+    font_size = calculate_optimal_font_size(foreground.size[0], caption_text)
+    log.debug(f"Calculated optimal font size: {font_size}")
 
-    with Image.new(mode="RGB", size=foreground.size) as sizing_im:
+    with Image.new(mode="RGBA", size=foreground.size, color=(0, 0, 0, 0)) as sizing_im:
         draw = ImageDraw.Draw(sizing_im)
         test_font = ImageFont.truetype("src/sexybabeycord/resources/fonts/ifunny.ttf", font_size)
         multiline_text = wrap_text(caption_text, test_font, sizing_im.size[0] * 0.7, draw)
 
     fonted_text = get_fonted_text(multiline_text, font_size)
 
-    # Calculate total text height including line spacing
-    line_spacing = 4  # Same as in draw_caption_background
+    line_spacing = 4
     total_text_height = 0
     for line in fonted_text:
         max_height = max(get_text_dimensions(text, font)[1] for text, font in line)
         total_text_height += max_height + line_spacing
 
-    # Remove the extra line spacing after the last line
     if fonted_text:
         total_text_height -= line_spacing
 
-    # Add some padding to ensure there's enough room
     bar_height = total_text_height + (font_size // 2)
     background = draw_caption_background(bar_height, foreground.size, fonted_text)
 
     if ext == "gif":
+        log.debug("Processing GIF caption")
         frames = []
         for frame in ImageSequence.Iterator(foreground):
+            frame_rgba = frame.convert("RGBA")
             captioned = background.copy()
-            captioned.paste(frame, (0, bar_height))
+            if frame_rgba.size != foreground.size:
+                frame_rgba = frame_rgba.resize(foreground.size, Image.Resampling.LANCZOS)
+            captioned.paste(frame_rgba, (0, bar_height), frame_rgba)
             frames.append(captioned)
 
         if reversed:
             frames.reverse()
+            log.debug("Reversed GIF frames")
 
         durations = get_frame_durations(foreground, playback_speed)
         frames[0].save(
@@ -480,18 +433,25 @@ async def caption(
             append_images=frames[1:],
             loop=0,
             duration=durations,
+            optimize=True,
+            disposal=2,
         )
+        log.debug(f"Saved GIF with {len(frames)} frames")
     else:
+        log.debug("Processing static image caption")
         if remove_bg:
+            log.debug("Removing background from image")
             foreground = remove(foreground)
         background.paste(foreground, (0, bar_height))
         background.save(buf, format="PNG")
+        log.debug("Saved PNG image")
 
     buf.seek(0)
+    log.info("Caption processing completed successfully")
     return buf
 
 
-def get_frame_durations(image: Image, playback_speed: float):
+def get_frame_durations(image: Image, playback_speed: float) -> List[int]:
     """Returns the average framerate of a PIL Image object"""
     image.seek(0)
     frames = 0
@@ -518,5 +478,9 @@ def get_frame_durations(image: Image, playback_speed: float):
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-    await bot.add_cog(Caption(bot))
-    log.info("Loaded")
+    try:
+        await bot.add_cog(Caption(bot))
+        log.info("Caption cog loaded successfully")
+    except Exception as e:
+        log.error(f"Failed to load Caption cog: {e}")
+        raise

@@ -9,6 +9,7 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import re
+from typing import Optional
 
 # external
 import discord
@@ -28,17 +29,26 @@ class FixLink(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Initialize fixlink"""
         self.bot = bot
+        log.info("FixLink cog initialized")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Fix links on message if they match the regex"""
+        if message.author.bot:
+            return
+            
         new_message = await fixlink(message)
         if new_message is not None:
-            await message.delete()
-            await message.channel.send(new_message)
+            log.debug(f"Fixed link from {message.author}: {message.content[:50]}...")
+            try:
+                await message.delete()
+                await message.channel.send(new_message)
+                log.info(f"Successfully fixed and reposted link from {message.author}")
+            except Exception as e:
+                log.error(f"Failed to fix link from {message.author}: {e}")
 
 
-async def fixlink(message: discord.Message) -> str:
+async def fixlink(message: discord.Message) -> Optional[str]:
     """Helper method for fixing links"""
     # Searches for the link regex from the message
     link = re.search(
@@ -48,23 +58,29 @@ async def fixlink(message: discord.Message) -> str:
 
     # If the regex matched, create the new link
     if link is not None:
-        link = link.group(0)
-        link = re.split(r"(https:\/\/www.|https:\/\/)", link)
-        link = list(filter(lambda x: len(x) > 0, link))
-        if "instagram" in link[1]:
-            link = link[0] + "dd" + link[1]
-        elif "x.com" in link[1]:
-            link = link[0] + link[1].replace("x.com", "vxtwitter.com")
+        original_link = link.group(0)
+        link_parts = re.split(r"(https:\/\/www.|https:\/\/)", original_link)
+        link_parts = list(filter(lambda x: len(x) > 0, link_parts))
+        
+        if "instagram" in link_parts[1]:
+            fixed_link = link_parts[0] + "dd" + link_parts[1]
+        elif "x.com" in link_parts[1]:
+            fixed_link = link_parts[0] + link_parts[1].replace("x.com", "vxtwitter.com")
         else:
-            link = link[0] + "vx" + link[1]
+            fixed_link = link_parts[0] + "vx" + link_parts[1]
+            
+        log.debug(f"Fixed link: {original_link} -> {fixed_link}")
+        new_message = f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{fixed_link}"
+        return new_message
     else:
         return None
-
-    new_message = f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{link}"
-    return new_message
 
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
-    await bot.add_cog(FixLink(bot))
-    log.info("Loaded")
+    try:
+        await bot.add_cog(FixLink(bot))
+        log.info("FixLink cog loaded successfully")
+    except Exception as e:
+        log.error(f"Failed to load FixLink cog: {e}")
+        raise

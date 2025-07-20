@@ -6,6 +6,7 @@ Made with love and care by Vaughn Woerpel
 """
 
 # built-in
+import asyncio
 import logging
 import os
 import sys
@@ -16,6 +17,12 @@ import coloredlogs
 
 # project modules
 from sexybabeycord import constants
+from sexybabeycord.main import main as sexybabeycord_main
+
+
+def main():
+    """Entry point for the sexybabeycord script"""
+    asyncio.run(sexybabeycord_main())
 
 root_log = logging.getLogger()
 
@@ -48,3 +55,6 @@ logging.getLogger("discord").setLevel(logging.WARNING)
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("_client").setLevel(logging.ERROR)
 logging.getLogger("twscrape").setLevel(logging.ERROR)
+
+
+
