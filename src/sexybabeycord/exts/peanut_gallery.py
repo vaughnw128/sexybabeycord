@@ -42,6 +42,7 @@ class PeanutGallery(commands.Cog):
         """Lazy load yt-dlp to avoid import overhead"""
         if self._yt_dlp is None:
             import yt_dlp
+
             self._yt_dlp = yt_dlp
         return self._yt_dlp
 
@@ -70,10 +71,10 @@ class PeanutGallery(commands.Cog):
                 with self.yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download(url)
                     output = buf.getvalue()
-            
+
             info = json.loads(output)
             return info.get("comments", [])
-            
+
         except Exception as e:
             log.error(f"Failed to extract comments from {url}: {e}")
             return None
@@ -87,7 +88,7 @@ class PeanutGallery(commands.Cog):
         """Grab comment on link matching the regex"""
         if message.author.bot:
             return
-            
+
         link_match = re.search(link_regex, message.content)
         if not link_match:
             return
@@ -96,11 +97,11 @@ class PeanutGallery(commands.Cog):
         log.debug(f"Processing YouTube link: {url}")
 
         comments = await self._extract_comments_async(url)
-        
+
         if not comments:
             log.debug("No comments found for YouTube video")
             return
-            
+
         comment = random.choice(comments)
         log.debug(f"Selected comment from {comment.get('author', 'unknown')}")
 
@@ -110,7 +111,7 @@ class PeanutGallery(commands.Cog):
             url=comment["author_url"],
             icon_url=comment["author_thumbnail"],
         )
-        
+
         try:
             await message.reply(embed=embed)
             log.info(f"Successfully posted peanut gallery comment for {message.author}")

@@ -9,7 +9,6 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 from io import BytesIO
-from typing import Optional
 
 # external
 import discord
@@ -17,7 +16,6 @@ import speech_recognition as sr
 from discord import app_commands
 from discord.app_commands import errors as discord_errors
 from discord.ext import commands
-from pydub import AudioSegment
 
 # project modules
 from sexybabeycord.utils import file_helper
@@ -78,7 +76,7 @@ class SpeechToText(commands.Cog):
                 except Exception as e:
                     log.error(f"Failed to transcribe audio: {e}")
                     raise discord_errors.AppCommandError("Voice message was unable to be transcribed")
-                    
+
         except Exception as e:
             log.error(f"Speech-to-text processing failed: {e}")
             raise

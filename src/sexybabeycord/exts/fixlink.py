@@ -36,7 +36,7 @@ class FixLink(commands.Cog):
         """Fix links on message if they match the regex"""
         if message.author.bot:
             return
-            
+
         new_message = await fixlink(message)
         if new_message is not None:
             log.debug(f"Fixed link from {message.author}: {message.content[:50]}...")
@@ -61,14 +61,14 @@ async def fixlink(message: discord.Message) -> Optional[str]:
         original_link = link.group(0)
         link_parts = re.split(r"(https:\/\/www.|https:\/\/)", original_link)
         link_parts = list(filter(lambda x: len(x) > 0, link_parts))
-        
+
         if "instagram" in link_parts[1]:
             fixed_link = link_parts[0] + "dd" + link_parts[1]
         elif "x.com" in link_parts[1]:
             fixed_link = link_parts[0] + link_parts[1].replace("x.com", "vxtwitter.com")
         else:
             fixed_link = link_parts[0] + "vx" + link_parts[1]
-            
+
         log.debug(f"Fixed link: {original_link} -> {fixed_link}")
         new_message = f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{fixed_link}"
         return new_message

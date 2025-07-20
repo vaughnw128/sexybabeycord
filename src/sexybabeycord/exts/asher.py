@@ -37,17 +37,17 @@ class Present(commands.Cog):
         """Build the present context menu"""
         log.debug(f"Present request from {interaction.user} for message {message.id}")
         await interaction.response.defer()
-        
+
         try:
             file, ext = await file_helper.grab_file(message)
             log.debug(f"Retrieved file with extension: {ext}")
-            
+
             distorted = await present(file, ext)
             log.debug("Successfully processed present image")
 
             await interaction.followup.send(file=discord.File(fp=distorted, filename=f"present.{ext}"))
             log.info(f"Successfully processed present request for user {interaction.user}")
-            
+
         except Exception as e:
             log.error(f"Present processing failed: {e}")
             raise
@@ -90,7 +90,7 @@ async def present(
             buf.seek(0)
             log.debug("Successfully processed present image")
             return buf
-            
+
     except Exception as e:
         log.error(f"Present image processing failed: {e}")
         raise

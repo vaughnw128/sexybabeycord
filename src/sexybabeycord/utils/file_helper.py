@@ -29,7 +29,10 @@ log = logging.getLogger("file_helper")
 magika = Magika()
 
 minio_client = Minio(
-    "s3.vaughn.sh", access_key=os.getenv("MINIO_ACCESS_KEY_ID").strip(), secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY").strip(), region="us-east"
+    "s3.vaughn.sh",
+    access_key=os.getenv("MINIO_ACCESS_KEY_ID").strip(),
+    secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY").strip(),
+    region="us-east",
 )
 
 

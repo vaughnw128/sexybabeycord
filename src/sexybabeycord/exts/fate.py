@@ -10,7 +10,7 @@ Made with love and care by Vaughn Woerpel
 import logging
 import re
 from datetime import time
-from typing import List, Optional
+from typing import List
 
 # external
 import discord
@@ -28,9 +28,18 @@ set_log_level("CRITICAL")
 # Suppress HTTP request logging from various libraries that twscrape uses
 # This prevents spam in logs from the frequent Twitter API requests
 http_loggers = [
-    "httpx", "urllib3", "requests", "aiohttp", "asyncio", 
-    "httpcore", "twscrape", "twscrape.api", "twscrape.logger",
-    "twscrape.utils", "twscrape.models", "twscrape.queue"
+    "httpx",
+    "urllib3",
+    "requests",
+    "aiohttp",
+    "asyncio",
+    "httpcore",
+    "twscrape",
+    "twscrape.api",
+    "twscrape.logger",
+    "twscrape.utils",
+    "twscrape.models",
+    "twscrape.queue",
 ]
 
 for logger_name in http_loggers:
@@ -114,7 +123,7 @@ class Fate(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     """Sets up the cog"""
     log.info("Setting up Fate cog...")
-    
+
     if constants.Channels.fate is None:
         log.error("Fate channel has not been specified in the environment variables. Aborting loading fate.")
         return
@@ -123,7 +132,7 @@ async def setup(bot: commands.Bot) -> None:
         db = bot.database.TwitterAccounts
         cursor = db.find()
         count = 0
-        
+
         for count, account in enumerate(cursor):
             try:
                 await api.pool.add_account(
@@ -136,7 +145,7 @@ async def setup(bot: commands.Bot) -> None:
                 log.debug(f"Added account {account['username']} to pool")
             except Exception as e:
                 log.error(f"Failed to add account {account.get('username', 'unknown')}: {e}")
-        
+
         log.info(f"Successfully loaded {count} Twitter accounts")
 
         accounts = await api.pool.accounts_info()
@@ -144,7 +153,7 @@ async def setup(bot: commands.Bot) -> None:
 
         await bot.add_cog(Fate(bot, accounts))
         log.info("Fate cog loaded successfully")
-        
+
     except Exception as e:
         log.error(f"Failed to setup Fate cog: {e}")
         raise

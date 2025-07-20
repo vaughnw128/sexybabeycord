@@ -26,7 +26,7 @@ class Mogged(commands.Cog):
         """Reacts with emojis on message."""
         if message.author.bot:
             return
-            
+
         for keyword in keywords:
             if keyword in message.content.lower().replace(" ", ""):
                 log.debug(f"Mogged keyword '{keyword}' detected from {message.author}")

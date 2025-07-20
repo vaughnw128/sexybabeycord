@@ -12,19 +12,17 @@ import re
 from enum import Enum
 from io import BytesIO
 import itertools
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 # external
 import discord
 from PIL.ImageFont import FreeTypeFont
-from discord import app_commands
 from discord.app_commands import errors as discord_errors
 from discord.ext import commands
 from PIL import Image as Image, ImageFont, ImageDraw
 from PIL import ImageSequence
 from rembg import remove
 
-from sexybabeycord import constants
 
 # project modules
 from sexybabeycord.utils import file_helper
@@ -117,23 +115,23 @@ def calculate_line_width(words: List[str], types: List[CharacterType], base_font
     total_width = 0
     fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
     font_size = base_font.size
-    
+
     fonts = {
         CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
         CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
         CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
     }
-    
+
     for i, (word, char_type) in enumerate(zip(words, types)):
         font = fonts[char_type]
         word_width = get_text_dimensions(word, font)[0]
-        
+
         if i > 0 and char_type == CharacterType.English and types[i - 1] == CharacterType.English:
             space_width = get_text_dimensions(" ", font)[0]
             total_width += space_width
-        
+
         total_width += word_width
-    
+
     return total_width
 
 
@@ -171,35 +169,35 @@ def calculate_optimal_font_size(image_width: int, text: str) -> int:
     """Calculate the optimal font size that ensures all character types fit within the image width"""
     if not text:
         return image_width // 10
-    
+
     fonts_dir = os.path.join("src", "sexybabeycord", "resources", "fonts")
-    
+
     base_font_size = image_width // 10
     max_width = image_width * 0.7
-    
+
     min_size = max(base_font_size // 4, 12)
     max_size = base_font_size
-    
+
     optimal_size = min_size
-    
+
     while min_size <= max_size:
         font_size = (min_size + max_size) // 2
-        
+
         try:
             fonts = {
                 CharacterType.English: ImageFont.truetype(os.path.join(fonts_dir, "ifunny.ttf"), font_size),
                 CharacterType.Japanese: ImageFont.truetype(os.path.join(fonts_dir, "jp.ttf"), font_size),
                 CharacterType.Emoji: ImageFont.truetype(os.path.join(fonts_dir, "emoji.ttf"), font_size),
             }
-            
+
             words_with_types = split_by_character_class(text)
             current_line_width = 0
             fits = True
-            
+
             for word, char_type in words_with_types:
                 font = fonts[char_type]
                 word_width = get_text_dimensions(word, font)[0]
-                
+
                 if char_type == CharacterType.English and current_line_width > 0:
                     space_width = get_text_dimensions(" ", font)[0]
                     if current_line_width + space_width + word_width <= max_width:
@@ -211,20 +209,20 @@ def calculate_optimal_font_size(image_width: int, text: str) -> int:
                         current_line_width += word_width
                     else:
                         current_line_width = word_width
-                
+
                 if word_width > max_width:
                     fits = False
                     break
-            
+
             if fits:
                 optimal_size = font_size
                 min_size = font_size + 1
             else:
                 max_size = font_size - 1
-                
+
         except Exception:
             max_size = font_size - 1
-    
+
     return optimal_size
 
 
@@ -268,7 +266,7 @@ def draw_caption_background(
     width, height = (image_dimension[0], bar_height + image_dimension[1])
     image = Image.new("RGBA", (width, height), color=(0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
-    
+
     draw.rectangle([0, 0, width, bar_height], fill="white")
 
     total_text_height = 0
@@ -296,18 +294,6 @@ def draw_caption_background(
         starting_y += max_height + line_spacing
 
     return image
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class Caption(commands.Cog):
@@ -364,11 +350,11 @@ class Caption(commands.Cog):
             elif message.content.lower().startswith("reverse"):
                 log.debug(f"Processing reverse for {message.author}")
                 edited = await caption(file, ext=ext, reversed=True)
-                
+
             location = file_helper.cdn_upload(edited, ext)
             await message.reply(content=location)
             log.info(f"Successfully processed caption command for {message.author}")
-            
+
         except Exception as e:
             log.error(f"Failed to process caption command for {message.author}: {e}")
             await message.reply("Failed to process caption")
@@ -384,7 +370,9 @@ async def caption(
     remove_bg: bool = False,
 ) -> BytesIO:
     """Adds a caption to images and gifs with image_magick"""
-    log.debug(f"Starting caption processing - ext: {ext}, reversed: {reversed}, speed: {playback_speed}, remove_bg: {remove_bg}")
+    log.debug(
+        f"Starting caption processing - ext: {ext}, reversed: {reversed}, speed: {playback_speed}, remove_bg: {remove_bg}"
+    )
     buf = BytesIO()
     foreground = Image.open(file)
 

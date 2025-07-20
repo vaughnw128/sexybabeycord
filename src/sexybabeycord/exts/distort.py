@@ -9,7 +9,6 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 from io import BytesIO
-from typing import Optional
 
 # external
 import discord
@@ -38,18 +37,18 @@ class Distort(commands.Cog):
         """Build the distort context menu"""
         log.debug(f"Distort request from {interaction.user} for message {message.id}")
         await interaction.response.defer()
-        
+
         try:
             file, ext = await file_helper.grab_file(message)
             log.debug(f"Retrieved file with extension: {ext}")
-            
+
             distorted = await distort(file, ext)
             log.debug("Successfully distorted image")
 
             location = file_helper.cdn_upload(distorted, ext)
             await interaction.followup.send(content=location)
             log.info(f"Successfully processed distort request for user {interaction.user}")
-            
+
         except Exception as e:
             log.error(f"Distort processing failed: {e}")
             raise
@@ -61,7 +60,7 @@ class Distort(commands.Cog):
             return
 
         log.debug(f"Distort command from {message.author} in {message.channel}")
-        
+
         try:
             file, ext = await file_helper.grab_file(message)
             distorted = await distort(file, ext)
@@ -77,7 +76,7 @@ async def distort(file: BytesIO, ext: str) -> BytesIO:
     """Handles the distortion using ImageMagick"""
     log.debug(f"Starting distortion for file with extension: {ext}")
     buf = BytesIO()
-    
+
     try:
         with Image(file=file) as src_image:
             if ext == "gif":
@@ -108,7 +107,7 @@ async def distort(file: BytesIO, ext: str) -> BytesIO:
 
         buf.seek(0)
         return buf
-        
+
     except Exception as e:
         log.error(f"Distortion failed: {e}")
         raise

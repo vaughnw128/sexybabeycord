@@ -24,6 +24,7 @@ def main():
     """Entry point for the sexybabeycord script"""
     asyncio.run(sexybabeycord_main())
 
+
 root_log = logging.getLogger()
 
 format_string = "%(asctime)s - %(levelname)s : [%(module)s] %(message)s"
@@ -55,6 +56,3 @@ logging.getLogger("discord").setLevel(logging.WARNING)
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("_client").setLevel(logging.ERROR)
 logging.getLogger("twscrape").setLevel(logging.ERROR)
-
-
-
