@@ -341,7 +341,7 @@ class Caption(commands.Cog):
 
         try:
             if message.content.lower().startswith("caption"):
-                caption_text = re.sub(r"^(?i)caption", "", message.content).strip()
+                caption_text = re.sub(r"(?i)^caption", "", message.content).strip()
                 if caption_text is None or len(caption_text) == 0:
                     raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
 
