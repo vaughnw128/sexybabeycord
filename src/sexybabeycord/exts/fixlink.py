@@ -67,7 +67,8 @@ async def fixlink(message: discord.Message) -> Optional[str]:
         elif "x.com" in link_parts[1]:
             fixed_link = link_parts[0] + link_parts[1].replace("x.com", "vxtwitter.com")
         else:
-            fixed_link = link_parts[0] + "vx" + link_parts[1]
+            fixed_link = link_parts[0] + link_parts[1]
+            fixed_link = fixed_link.replace("tiktok", "tnktok")
 
         log.debug(f"Fixed link: {original_link} -> {fixed_link}")
         new_message = f"{message.author.mention} {re.sub(link_regex, '', message.content)}\n{fixed_link}"
