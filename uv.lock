@@ -1355,7 +1355,7 @@ wheels = [
 
 [[package]]
 name = "sexybabeycord"
-version = "0.6.3"
+version = "0.6.4"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
