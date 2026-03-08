@@ -12,7 +12,7 @@ import discord
 from discord.ext import commands
 
 log = logging.getLogger("Mason")
-keywords: Tuple[str, ...] = ("canyou", "watermy", "mason")
+keywords: Tuple[str, ...] = ("canyou", "watermy", "mason", "forme")
 
 
 class Mason(commands.Cog):
