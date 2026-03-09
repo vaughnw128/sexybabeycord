@@ -8,7 +8,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         ffmpeg \
         libmagic-dev \
         libmagickwand-dev \
-        docker.io
+        docker.io \
+        curl
+
+# install deno for yt-dlp
+curl -fsSL https://deno.land/install.sh | sh
 
 # Copy the application into the container.
 COPY . /app

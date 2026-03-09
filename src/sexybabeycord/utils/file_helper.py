@@ -133,4 +133,4 @@ def cdn_upload(bytes: BytesIO, ext: str) -> str:
     bytes.seek(0)
     fname = str(uuid.uuid4()) + "." + ext
     response = minio_client.put_object("cdn", fname, bytes, bytes_size)
-    return f"https://s3.vaughn.sh/cdn/{response._object_name}"
+    return f"https://s3.vaughn.sh/cdn/{response.object_name}"
