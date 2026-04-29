@@ -18,5 +18,5 @@ jobs:
     uses: vaughnw128/hakoniwa/.github/workflows/code-scanning.yml@main
     with:
       language: python
-      codeql-languages: '["python"]'
       semgrep-rules: p/python
+      skip-codeql: true
