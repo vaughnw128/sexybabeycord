@@ -1,7 +1,7 @@
 single-container:
   name: "sexybabeycord"
   image: "ghcr.io/vaughnw128/sexybabeycord"
-  imageTag: "0.7.1"
+  imageTag: "0.7.2"
   containerPort: 8080
   secretVars:
     DISCORD_TOKEN: "sexybabeycord-discord-token/credential"
