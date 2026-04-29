@@ -2,8 +2,8 @@ apiVersion: v2
 name: sexybabeycord
 description: The magical multitool of the century
 type: application
-version: 0.7.0
-appVersion: "0.7.0"
+version: 0.7.1
+appVersion: "0.7.1"
 dependencies:
   - name: single-container
     version: "1.x.x"
