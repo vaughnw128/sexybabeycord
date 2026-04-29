@@ -344,7 +344,7 @@ class Caption(commands.Cog):
 
         try:
             if text.startswith("caption") or text.startswith("dcaption"):
-                caption_text = re.sub(r"(?i)^caption", "", message.content).strip()
+                caption_text = re.sub(r"(?i)^(d|)caption", "", message.content).strip()
                 if caption_text is None or len(caption_text) == 0:
                     raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
 
@@ -362,8 +362,7 @@ class Caption(commands.Cog):
                 try:
                     if original_message.author.id == message.author.id:
                         await original_message.delete()
-                        await message.delete()
-                        log.info(f"Deleted original message and caption for dcaption command from {message.author}")
+                    await message.delete()
                 except Exception as e:
                     log.error(f"Failed to delete original message for dcaption command from {message.author}: {e}")
 
