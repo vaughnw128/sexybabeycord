@@ -1,0 +1,5 @@
+skip-check:
+  - CKV_DOCKER_7  # Shared uv builder image uses a rolling tag by design
+  - CKV_DOCKER_2  # Runtime health is handled by Kubernetes probes
+  - CKV_DOCKER_3  # Container user/runtime hardening is controlled by the deployment chart
+  - CKV_SECRET_6  # Secret scanning false-positive on 1Password reference paths

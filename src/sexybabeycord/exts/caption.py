@@ -307,8 +307,11 @@ class Caption(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """On message if someone says 'caption' it adds the caption to the image it's replying to"""
+
+        text = message.content.lower()
+
         if (
-            not (message.content.lower().startswith("caption") or message.content.lower().startswith("reverse"))
+            not (text.startswith("caption") or text.startswith("reverse") or text.startswith("dcaption"))
             or message.author.id == self.bot.user.id
         ):
             return
@@ -334,26 +337,35 @@ class Caption(commands.Cog):
             await message.reply("Wrong filetype, bozo!!")
             return
 
-        if message.content.lower().startswith("reverse") and ext != "gif":
+        if text.startswith("reverse") and ext != "gif":
             log.warning(f"Reverse command used on non-GIF file: {ext} from {message.author}")
             await message.reply("You can only reverse gifs, silly ;p.")
             return
 
         try:
-            if message.content.lower().startswith("caption"):
+            if text.startswith("caption") or text.startswith("dcaption"):
                 caption_text = re.sub(r"(?i)^caption", "", message.content).strip()
                 if caption_text is None or len(caption_text) == 0:
                     raise discord_errors.AppCommandError("Looks like you didn't add a caption, buddy")
 
                 log.debug(f"Processing caption: '{caption_text[:50]}...' for {message.author}")
                 edited = await caption(file, caption_text, ext)
-            elif message.content.lower().startswith("reverse"):
+            elif text.startswith("reverse"):
                 log.debug(f"Processing reverse for {message.author}")
                 edited = await caption(file, ext=ext, reversed=True)
 
             location = file_helper.cdn_upload(edited, ext)
             await message.reply(content=location)
             log.info(f"Successfully processed caption command for {message.author}")
+
+            if text.startswith("dcaption"):
+                try:
+                    if original_message.author.id == message.author.id:
+                        await original_message.delete()
+                        await message.delete()
+                        log.info(f"Deleted original message and caption for dcaption command from {message.author}")
+                except Exception as e:
+                    log.error(f"Failed to delete original message for dcaption command from {message.author}: {e}")
 
         except Exception as e:
             log.error(f"Failed to process caption command for {message.author}: {e}")

@@ -1,15 +1,30 @@
-name: "sexybabeycord"
-image: "ghcr.io/vaughnw128/sexybabeycord"
-size: small
-secretVars:
-  DISCORD_TOKEN: "sexybabeycord-discord-token/credential"
-  TENOR_TOKEN: "tenor-token/credential"
-  MONGO_URI: "sexybabeycord-mongo-uri/credential"
-  MINIO_ACCESS_KEY_ID: "minio-sexybabeycord/username"
-  MINIO_SECRET_ACCESS_KEY: "minio-sexybabeycord/password"
-  LOGFIRE_TOKEN: "logfire-token/credential"
-envVars:
-  GUILD_ID: "644752766241341460"
-  GENERAL_CHANNEL_ID: "644752766736138241"
-  FATE_CHANNEL_ID: "1021214119141064755"
-  DATABASE_NAME: "SexybabeyDB"
+single-container:
+  name: "sexybabeycord"
+  image: "ghcr.io/vaughnw128/sexybabeycord"
+  imageTag: "0.6.4"
+  containerPort: 8080
+  secretVars:
+    DISCORD_TOKEN: "sexybabeycord-discord-token/credential"
+    TENOR_TOKEN: "tenor-token/credential"
+    MONGO_URI: "sexybabeycord-mongo-uri/credential"
+    MINIO_ACCESS_KEY_ID: "minio-sexybabeycord/username"
+    MINIO_SECRET_ACCESS_KEY: "minio-sexybabeycord/password"
+    LOGFIRE_TOKEN: "logfire-token/credential"
+  envVars:
+    GUILD_ID: "644752766241341460"
+    GENERAL_CHANNEL_ID: "644752766736138241"
+    FATE_CHANNEL_ID: "1021214119141064755"
+    DATABASE_NAME: "SexybabeyDB"
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 250m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  volumeMounts:
+    - name: logs
+      mountPath: /app/logs
+      readOnly: false
+      source:
+        emptyDir: {}
