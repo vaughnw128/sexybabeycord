@@ -20,6 +20,7 @@ COPY . /app
 
 # Install the application dependencies.
 WORKDIR /app
+ENV NUMBA_CACHE_DIR=/tmp/numba-cache
 RUN uv sync --frozen --no-cache
 
 # Run the application.
