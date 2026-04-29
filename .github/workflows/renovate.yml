@@ -1,0 +1,25 @@
+name: Renovate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .renovaterc.json5
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  renovate:
+    if: ${{ github.event_name != 'issue_comment' || github.event.comment.user.type != 'Bot' }}
+    uses: vaughnw128/hakoniwa/.github/workflows/renovate.yml@main
+    with:
+      event-name: ${{ github.event_name }}
+      comment-body: ${{ github.event.comment.body || '' }}
+    secrets: inherit

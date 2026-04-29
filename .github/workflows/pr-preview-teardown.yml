@@ -1,0 +1,19 @@
+name: PR Preview Teardown
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+
+jobs:
+  teardown:
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-preview-teardown.yml@main
+    with:
+      pr-number: ${{ github.event.pull_request.number }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      chart-name: sexybabeycord
+    secrets: inherit

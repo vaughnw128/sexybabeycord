@@ -1,0 +1,41 @@
+name: PR Preview Build
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: ${{ startsWith(github.event.comment.body || '', 'euclid build') && format('pr-preview-{0}', github.event.issue.number) || format('issue-comment-{0}-{1}', github.event.issue.number, github.run_id) }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' }}
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-comment-prepare.yml@main
+    with:
+      issue-number: ${{ github.event.issue.number }}
+      comment-body: ${{ github.event.comment.body || '' }}
+      comment-author-association: ${{ github.event.comment.author_association || '' }}
+      command-prefix: euclid build
+      allow-forks: false
+    secrets: inherit
+
+  preview:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_run == 'true' }}
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-preview.yml@main
+    with:
+      pr-number: ${{ needs.prepare.outputs.pr_number }}
+      head-sha: ${{ needs.prepare.outputs.head_sha }}
+      language: python
+      dockerfile: ./Dockerfile
+      build-context: .
+      helm-path: ./helm
+      chart-name: sexybabeycord
+    secrets: inherit

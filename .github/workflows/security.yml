@@ -1,0 +1,22 @@
+name: Security Scanning
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 8 * * 1"  # Every Monday at 08:00 UTC
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security:
+    uses: vaughnw128/hakoniwa/.github/workflows/code-scanning.yml@main
+    with:
+      language: python
+      codeql-languages: '["python"]'
+      semgrep-rules: p/python

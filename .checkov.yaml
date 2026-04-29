@@ -1,0 +1,3 @@
+skip-check:
+  - CKV_DOCKER_2  # Runtime health is handled by Kubernetes probes
+  - CKV_DOCKER_3  # Container user/runtime hardening is controlled by the deployment chart

@@ -7,6 +7,8 @@ moodmeter.json
 data
 test.py
 logs
+Chart.lock
+charts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
