@@ -15,6 +15,7 @@ single-container:
     GENERAL_CHANNEL_ID: "644752766736138241"
     FATE_CHANNEL_ID: "1021214119141064755"
     DATABASE_NAME: "SexybabeyDB"
+    NUMBA_CACHE_DIR: "/tmp/numba-cache"
   resources:
     requests:
       memory: 128Mi

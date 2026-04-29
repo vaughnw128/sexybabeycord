@@ -21,7 +21,6 @@ from discord.app_commands import errors as discord_errors
 from discord.ext import commands
 from PIL import Image as Image, ImageFont, ImageDraw
 from PIL import ImageSequence
-from rembg import remove
 
 
 # project modules
@@ -59,6 +58,12 @@ emoji_ranges = [
     (0x2300, 0x23FF),  # Miscellaneous Technical
     (0x2B00, 0x2BFF),  # Miscellaneous Symbols and Arrows
 ]
+
+
+def remove_background(image: Image.Image) -> Image.Image:
+    from rembg import remove
+
+    return remove(image)
 
 
 def wrap_text(text: str, font: FreeTypeFont, max_width: int, draw: ImageDraw.Draw) -> List[str]:
@@ -440,7 +445,7 @@ async def caption(
         log.debug("Processing static image caption")
         if remove_bg:
             log.debug("Removing background from image")
-            foreground = remove(foreground)
+            foreground = remove_background(foreground)
         background.paste(foreground, (0, bar_height))
         background.save(buf, format="PNG")
         log.debug("Saved PNG image")
