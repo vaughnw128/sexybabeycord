@@ -29,10 +29,10 @@ log = logging.getLogger("file_helper")
 magika = Magika()
 
 minio_client = Minio(
-    "s3.vaughn.sh",
+    "garage.internal.vw-ops.net",
     access_key=os.getenv("MINIO_ACCESS_KEY_ID").strip(),
     secret_key=os.getenv("MINIO_SECRET_ACCESS_KEY").strip(),
-    region="us-east",
+    region="garage"
 )
 
 
@@ -133,4 +133,4 @@ def cdn_upload(bytes: BytesIO, ext: str) -> str:
     bytes.seek(0)
     fname = str(uuid.uuid4()) + "." + ext
     response = minio_client.put_object("cdn", fname, bytes, bytes_size)
-    return f"https://garage.internal.vw-ops.net/cdn/{response.object_name}"
+    return f"https://cdn.vaughn.sh/{response.object_name}"
