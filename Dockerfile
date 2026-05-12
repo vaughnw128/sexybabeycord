@@ -8,6 +8,7 @@ RUN apk add --no-cache \
         curl \
         unzip \
         git \
+        gcc \
         rust
 
 # Install uv
