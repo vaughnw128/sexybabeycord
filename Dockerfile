@@ -18,7 +18,6 @@ RUN curl -fsSL https://deno.land/install.sh | sh
 # Copy the application into the container.
 COPY . /app
 
-# Install the application dependencies.
 WORKDIR /app
 ENV NUMBA_CACHE_DIR=/tmp/numba-cache
 RUN uv sync --frozen --no-cache

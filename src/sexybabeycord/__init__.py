@@ -38,9 +38,10 @@ time = str(datetime.now().strftime("%Y%m%d"))
 filename = f"sexybabeycord-{time}.log"
 file_handler = logging.FileHandler(f"{constants.Logging.loglocation}{filename}", encoding="utf8")
 file_handler.setFormatter(log_format)
+file_handler.setLevel(logging.INFO)
 root_log.addHandler(file_handler)
 
-# Sets colored logs formatting
+# Sets colored logs formatting (stream only — file handler uses plain formatter above)
 coloredlogs.DEFAULT_LEVEL_STYLES = {
     **coloredlogs.DEFAULT_LEVEL_STYLES,
     "trace": {"color": 246},
@@ -48,7 +49,7 @@ coloredlogs.DEFAULT_LEVEL_STYLES = {
     "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"],
 }
 coloredlogs.DEFAULT_LOG_FORMAT = format_string
-coloredlogs.install(level=5, logger=root_log, stream=sys.stdout)
+coloredlogs.install(level=logging.INFO, logger=root_log, stream=sys.stdout, isatty=True)
 
 # Sets module log levels
 root_log.setLevel(logging.INFO)

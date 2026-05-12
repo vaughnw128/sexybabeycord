@@ -18,7 +18,6 @@ dependencies = [
     "pymongo",
     "croniter",
     "dnspython",
-    "pillow",
     "numpy",
     "rembg",
     "magika",
@@ -26,8 +25,9 @@ dependencies = [
     "python-dotenv",
     "opencv-python",
     "pynacl",
-    "minio>=7.2.15",
+    "aiobotocore[boto3]>=2.21.0",
     "logfire>=3.24.0",
+    "caption",
 ]
 
 [project.scripts]
@@ -51,6 +51,9 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 package = true
+
+[tool.uv.sources]
+caption = { git = "https://github.com/vaughnw128/caption" }
 
 [tool.pytest.ini_options]
 filterwarnings = [
