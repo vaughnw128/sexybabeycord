@@ -7,8 +7,7 @@ RUN apk add --no-cache \
         file \
         curl \
         unzip \
-        rust \
-        cargo
+        rust
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
@@ -20,7 +19,10 @@ WORKDIR /app
 COPY . .
 
 ENV NUMBA_CACHE_DIR=/tmp/numba-cache
-RUN uv sync --frozen --no-cache
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
+    uv sync --frozen
 
 FROM cgr.dev/chainguard/wolfi-base
 
