@@ -208,12 +208,11 @@ docker-compose up -d
 - **Caption**: Adds captions to images when you reply with the 'caption' keyword
 - **Distort**: Grabs images from messages and uses liquid rescaling to distort them
 - **FixLink**: Automatically fixes Twitter, Instagram, and TikTok links for proper embed formatting
-- **Fate**: Uses twscrape to grab @JamesCageWhite's tweets and send them in the #fate channel
 - **MoodMeter**: Allows users to select coordinates from dropdown menus and places their profile photo on a mood matrix
 - **SpeechToText**: Converts voice messages to text via right-click context menu
 - **Asher**: Makes Asher present on images via right-click context menu
 - **Mogged**: Reacts with emojis when certain keywords are detected
-- **Gabonganized**: Adds a gabonga where someone's face is supposed to be
+
 - **Peanut Gallery**: Sends random comments from YouTube videos when links are shared
 
 ### Archived Components
@@ -222,6 +221,8 @@ docker-compose up -d
 - **Astropix**: Scrapes and sends NASA picture of the day daily at noon
 - **Ytdl**: Downloads YouTube videos and clips with commands or menu buttons
 - **Remind**: Uses MongoDB and crontab formatting for one-time and recurring reminders
+- **Fate**: Uses twscrape to grab @JamesCageWhite's tweets and send them in the #fate channel
+- **Gabonganized**: Adds a gabonga where someone's face is supposed to be
 
 ## Contributing
 
