@@ -18,7 +18,7 @@ Special thanks to [@CowZix](https://github.com/CowZix) for creating the `asher` 
 
 Before setting up Sexybabeycord, make sure you have the following installed:
 
-- **Python 3.12**
+- **Python 3.14**
 - **uv**
 - **FFmpeg** 
 - **ImageMagick**
