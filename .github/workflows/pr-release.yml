@@ -9,17 +9,19 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  packages: write
-  checks: read
-  actions: read
-  security-events: write
+  contents: read
 
 jobs:
   release:
     if: ${{ github.event.issue.pull_request }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      packages: write
+      checks: read
+      actions: read
+      security-events: write
     uses: vaughnw128/hakoniwa/.github/workflows/release-command.yml@main
     with:
       issue-number: ${{ github.event.issue.number }}
@@ -30,6 +32,7 @@ jobs:
       python-version: "3.14"
       helm-path: ./helm
       chart-name: sexybabeycord
+      platforms: linux/amd64
       merge-method: squash
       require-approval: true
     secrets: inherit

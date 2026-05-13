@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   verify:
     uses: vaughnw128/hakoniwa/.github/workflows/verify.yml@main

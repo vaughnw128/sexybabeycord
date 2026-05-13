@@ -9,11 +9,13 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 jobs:
   scan:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     uses: vaughnw128/hakoniwa/.github/workflows/code-scanning.yml@main
     with:
       language: python
