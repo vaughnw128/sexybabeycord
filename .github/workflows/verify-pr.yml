@@ -6,7 +6,7 @@ on:
 
 jobs:
   verify-pr:
-    uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@v1
+    uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@main
     with:
       pr-title: ${{ github.event.pull_request.title }}
       pr-body: ${{ github.event.pull_request.body || '' }}
