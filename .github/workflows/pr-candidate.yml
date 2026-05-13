@@ -10,15 +10,14 @@ concurrency:
 
 permissions:
   contents: read
-  checks: read
-  issues: write
-  packages: write
-  pull-requests: read
-  security-events: write
 
 jobs:
   prepare:
     if: ${{ github.event.issue.pull_request }}
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
     uses: vaughnw128/hakoniwa/.github/workflows/pr-comment-prepare.yml@main
     with:
       issue-number: ${{ github.event.issue.number }}
@@ -31,6 +30,11 @@ jobs:
   candidate:
     needs: prepare
     if: ${{ needs.prepare.outputs.should_run == 'true' }}
+    permissions:
+      contents: read
+      checks: read
+      packages: write
+      security-events: write
     uses: vaughnw128/hakoniwa/.github/workflows/candidate.yml@main
     with:
       ref: ${{ needs.prepare.outputs.head_sha }}
@@ -40,4 +44,5 @@ jobs:
       python-version: "3.14"
       helm-path: ./helm
       chart-name: sexybabeycord
+      platforms: linux/amd64
     secrets: inherit

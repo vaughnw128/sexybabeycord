@@ -6,11 +6,13 @@ on:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: read
 
 jobs:
   help:
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
     uses: vaughnw128/hakoniwa/.github/workflows/pr-help.yml@main
     with:
       pr-number: ${{ github.event.pull_request.number }}

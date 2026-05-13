@@ -1,8 +1,5 @@
 # Sexybabeycord (A Sexybabeycord Production)
 
-[![Build](https://github.com/vaughnw128/sexybabeycord/actions/workflows/build.yml/badge.svg)](https://github.com/vaughnw128/sexybabeycord/actions/workflows/main.yml)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
 This is the newest iteration/amalgam of the many discord bots I've made over the years.
 I plan on adding new bots and re-implementing old bots in this new and improved system!
 The bot itself is a collection of multiple pieces, each with vastly

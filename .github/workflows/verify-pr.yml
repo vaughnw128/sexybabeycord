@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
+permissions:
+  contents: read
+
 jobs:
   verify-pr:
     uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@main
