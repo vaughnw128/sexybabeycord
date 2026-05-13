@@ -40,10 +40,7 @@ class Caption(commands.Cog):
 
         text = message.content.lower()
 
-        if (
-            not (text.startswith("caption") or text.startswith("dcaption"))
-            or message.author.id == self.bot.user.id
-        ):
+        if not (text.startswith("caption") or text.startswith("dcaption")) or message.author.id == self.bot.user.id:
             return
 
         log.debug(f"Caption command from {message.author} in {message.channel}")
