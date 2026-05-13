@@ -34,5 +34,5 @@ jobs:
       chart-name: sexybabeycord
       platforms: linux/amd64
       merge-method: squash
-      require-approval: true
+      required-approvals: "0"
     secrets: inherit

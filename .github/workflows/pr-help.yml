@@ -18,4 +18,5 @@ jobs:
       pr-number: ${{ github.event.pull_request.number }}
       preview-command: euclid build
       release-command: euclid release
+      required-approvals: "0"
     secrets: inherit
