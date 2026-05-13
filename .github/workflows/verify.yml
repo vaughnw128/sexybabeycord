@@ -11,4 +11,4 @@ jobs:
     with:
       language: python
       helm-path: ./helm
-      secrets: inherit
+    secrets: inherit
