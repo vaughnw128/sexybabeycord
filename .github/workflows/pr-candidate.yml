@@ -10,6 +10,7 @@ concurrency:
 
 permissions:
   contents: read
+  checks: read
   issues: write
   packages: write
   pull-requests: read
@@ -35,6 +36,7 @@ jobs:
       candidate-kind: pr
       candidate-id: ${{ needs.prepare.outputs.pr_number }}
       language: python
+      python-version: "3.14"
       helm-path: ./helm
       chart-name: sexybabeycord
     secrets: inherit
