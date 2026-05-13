@@ -37,4 +37,4 @@ jobs:
       language: python
       helm-path: ./helm
       chart-name: sexybabeycord
-      secrets: inherit
+    secrets: inherit
