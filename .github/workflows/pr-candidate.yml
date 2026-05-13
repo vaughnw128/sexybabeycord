@@ -17,7 +17,7 @@ permissions:
 jobs:
   prepare:
     if: ${{ github.event.issue.pull_request }}
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-comment-prepare.yml@main
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-comment-prepare.ymlmain
     with:
       issue-number: ${{ github.event.issue.number }}
       comment-body: ${{ github.event.comment.body || '' }}
@@ -29,7 +29,7 @@ jobs:
   candidate:
     needs: prepare
     if: ${{ needs.prepare.outputs.should_run == 'true' }}
-    uses: vaughnw128/hakoniwa/.github/workflows/candidate.yml@main
+    uses: vaughnw128/hakoniwa/.github/workflows/candidate.ymlmain
     with:
       ref: ${{ needs.prepare.outputs.head_sha }}
       candidate-kind: pr
