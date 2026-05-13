@@ -26,6 +26,7 @@ jobs:
       comment-author-association: ${{ github.event.comment.author_association || '' }}
       command-prefix: euclid release
       language: python
+      python-version: "3.14"
       helm-path: ./helm
       chart-name: sexybabeycord
       merge-method: squash
