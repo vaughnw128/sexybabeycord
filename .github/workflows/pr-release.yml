@@ -19,7 +19,7 @@ permissions:
 jobs:
   release:
     if: ${{ github.event.issue.pull_request }}
-    uses: vaughnw128/hakoniwa/.github/workflows/release-command.yml@v1
+    uses: vaughnw128/hakoniwa/.github/workflows/release-command.yml@main
     with:
       issue-number: ${{ github.event.issue.number }}
       comment-body: ${{ github.event.comment.body || '' }}

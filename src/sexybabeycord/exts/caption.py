@@ -48,67 +48,66 @@ class Caption(commands.Cog):
 
         log.debug(f"Caption command from {message.author} in {message.channel}")
 
-        async with message.channel.typing():
+        try:
             try:
+                original_message = await message.channel.fetch_message(message.reference.message_id)
+            except AttributeError:
+                log.debug(f"No message reference found for caption command from {message.author}")
+                return
+
+            try:
+                file, ext = await file_helper.grab_file(original_message)
+                log.debug(f"Retrieved file with extension: {ext}")
+            except discord_errors.AppCommandError as e:
+                log.error(f"Failed to grab file for caption command from {message.author}: {e}")
+                await message.reply("Looks like there was an error grabbing the file :/")
+                return
+
+            if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
+                log.warning(f"Invalid file type for caption: {ext} from {message.author}")
+                await message.reply("Wrong filetype, bozo!!")
+                return
+
+            caption_text = re.sub(r"(?i)^(d|)caption", "", message.content).strip()
+            if not caption_text:
+                await message.reply("Looks like you didn't add a caption, buddy")
+                return
+
+            log.debug(f"Processing caption: '{caption_text[:50]}' for {message.author}")
+
+            input_bytes = file.read()
+            input_kb = len(input_bytes) / 1024
+            output_format = "gif" if ext == "gif" else "png"
+
+            captioner = self._captioner
+            t0 = time.perf_counter()
+            captioned_bytes: bytes = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: captioner.caption_bytes(input_bytes, caption_text, output_format),
+            )
+            caption_ms = (time.perf_counter() - t0) * 1000
+
+            t1 = time.perf_counter()
+            location = await file_helper.cdn_upload(BytesIO(captioned_bytes), output_format)
+            upload_ms = (time.perf_counter() - t1) * 1000
+
+            await message.reply(content=location)
+            log.info(
+                f"Captioned {ext} ({input_kb:.1f} KB) for {message.author} in "
+                f"{caption_ms:.0f}ms caption / {upload_ms:.0f}ms upload"
+            )
+
+            if text.startswith("dcaption"):
                 try:
-                    original_message = await message.channel.fetch_message(message.reference.message_id)
-                except AttributeError:
-                    log.debug(f"No message reference found for caption command from {message.author}")
-                    return
+                    if original_message.author.id == message.author.id:
+                        await original_message.delete()
+                    await message.delete()
+                except Exception as e:
+                    log.error(f"Failed to delete original message for dcaption command from {message.author}: {e}")
 
-                try:
-                    file, ext = await file_helper.grab_file(original_message)
-                    log.debug(f"Retrieved file with extension: {ext}")
-                except discord_errors.AppCommandError as e:
-                    log.error(f"Failed to grab file for caption command from {message.author}: {e}")
-                    await message.reply("Looks like there was an error grabbing the file :/")
-                    return
-
-                if ext not in ("png", "jpg", "webp", "gif", "jpeg"):
-                    log.warning(f"Invalid file type for caption: {ext} from {message.author}")
-                    await message.reply("Wrong filetype, bozo!!")
-                    return
-
-                caption_text = re.sub(r"(?i)^(d|)caption", "", message.content).strip()
-                if not caption_text:
-                    await message.reply("Looks like you didn't add a caption, buddy")
-                    return
-
-                log.debug(f"Processing caption: '{caption_text[:50]}' for {message.author}")
-
-                input_bytes = file.read()
-                input_kb = len(input_bytes) / 1024
-                output_format = "gif" if ext == "gif" else "png"
-
-                captioner = self._captioner
-                t0 = time.perf_counter()
-                captioned_bytes: bytes = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    lambda: captioner.caption_bytes(input_bytes, caption_text, output_format),
-                )
-                caption_ms = (time.perf_counter() - t0) * 1000
-
-                t1 = time.perf_counter()
-                location = await file_helper.cdn_upload(BytesIO(captioned_bytes), output_format)
-                upload_ms = (time.perf_counter() - t1) * 1000
-
-                await message.reply(content=location)
-                log.info(
-                    f"Captioned {ext} ({input_kb:.1f} KB) for {message.author} in "
-                    f"{caption_ms:.0f}ms caption / {upload_ms:.0f}ms upload"
-                )
-
-                if text.startswith("dcaption"):
-                    try:
-                        if original_message.author.id == message.author.id:
-                            await original_message.delete()
-                        await message.delete()
-                    except Exception as e:
-                        log.error(f"Failed to delete original message for dcaption command from {message.author}: {e}")
-
-            except Exception as e:
-                log.error(f"Failed to process caption command for {message.author}: {e}")
-                await message.reply("Failed to process caption")
+        except Exception as e:
+            log.error(f"Failed to process caption command for {message.author}: {e}")
+            await message.reply("Failed to process caption")
 
 
 async def setup(bot: commands.Bot) -> None:

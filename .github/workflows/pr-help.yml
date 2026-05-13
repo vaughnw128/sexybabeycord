@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   help:
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-help.yml@v1
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-help.yml@main
     with:
       pr-number: ${{ github.event.pull_request.number }}
       preview-command: euclid build

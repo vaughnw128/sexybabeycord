@@ -7,7 +7,7 @@ on:
 
 jobs:
   verify:
-    uses: vaughnw128/hakoniwa/.github/workflows/verify.yml@v1
+    uses: vaughnw128/hakoniwa/.github/workflows/verify.yml@main
     with:
       language: python
       helm-path: ./helm    secrets: inherit
