@@ -11,4 +11,5 @@ jobs:
     with:
       language: python
       helm-path: ./helm
+      python-version: "3.14"
     secrets: inherit
