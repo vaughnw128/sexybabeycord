@@ -38,7 +38,6 @@ _S3_CONFIG = Config(s3={"addressing_style": "path"})
 
 # Both lazily initialised on first upload so they bind to the bot's event loop.
 _s3_client = None
-_http_session: aiohttp.ClientSession | None = None
 
 
 async def _get_s3_client():
@@ -54,14 +53,6 @@ async def _get_s3_client():
         )
         _s3_client = await ctx.__aenter__()
     return _s3_client
-
-
-async def _get_http_session() -> aiohttp.ClientSession:
-    global _http_session
-    if _http_session is None or _http_session.closed:
-        connector = aiohttp.TCPConnector(limit=4, keepalive_timeout=30)
-        _http_session = aiohttp.ClientSession(connector=connector)
-    return _http_session
 
 
 def get_file_extension_from_bytes(file: BytesIO | str) -> str:
@@ -162,16 +153,6 @@ async def cdn_upload(data: BytesIO, ext: str) -> str:
 
     fname = str(uuid.uuid4()) + "." + ext
     client = await _get_s3_client()
-    presigned = await client.generate_presigned_url(
-        "put_object",
-        Params={"Bucket": _BUCKET, "Key": fname},
-        ExpiresIn=60,
-    )
     data.seek(0)
-    payload = data.read()
-    session = await _get_http_session()
-    async with session.put(presigned, data=payload, headers={"Content-Length": str(len(payload))}) as resp:
-        if resp.status not in (200, 204):
-            body = await resp.text()
-            raise RuntimeError(f"CDN upload failed: HTTP {resp.status}: {body[:200]}")
+    await client.put_object(Bucket=_BUCKET, Key=fname, Body=data.read())
     return f"{_CDN_BASE}/{fname}"
