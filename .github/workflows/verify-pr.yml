@@ -2,15 +2,11 @@ name: Verify PR
 
 on:
   pull_request:
-    branches:
-      - main
-    types: [opened, edited, synchronize, reopened]
-
-permissions:
-  contents: read
+    types: [opened, edited, synchronize, reopened, ready_for_review]
 
 jobs:
-  verify:
-    uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@main
+  verify-pr:
+    uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@v1
     with:
       pr-title: ${{ github.event.pull_request.title }}
+      pr-body: ${{ github.event.pull_request.body || '' }}

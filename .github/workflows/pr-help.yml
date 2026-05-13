@@ -1,0 +1,19 @@
+name: PR Help
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  help:
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-help.yml@v1
+    with:
+      pr-number: ${{ github.event.pull_request.number }}
+      preview-command: euclid build
+      release-command: euclid release
+    secrets: inherit

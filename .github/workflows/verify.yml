@@ -1,0 +1,13 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    uses: vaughnw128/hakoniwa/.github/workflows/verify.yml@v1
+    with:
+      language: python
+      helm-path: ./helm    secrets: inherit
