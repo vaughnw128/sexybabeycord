@@ -31,10 +31,10 @@ magika = Magika()
 
 _BUCKET = "cdn"
 _CDN_BASE = "https://cdn.vaughn.sh"
-_ENDPOINT = "http://garage.internal.vw-ops.net"
+_ENDPOINT = "http://garage.applications.svc.cluster.local:3900"
 
 _botocore_session = aiobotocore.session.get_session()
-_S3_CONFIG = Config(s3={"addressing_style": "path"})
+_S3_CONFIG = Config(signature_version="s3v4", s3={"addressing_style": "path"})
 
 # Both lazily initialised on first upload so they bind to the bot's event loop.
 _s3_client = None
