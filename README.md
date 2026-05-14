@@ -202,7 +202,7 @@ docker-compose up -d
 
 ### Current Components (Cogs)
 
-- **Caption**: Adds captions to images when you reply with the 'caption' keyword
+- **[Caption](https://github.com/vaughnw128/caption)**: Adds captions to images when you reply with the 'caption' keyword
 - **Distort**: Grabs images from messages and uses liquid rescaling to distort them
 - **FixLink**: Automatically fixes Twitter, Instagram, and TikTok links for proper embed formatting
 - **MoodMeter**: Allows users to select coordinates from dropdown menus and places their profile photo on a mood matrix
