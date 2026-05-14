@@ -47,6 +47,41 @@ jobs:
       platforms: linux/amd64
     secrets: inherit
 
+  announce:
+    name: Announce PR Candidate
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_run == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Get app token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Comment candidate start
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const sha = "${{ needs.prepare.outputs.head_sha }}".slice(0, 7);
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number("${{ needs.prepare.outputs.pr_number }}"),
+              body: [
+                "PR candidate build started.",
+                "",
+                "- Commit: `" + sha + "`",
+                "- Run: " + runUrl,
+              ].join("\n"),
+            });
+
   notify:
     name: Notify PR Candidate
     needs: [prepare, candidate]

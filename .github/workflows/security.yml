@@ -19,5 +19,4 @@ jobs:
     uses: vaughnw128/hakoniwa/.github/workflows/code-scanning.yml@main
     with:
       language: python
-      codeql-languages: '["python"]'
     secrets: inherit
