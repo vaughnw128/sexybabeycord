@@ -209,7 +209,6 @@ docker-compose up -d
 - **SpeechToText**: Converts voice messages to text via right-click context menu
 - **Asher**: Makes Asher present on images via right-click context menu
 - **Mogged**: Reacts with emojis when certain keywords are detected
-
 - **Peanut Gallery**: Sends random comments from YouTube videos when links are shared
 
 ### Archived Components
