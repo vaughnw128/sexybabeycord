@@ -18,7 +18,7 @@ Special thanks to [@CowZix](https://github.com/CowZix) for creating the `asher` 
 
 Before setting up Sexybabeycord, make sure you have the following installed:
 
-- **Python 3.12**
+- **Python 3.14**
 - **uv**
 - **FFmpeg** 
 - **ImageMagick**
@@ -202,14 +202,13 @@ docker-compose up -d
 
 ### Current Components (Cogs)
 
-- **Caption**: Adds captions to images when you reply with the 'caption' keyword
+- **[Caption](https://github.com/vaughnw128/caption)**: Adds captions to images when you reply with the 'caption' keyword
 - **Distort**: Grabs images from messages and uses liquid rescaling to distort them
 - **FixLink**: Automatically fixes Twitter, Instagram, and TikTok links for proper embed formatting
 - **MoodMeter**: Allows users to select coordinates from dropdown menus and places their profile photo on a mood matrix
 - **SpeechToText**: Converts voice messages to text via right-click context menu
 - **Asher**: Makes Asher present on images via right-click context menu
 - **Mogged**: Reacts with emojis when certain keywords are detected
-
 - **Peanut Gallery**: Sends random comments from YouTube videos when links are shared
 
 ### Archived Components

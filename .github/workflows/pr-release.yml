@@ -13,13 +13,13 @@ permissions:
 
 jobs:
   release:
-    if: ${{ github.event.issue.pull_request }}
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' }}
     permissions:
       contents: write
       pull-requests: write
       issues: write
       packages: write
-      checks: read
+      checks: write
       actions: read
       security-events: write
     uses: vaughnw128/hakoniwa/.github/workflows/release-command.yml@main
@@ -27,6 +27,7 @@ jobs:
       issue-number: ${{ github.event.issue.number }}
       comment-body: ${{ github.event.comment.body || '' }}
       comment-author-association: ${{ github.event.comment.author_association || '' }}
+      comment-author-type: ${{ github.event.comment.user.type || '' }}
       command-prefix: euclid release
       language: python
       python-version: "3.14"
