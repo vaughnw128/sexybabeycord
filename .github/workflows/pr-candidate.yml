@@ -12,87 +12,26 @@ permissions:
   contents: read
 
 jobs:
-  prepare:
-    if: ${{ github.event.issue.pull_request }}
+  candidate:
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' }}
     permissions:
       contents: read
       issues: write
+      checks: write
+      packages: write
       pull-requests: read
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-comment-prepare.yml@main
+      security-events: write
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-candidate-command.yml@main
     with:
       issue-number: ${{ github.event.issue.number }}
       comment-body: ${{ github.event.comment.body || '' }}
       comment-author-association: ${{ github.event.comment.author_association || '' }}
+      comment-author-type: ${{ github.event.comment.user.type || '' }}
       command-prefix: euclid build
       allow-forks: false
-    secrets: inherit
-
-  candidate:
-    needs: prepare
-    if: ${{ needs.prepare.outputs.should_run == 'true' }}
-    permissions:
-      contents: read
-      checks: read
-      packages: write
-      security-events: write
-    uses: vaughnw128/hakoniwa/.github/workflows/candidate.yml@main
-    with:
-      ref: ${{ needs.prepare.outputs.head_sha }}
-      candidate-kind: pr
-      candidate-id: ${{ needs.prepare.outputs.pr_number }}
       language: python
       python-version: "3.14"
       helm-path: ./helm
       chart-name: sexybabeycord
       platforms: linux/amd64
     secrets: inherit
-
-  notify:
-    name: Notify PR Candidate
-    needs: [prepare, candidate]
-    if: ${{ always() && needs.prepare.outputs.should_run == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - name: Get app token
-        uses: actions/create-github-app-token@v2
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.PRIVATE_KEY }}
-
-      - name: Comment candidate result
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const ok = "${{ needs.candidate.result }}" === "success";
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const lines = ok
-              ? [
-                  "PR candidate build succeeded.",
-                  "",
-                  "- Image: `${{ needs.candidate.outputs.image }}`",
-                  "- Docker image tag: `${{ needs.candidate.outputs.image_tag }}`",
-                  "- Digest: `${{ needs.candidate.outputs.digest }}`",
-                  "- Run: " + runUrl,
-                ]
-              : [
-                  "PR candidate build failed.",
-                  "",
-                  "- Prepare: `${{ needs.prepare.result }}`",
-                  "- Candidate: `${{ needs.candidate.result }}`",
-                  "- Run: " + runUrl,
-                ];
-
-            lines.push("- Chart URL: `${{ needs.candidate.outputs.chart_url }}`");
-            lines.push("- Chart version: `${{ needs.candidate.outputs.chart_version }}`");
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: Number("${{ needs.prepare.outputs.pr_number }}"),
-              body: lines.join("\n"),
-            });
