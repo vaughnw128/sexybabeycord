@@ -15,6 +15,7 @@ jobs:
   candidate:
     if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' }}
     permissions:
+      actions: read
       contents: read
       issues: write
       checks: write
