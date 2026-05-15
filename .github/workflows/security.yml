@@ -9,6 +9,9 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  issues: write
+  security-events: write
 
 jobs:
   scan:
@@ -20,3 +23,15 @@ jobs:
     with:
       language: python
     secrets: inherit
+
+  notify-failure:
+    needs: scan
+    if: ${{ always() && github.event_name == 'pull_request' && needs.scan.result != 'success' }}
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-failure-comment.yml@main
+    with:
+      pr-number: ${{ github.event.pull_request.number }}
+      title: "Security checks failed."
