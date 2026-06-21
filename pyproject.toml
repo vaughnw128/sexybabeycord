@@ -57,6 +57,9 @@ exclude-newer = "7 days"
 caption = { git = "https://github.com/vaughnw128/caption" }
 
 [tool.pytest.ini_options]
+pythonpath = [
+    "src",
+]
 filterwarnings = [
     "ignore::DeprecationWarning"
 ]
