@@ -168,7 +168,6 @@ def contains_filtered_gloke(content: str) -> bool:
 
 
 def contains_goke_word(content: str) -> bool:
-    """Return whether content contains the plain word goke."""
     return goke_regex.search(content) is not None
 
 
