@@ -39,7 +39,7 @@ class Gloke(commands.Cog):
             return
 
         found = False
-        for keyword in ("gloke", "gl0ke", "g1oke", "g10ke", "g10k3", "gl0k3", "g1ok3", "gloak", "g1oak"):
+        for keyword in ("gloke", "gl0ke", "g1oke", "g10ke", "g10k3", "gl0k3", "g1ok3", "gloak", "g1oak", "gløke"):
             if keyword in message.content.lower().replace(" ", ""):
                 log.debug(f"Gloke keyword '{keyword}' detected from {message.author}")
                 found = True
