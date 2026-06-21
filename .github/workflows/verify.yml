@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
   issues: write
   packages: read
 
@@ -19,15 +18,3 @@ jobs:
       helm-path: ./helm
       python-version: "3.14"
     secrets: inherit
-
-  notify-failure:
-    needs: verify
-    if: ${{ always() && github.event_name == 'pull_request' && needs.verify.result != 'success' }}
-    permissions:
-      actions: read
-      contents: read
-      issues: write
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-failure-comment.yml@main
-    with:
-      pr-number: ${{ github.event.pull_request.number }}
-      title: "Verify failed."
