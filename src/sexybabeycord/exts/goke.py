@@ -25,8 +25,13 @@ class Gloke(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         """Correct messages containing the word gloke."""
 
-        if message.author.bot or gloke_regex.search(message.content) is None:
+        if message.author.bot:
             return
+
+        for keyword in ("gloke", "gl0ke", "g1oke", "g10ke", "g10k3", "gl0k3", "g1ok3", "gloak", "g1oak"):
+             if keyword in message.content.lower().replace(" ", ""):
+                log.debug(f"Gloke keyword '{keyword}' detected from {message.author}")
+                break
 
         log.debug(f"Gloke keyword detected from {message.author}")
 
