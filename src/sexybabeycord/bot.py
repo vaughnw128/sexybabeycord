@@ -29,11 +29,13 @@ class Sexybabeycord(commands.Bot):
 
     def __init__(self, database, *args, **kwargs):
         """Initialize the bot class"""
+
         self.database = database
         super().__init__(*args, **kwargs)
 
     async def sync_app_commands(self) -> None:
         """Sync the command tree to the guild"""
+
         await self.tree.sync()
         await self.tree.sync(guild=discord.Object(constants.Guild.id))
 
@@ -41,6 +43,7 @@ class Sexybabeycord(commands.Bot):
 
     async def load_extensions(self, module: types.ModuleType) -> None:
         """Load all cogs by walking the packages in exts."""
+
         logging.info("Loading extensions")
         for module_info in pkgutil.walk_packages(module.__path__, f"{module.__name__}."):
             if module_info.ispkg:
@@ -52,6 +55,7 @@ class Sexybabeycord(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Replacing default setup_hook to run on startup"""
+
         await self.load_extensions(exts)
         await self.sync_app_commands()
         self.tree.on_error = self.global_app_command_error
@@ -63,6 +67,7 @@ class Sexybabeycord(commands.Bot):
         error: app_commands.AppCommandError,
     ) -> None:
         """Handles app command errors"""
+
         if isinstance(error, discord.app_commands.CommandInvokeError):
             log.error(traceback.format_exc())
             await interaction.followup.send("An unexpected error has occurred.")
@@ -73,6 +78,7 @@ class Sexybabeycord(commands.Bot):
 
     async def on_error(self, event: str, *args, **kwargs) -> None:
         """Handles exts errors"""
+
         message = args[0]
         log.warning("ERROR CAUGHT")
         log.warning(f"Event: {event}")
