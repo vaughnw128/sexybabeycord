@@ -45,7 +45,7 @@ class Distort(commands.Cog):
             distorted = await distort(file, ext)
             log.debug("Successfully distorted image")
 
-            location = file_helper.cdn_upload(distorted, ext)
+            location = await file_helper.cdn_upload(distorted, ext)
             await interaction.followup.send(content=location)
             log.info(f"Successfully processed distort request for user {interaction.user}")
 
@@ -64,7 +64,7 @@ class Distort(commands.Cog):
         try:
             file, ext = await file_helper.grab_file(message)
             distorted = await distort(file, ext)
-            location = file_helper.cdn_upload(distorted, ext)
+            location = await file_helper.cdn_upload(distorted, ext)
             await message.reply(content=location)
             log.info(f"Successfully processed distort command for user {message.author}")
         except Exception as e:
