@@ -61,9 +61,6 @@ Create a `.env` file in the project root with the following variables:
 # REQUIRED: Discord Bot Token
 DISCORD_TOKEN=your_discord_bot_token_here
 
-# REQUIRED: Tenor API Token (for GIF functionality)
-TENOR_TOKEN=your_tenor_token_here
-
 # REQUIRED: Guild/Server Information
 GUILD_ID=your_guild_id_here
 GENERAL_CHANNEL_ID=your_general_channel_id_here
@@ -84,11 +81,7 @@ FATE_CHANNEL_ID=your_fate_channel_id_here
    - Go to the "Bot" section
    - Copy the token
 
-2. **Tenor Token**: 
-   - Follow the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
-   - It's free and only requires a Google Cloud account
-
-3. **Guild and Channel IDs**: 
+2. **Guild and Channel IDs**:
    - Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
    - Right-click on your server and channels to copy their IDs
 
@@ -155,7 +148,6 @@ The easiest way to run Sexybabeycord is using the pre-built Docker image:
 docker run -d \
   --name sexybabeycord \
   -e DISCORD_TOKEN=your_token \
-  -e TENOR_TOKEN=your_tenor_token \
   -e GUILD_ID=your_guild_id \
   -e GENERAL_CHANNEL_ID=your_channel_id \
   --restart always \
@@ -182,7 +174,6 @@ services:
     container_name: sexybabeycord
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - TENOR_TOKEN=${TENOR_TOKEN}
       - GUILD_ID=${GUILD_ID}
       - GENERAL_CHANNEL_ID=${GENERAL_CHANNEL_ID}
       - MONGO_URI=${MONGO_URI}

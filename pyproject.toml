@@ -9,8 +9,6 @@ dependencies = [
     "Wand",
     "aiohttp",
     "pydub",
-    "requests",
-    "validators",
     "speechrecognition",
     "twscrape",
     "coloredlogs",
@@ -19,7 +17,6 @@ dependencies = [
     "croniter",
     "dnspython",
     "numpy",
-    "rembg",
     "magika",
     "discord-py",
     "python-dotenv",
@@ -56,6 +53,9 @@ package = true
 caption = { git = "https://github.com/vaughnw128/caption" }
 
 [tool.pytest.ini_options]
+pythonpath = [
+    "src",
+]
 filterwarnings = [
     "ignore::DeprecationWarning"
 ]

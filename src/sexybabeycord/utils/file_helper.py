@@ -8,6 +8,7 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import os
+import re
 import uuid
 from io import BytesIO
 from pathlib import Path
@@ -18,13 +19,8 @@ from botocore.config import Config
 
 # external
 import discord
-import requests
-import validators
 from discord.app_commands import errors as discord_errors
 from magika import Magika
-
-# project modules
-from sexybabeycord import constants
 
 log = logging.getLogger("file_helper")
 magika = Magika()
@@ -36,8 +32,30 @@ _ENDPOINT = "http://garage.applications.svc.cluster.local:3900"
 _botocore_session = aiobotocore.session.get_session()
 _S3_CONFIG = Config(signature_version="s3v4", s3={"addressing_style": "path"})
 
-# Both lazily initialised on first upload so they bind to the bot's event loop.
+_MEDIA_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif", "mp4", "mov", "webm"}
+
+_OG_MEDIA_PATTERNS = (
+    re.compile(
+        r"<meta[^>]+(?:property|name)=[\"'](?:og:image|og:video(?::secure_url)?|twitter:image)[\"'][^>]+content=[\"']([^\"']+)[\"']",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+(?:property|name)=[\"'](?:og:image|og:video(?::secure_url)?|twitter:image)[\"']",
+        re.IGNORECASE,
+    ),
+)
+
+_REQUEST_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)"}
+
 _s3_client = None
+_http_session: aiohttp.ClientSession | None = None
+
+
+async def _get_http_session() -> aiohttp.ClientSession:
+    global _http_session
+    if _http_session is None or _http_session.closed:
+        _http_session = aiohttp.ClientSession()
+    return _http_session
 
 
 async def _get_s3_client():
@@ -57,11 +75,9 @@ async def _get_s3_client():
 
 def get_file_extension_from_bytes(file: BytesIO | str) -> str:
     if isinstance(file, BytesIO):
-        filetype = magika.identify_bytes(file.read()).filetype.dl.ct_label
-        file.seek(0)
-        return filetype
+        return str(magika.identify_bytes(file.getvalue()).output.label)
     elif isinstance(file, str):
-        return magika.identify_path(Path(file)).dl.ct_label
+        return str(magika.identify_path(Path(file)).output.label)
     raise ValueError
 
 
@@ -72,48 +88,46 @@ def get_file_extension_from_url(url: str) -> str | None:
         return None
 
 
+def find_media_url(message) -> str | None:
+    """Return the best downloadable media URL exposed by a Discord message."""
+
+    urls: list[str | None] = []
+    thumbnails: list[str | None] = []
+    if message.attachments:
+        attachment = message.attachments[0]
+        urls.extend((getattr(attachment, "proxy_url", None), attachment.url))
+
+    for embed in message.embeds:
+        image = getattr(embed, "image", None)
+        thumbnail = getattr(embed, "thumbnail", None)
+        urls.extend(
+            (
+                getattr(image, "proxy_url", None),
+                getattr(image, "url", None),
+                getattr(embed, "url", None),
+            )
+        )
+        thumbnails.extend(
+            (
+                getattr(thumbnail, "proxy_url", None),
+                getattr(thumbnail, "url", None),
+            )
+        )
+
+    if message.content:
+        urls.extend(item for item in message.content.split() if item.startswith(("https://", "http://")))
+
+    urls.extend(thumbnails)
+    return next((url for url in urls if url), None)
+
+
 async def grab_file(message: discord.Message) -> tuple[BytesIO, str]:
     """Grabs files from various types of discord messages"""
-    # Grab all possible URLs
-    urls = []
-    if message.attachments:
-        urls.append(message.attachments[0].url)
-    if message.embeds:
-        if message.embeds[0].url.startswith("https://cdn.discordapp.com"):
-            urls += [message.embeds[0].thumbnail.proxy_url]
-        else:
-            urls += [
-                message.embeds[0].url,
-                message.embeds[0].thumbnail.proxy_url,
-                message.embeds[0].image.proxy_url,
-            ]
-    if message.content:
-        for item in message.content.split(" "):
-            if validators.url(item):
-                urls.append(item)
 
-    if len(urls) == 0:
+    url = find_media_url(message)
+    if url is None:
         raise discord_errors.AppCommandError("No file found in the message.")
-    url = [url for url in urls if url is not None][0]
-    # Grabs tenor specific URL
-    if "tenor" in url and ".gif" not in url:
-        url = _get_tenor_url(url)
     return await grab_file_bytes(url)
-
-
-def _get_tenor_url(url: str) -> str:
-    if constants.Bot.tenor is None:
-        log.error("No tenor token has been found in .env")
-        raise discord_errors.AppCommandError("No tenor token was supplied. Please fix!")
-    try:
-        id = url.split("-")[-1]
-        resp = requests.get(f"https://tenor.googleapis.com/v2/posts?key={constants.Bot.tenor}&ids={id}&limit=1")
-        data = resp.json()
-        url = data["results"][0]["media_formats"]["mediumgif"]["url"]
-    except KeyError:
-        log.error(f"Unable to get gif from tenor: {url}")
-        raise discord_errors.AppCommandError("Unable to get gif from tenor.")
-    return url
 
 
 def check_discord_file_timeout(buffer):
@@ -123,22 +137,44 @@ def check_discord_file_timeout(buffer):
         buffer.seek(0)
 
 
-async def grab_file_bytes(url: str) -> tuple[BytesIO, str]:
-    """Grabs the bytes of a file from the URL."""
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            buffer = BytesIO(await resp.read())
+def _extract_og_media_url(html: str) -> str | None:
+    """Pull the media URL out of a page's OpenGraph/Twitter meta tags."""
 
-            # Handle if the discord file has timed out due to discord file timing query headers
-            try:
-                check_discord_file_timeout(buffer)
-            except ValueError:
-                raise discord_errors.AppCommandError("Unable to pull the filetype from the buffer.")
-            # First checks the URL file extension, then pulls it from the file buffer
-            try:
-                return buffer, get_file_extension_from_url(url)
-            except ValueError:
-                return buffer, get_file_extension_from_bytes(buffer)
+    candidates = [match for pattern in _OG_MEDIA_PATTERNS for match in pattern.findall(html)]
+
+    for preferred in ("gif", "webp"):
+        for candidate in candidates:
+            if get_file_extension_from_url(candidate) == preferred:
+                return candidate
+    return next(iter(candidates), None)
+
+
+async def grab_file_bytes(url: str, *, follow_page_media: bool = True) -> tuple[BytesIO, str]:
+    """Grabs the bytes of a file from the URL."""
+
+    session = await _get_http_session()
+    async with session.get(url, headers=_REQUEST_HEADERS) as resp:
+        buffer = BytesIO(await resp.read())
+
+    # Handle if the discord file has timed out due to discord file timing query headers
+    try:
+        check_discord_file_timeout(buffer)
+    except ValueError:
+        raise discord_errors.AppCommandError("Unable to pull the filetype from the buffer.")
+
+    # Trust the URL extension only if it looks like real media
+    ext = (get_file_extension_from_url(url) or "").lower()
+    if ext not in _MEDIA_EXTENSIONS:
+        ext = get_file_extension_from_bytes(buffer)
+
+    if ext in ("html", "xml") and follow_page_media:
+        media_url = _extract_og_media_url(buffer.getvalue().decode("utf-8", errors="replace"))
+        log.debug(f"URL {url} is a page; scraped media URL: {media_url}")
+        if media_url:
+            return await grab_file_bytes(media_url, follow_page_media=False)
+        raise discord_errors.AppCommandError("No media found on the linked page.")
+
+    return buffer, ext
 
 
 def remove(filename: str) -> None:

@@ -16,12 +16,9 @@ load_dotenv()
 class _Bot:
     prefix = "~"
     token = os.getenv("DISCORD_TOKEN")
-    tenor = os.getenv("TENOR_TOKEN")
 
     if token is None or token == "":
         raise ValueError("DISCORD_TOKEN is not set.")
-    if tenor is None or tenor == "":
-        raise ValueError("TENOR_TOKEN is not set.")
 
 
 Bot = _Bot()
