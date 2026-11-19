@@ -36,6 +36,7 @@ class _Channels:
     general = os.getenv("GENERAL_CHANNEL_ID")
     fate = os.getenv("FATE_CHANNEL_ID")
     vx_underground = 1266589920273764408
+    ledger = 1572808063218356415
 
     if general is None or general == "":
         raise ValueError("TENOR_TOKEN is not set.")
