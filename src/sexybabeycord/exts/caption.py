@@ -12,11 +12,12 @@ import re
 import time
 from io import BytesIO
 
+import caption as fast_caption
+
 # external
 import discord
 from discord.app_commands import errors as discord_errors
 from discord.ext import commands
-import caption as fast_caption
 
 # project
 from sexybabeycord.utils import file_helper

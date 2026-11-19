@@ -5,14 +5,13 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import logging
-from typing import Tuple
 
 # external
 import discord
 from discord.ext import commands
 
 log = logging.getLogger("Mason")
-keywords: Tuple[str, ...] = ("canyou", "watermy", "mason", "forme")
+keywords: tuple[str, ...] = ("canyou", "watermy", "mason", "forme")
 
 
 class Mason(commands.Cog):

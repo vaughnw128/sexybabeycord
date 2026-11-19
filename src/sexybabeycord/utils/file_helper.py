@@ -13,12 +13,12 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 
-import aiohttp
 import aiobotocore.session
-from botocore.config import Config
+import aiohttp
 
 # external
 import discord
+from botocore.config import Config
 from discord.app_commands import errors as discord_errors
 from magika import Magika
 
