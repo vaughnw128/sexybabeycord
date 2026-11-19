@@ -129,16 +129,15 @@ async def drop_pin(mood: str, user: discord.User) -> BytesIO:
         avatar, ext = await file_helper.grab_file_bytes(user.avatar.url)
         log.debug(f"Retrieved avatar for user {user}")
 
-        with Image(filename=constants.MoodMeter.image) as image:
-            with Image(file=avatar) as avatar:
-                avatar.resize(50, 50)
-                avatar.crop()
-                image.composite(avatar, left=(x - (avatar.width // 2)), top=(y - (avatar.height // 2)))
-                buf = BytesIO()
-                image.save(file=buf)
-                buf.seek(0)
-                log.debug(f"Successfully generated mood meter image for user {user}")
-                return buf
+        with Image(filename=constants.MoodMeter.image) as image, Image(file=avatar) as avatar:
+            avatar.resize(50, 50)
+            avatar.crop()
+            image.composite(avatar, left=(x - (avatar.width // 2)), top=(y - (avatar.height // 2)))
+            buf = BytesIO()
+            image.save(file=buf)
+            buf.seek(0)
+            log.debug(f"Successfully generated mood meter image for user {user}")
+            return buf
 
     except Exception as e:
         log.error(f"Failed to generate mood meter for user {user}: {e}")

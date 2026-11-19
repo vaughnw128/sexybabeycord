@@ -9,13 +9,12 @@ Code blatently stolen and reused by Ian Le
 import logging
 from io import BytesIO
 from itertools import chain
-from typing import Optional
 
 # external
 import discord
+from discord import app_commands
 from discord.ext import commands
 from wand.image import Image
-from discord import app_commands
 
 # project modules
 from sexybabeycord.utils import file_helper
@@ -55,7 +54,7 @@ class Present(commands.Cog):
 
 async def present(
     file: BytesIO,
-    ext: Optional[str] = None,
+    ext: str | None = None,
 ) -> BytesIO:
     """Make Asher present on the image"""
     log.debug("Starting present image processing")
