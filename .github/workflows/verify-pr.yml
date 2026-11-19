@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
   issues: write
 
 jobs:
@@ -15,15 +14,3 @@ jobs:
     with:
       pr-title: ${{ github.event.pull_request.title }}
       pr-body: ${{ github.event.pull_request.body || '' }}
-
-  notify-failure:
-    needs: verify-pr
-    if: ${{ always() && needs.verify-pr.result != 'success' }}
-    permissions:
-      actions: read
-      contents: read
-      issues: write
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-failure-comment.yml@main
-    with:
-      pr-number: ${{ github.event.pull_request.number }}
-      title: "PR metadata check failed."

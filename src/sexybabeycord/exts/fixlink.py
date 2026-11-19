@@ -9,7 +9,6 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import re
-from typing import Optional
 
 # external
 import discord
@@ -48,7 +47,7 @@ class FixLink(commands.Cog):
                 log.error(f"Failed to fix link from {message.author}: {e}")
 
 
-async def fixlink(message: discord.Message) -> Optional[str]:
+async def fixlink(message: discord.Message) -> str | None:
     """Helper method for fixing links"""
     # Searches for the link regex from the message
     link = re.search(

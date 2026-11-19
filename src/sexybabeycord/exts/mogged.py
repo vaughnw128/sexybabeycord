@@ -5,14 +5,13 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import logging
-from typing import Tuple
 
 # external
 import discord
 from discord.ext import commands
 
 log = logging.getLogger("Mogged")
-keywords: Tuple[str, ...] = ("byebye", "mogged", "mewing", "mewed", "looksmax")
+keywords: tuple[str, ...] = ("byebye", "mogged", "mewing", "mewed", "looksmax")
 
 
 class Mogged(commands.Cog):
