@@ -9,8 +9,6 @@ dependencies = [
     "Wand",
     "aiohttp",
     "pydub",
-    "requests",
-    "validators",
     "speechrecognition",
     "twscrape",
     "coloredlogs",
@@ -19,7 +17,6 @@ dependencies = [
     "croniter",
     "dnspython",
     "numpy",
-    "rembg",
     "magika",
     "discord-py",
     "python-dotenv",
@@ -57,6 +54,9 @@ exclude-newer = "7 days"
 caption = { git = "https://github.com/vaughnw128/caption" }
 
 [tool.pytest.ini_options]
+pythonpath = [
+    "src",
+]
 filterwarnings = [
     "ignore::DeprecationWarning"
 ]
@@ -93,6 +93,7 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "disabled_exts",
 ]
 line-length = 120
 

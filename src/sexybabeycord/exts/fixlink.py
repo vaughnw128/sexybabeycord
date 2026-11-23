@@ -9,7 +9,6 @@ Made with love and care by Vaughn Woerpel
 # built-in
 import logging
 import re
-from typing import Optional
 
 # external
 import discord
@@ -44,11 +43,11 @@ class FixLink(commands.Cog):
                 await message.delete()
                 await message.channel.send(new_message)
                 log.info(f"Successfully fixed and reposted link from {message.author}")
-            except Exception as e:
-                log.error(f"Failed to fix link from {message.author}: {e}")
+            except Exception:
+                log.exception(f"Failed to fix link from {message.author}")
 
 
-async def fixlink(message: discord.Message) -> Optional[str]:
+async def fixlink(message: discord.Message) -> str | None:
     """Helper method for fixing links"""
     # Searches for the link regex from the message
     link = re.search(

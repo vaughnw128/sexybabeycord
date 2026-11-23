@@ -9,6 +9,7 @@ test.py
 logs
 Chart.lock
 charts/
+.omx/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

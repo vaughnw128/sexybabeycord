@@ -5,14 +5,13 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import logging
-from typing import Tuple
 
 # external
 import discord
 from discord.ext import commands
 
 log = logging.getLogger("Mogged")
-keywords: Tuple[str, ...] = ("byebye", "mogged", "mewing", "mewed", "looksmax")
+keywords: tuple[str, ...] = ("byebye", "mogged", "mewing", "mewed", "looksmax")
 
 
 class Mogged(commands.Cog):
@@ -34,8 +33,8 @@ class Mogged(commands.Cog):
                     await message.add_reaction("🤫")
                     await message.add_reaction("🧏‍♂️")
                     log.debug(f"Added mogged reactions to message from {message.author}")
-                except Exception as e:
-                    log.error(f"Failed to add mogged reactions: {e}")
+                except Exception:
+                    log.exception("Failed to add mogged reactions")
                 return
 
 

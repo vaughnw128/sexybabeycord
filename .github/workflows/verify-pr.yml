@@ -4,29 +4,13 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
-concurrency:
-  group: verify-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
-permissions: {}
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   verify-pr:
-    permissions:
-      contents: read
     uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@main
     with:
       pr-title: ${{ github.event.pull_request.title }}
       pr-body: ${{ github.event.pull_request.body || '' }}
-
-  notify-failure:
-    needs: verify-pr
-    if: ${{ always() && github.event_name == 'pull_request' && needs.verify-pr.result == 'failure' }}
-    permissions:
-      actions: read
-      contents: read
-      issues: write
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-failure-comment.yml@main
-    with:
-      pr-number: ${{ github.event.pull_request.number }}
-      title: "PR metadata check failed."

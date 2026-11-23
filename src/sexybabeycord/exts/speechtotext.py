@@ -74,8 +74,8 @@ class SpeechToText(commands.Cog):
                     log.info(f"Successfully transcribed audio for user {interaction.user}")
                     await interaction.followup.send(text)
                 except Exception as e:
-                    log.error(f"Failed to transcribe audio: {e}")
-                    raise discord_errors.AppCommandError("Voice message was unable to be transcribed")
+                    log.exception("Failed to transcribe audio")
+                    raise discord_errors.AppCommandError("Voice message was unable to be transcribed") from e
 
         except Exception as e:
             log.error(f"Speech-to-text processing failed: {e}")

@@ -13,9 +13,8 @@ import json
 import logging
 import random
 import re
-from contextlib import redirect_stdout
-from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import redirect_stdout
 
 # external
 import discord
@@ -46,7 +45,7 @@ class PeanutGallery(commands.Cog):
             self._yt_dlp = yt_dlp
         return self._yt_dlp
 
-    def _extract_comments_sync(self, url: str) -> Optional[list]:
+    def _extract_comments_sync(self, url: str) -> list | None:
         """Synchronous comment extraction using optimized yt-dlp settings"""
         try:
             ydl_opts = {
@@ -67,19 +66,18 @@ class PeanutGallery(commands.Cog):
                 "nocheckcertificate": True,  # Skip SSL verification for speed
             }
 
-            with io.StringIO() as buf, redirect_stdout(buf):
-                with self.yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download(url)
-                    output = buf.getvalue()
+            with io.StringIO() as buf, redirect_stdout(buf), self.yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download(url)
+                output = buf.getvalue()
 
             info = json.loads(output)
             return info.get("comments", [])
 
-        except Exception as e:
-            log.error(f"Failed to extract comments from {url}: {e}")
+        except Exception:
+            log.exception(f"Failed to extract comments from {url}")
             return None
 
-    async def _extract_comments_async(self, url: str) -> Optional[list]:
+    async def _extract_comments_async(self, url: str) -> list | None:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(executor, self._extract_comments_sync, url)
 
@@ -115,8 +113,8 @@ class PeanutGallery(commands.Cog):
         try:
             await message.reply(embed=embed)
             log.info(f"Successfully posted peanut gallery comment for {message.author}")
-        except Exception as e:
-            log.error(f"Failed to post peanut gallery comment for {message.author}: {e}")
+        except Exception:
+            log.exception(f"Failed to post peanut gallery comment for {message.author}")
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -7,34 +7,18 @@ on:
   schedule:
     - cron: "0 8 * * 1"
 
-concurrency:
-  group: security-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-permissions: {}
+permissions:
+  contents: read
+  issues: write
+  security-events: write
 
 jobs:
   scan:
     permissions:
       contents: read
-      actions: read
-      pull-requests: write
       security-events: write
+      issues: write
     uses: vaughnw128/hakoniwa/.github/workflows/code-scanning.yml@main
     with:
       language: python
-      dependency-min-age-days: 7
-    secrets:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-
-  notify-failure:
-    needs: scan
-    if: ${{ always() && github.event_name == 'pull_request' && needs.scan.result == 'failure' }}
-    permissions:
-      actions: read
-      contents: read
-      issues: write
-    uses: vaughnw128/hakoniwa/.github/workflows/pr-failure-comment.yml@main
-    with:
-      pr-number: ${{ github.event.pull_request.number }}
-      title: "Security checks failed."
+    secrets: inherit

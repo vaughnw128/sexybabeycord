@@ -10,7 +10,6 @@ Made with love and care by Vaughn Woerpel
 import logging
 import re
 from datetime import time
-from typing import List
 
 # external
 import discord
@@ -51,7 +50,7 @@ log = logging.getLogger("fate")
 class Fate(commands.Cog):
     """Cog for running #fate"""
 
-    def __init__(self, bot: commands.Bot, accounts: List) -> None:
+    def __init__(self, bot: commands.Bot, accounts: list) -> None:
         """Initializes the cog."""
         self.bot = bot
         self.accounts = accounts
