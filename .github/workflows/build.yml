@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+jobs:
+  candidate:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft }}
+    permissions:
+      contents: read
+      checks: read
+      packages: write
+      security-events: write
+    uses: vaughnw128/hakoniwa/.github/workflows/candidate.yml@main
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      candidate-kind: pr
+      candidate-id: ${{ github.event.pull_request.number }}
+      language: python
+      python-version: 3.14
+      helm-path: ./helm
+      chart-name: sexybabeycord
+      platforms: linux/amd64
+      dependency-min-age-days: 7
+      image-scan-fail-build: true
+      image-scan-severity-cutoff: critical
+      image-scan-only-fixed: true
+
+  candidate-comment:
+    needs: candidate
+    if: ${{ needs.candidate.result == 'success' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-candidate-comment.yml@main
+    with:
+      pr-number: ${{ github.event.pull_request.number }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      image: ${{ needs.candidate.outputs.image }}
+      digest: ${{ needs.candidate.outputs.digest }}
+      chart-url: ${{ needs.candidate.outputs.chart_url }}
+      chart-version: ${{ needs.candidate.outputs.chart_version }}
+      chart-name: sexybabeycord
+
+  release:
+    if: ${{ github.event_name != 'pull_request' && !contains(github.event.head_commit.message || '', '[skip release]') }}
+    permissions:
+      contents: write
+      checks: read
+      packages: write
+      pull-requests: read
+      issues: read
+      security-events: write
+    uses: vaughnw128/hakoniwa/.github/workflows/release-on-merge.yml@main
+    with:
+      language: python
+      python-version: 3.14
+      helm-path: ./helm
+      chart-name: sexybabeycord
+      platforms: linux/amd64
+      flux-repo: vaughnw128/immanent-grove
+      flux-base: main
+      flux-file: applications/{chart}/helmrelease.yaml
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}

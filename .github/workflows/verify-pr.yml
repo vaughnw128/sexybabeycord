@@ -4,13 +4,16 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
-permissions:
-  contents: read
-  actions: read
-  issues: write
+concurrency:
+  group: verify-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   verify-pr:
+    permissions:
+      contents: read
     uses: vaughnw128/hakoniwa/.github/workflows/verify-pr.yml@main
     with:
       pr-title: ${{ github.event.pull_request.title }}
@@ -18,7 +21,7 @@ jobs:
 
   notify-failure:
     needs: verify-pr
-    if: ${{ always() && needs.verify-pr.result != 'success' }}
+    if: ${{ always() && github.event_name == 'pull_request' && needs.verify-pr.result == 'failure' }}
     permissions:
       actions: read
       contents: read
