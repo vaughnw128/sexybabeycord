@@ -51,6 +51,7 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 package = true
+exclude-newer = "7 days"
 
 [tool.uv.sources]
 caption = { git = "https://github.com/vaughnw128/caption" }

@@ -1,0 +1,40 @@
+name: Commands
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: commands-${{ github.event.issue.number }}-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' && startsWith(github.event.comment.body, '/build') }}
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: write
+      issues: write
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-build-command.yml@main
+    with:
+      issue-number: ${{ github.event.issue.number }}
+
+  upgrade:
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.type != 'Bot' && startsWith(github.event.comment.body, '/upgrade') }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    uses: vaughnw128/hakoniwa/.github/workflows/pr-upgrade-command.yml@main
+    with:
+      issue-number: ${{ github.event.issue.number }}
+      comment-body: ${{ github.event.comment.body }}
+      flux-repo: vaughnw128/immanent-grove
+      flux-base: main
+      flux-file: applications/{chart}/helmrelease.yaml
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}

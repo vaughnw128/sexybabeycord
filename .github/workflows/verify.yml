@@ -5,24 +5,26 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: read
-  actions: read
-  issues: write
-  packages: read
+concurrency:
+  group: verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
 
 jobs:
   verify:
+    permissions:
+      contents: read
+      packages: read
     uses: vaughnw128/hakoniwa/.github/workflows/verify.yml@main
     with:
       language: python
+      python-version: 3.14
       helm-path: ./helm
-      python-version: "3.14"
-    secrets: inherit
 
   notify-failure:
     needs: verify
-    if: ${{ always() && github.event_name == 'pull_request' && needs.verify.result != 'success' }}
+    if: ${{ always() && github.event_name == 'pull_request' && needs.verify.result == 'failure' }}
     permissions:
       actions: read
       contents: read

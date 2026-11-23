@@ -1,0 +1,21 @@
+name: Pre-commit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pre-commit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+jobs:
+  pre-commit:
+    permissions:
+      contents: read
+    uses: vaughnw128/hakoniwa/.github/workflows/pre-commit.yml@main
+    with:
+      language: python
+      python-version: 3.14

@@ -1,0 +1,10 @@
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "vaughnw128/hakoniwa/*": ref-pin
+        "*": hash-pin
+  dangerous-triggers:
+    ignore:
+      # Commands check the commenter's write access and never check out PR code.
+      - commands.yml

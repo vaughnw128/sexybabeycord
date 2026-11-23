@@ -20,7 +20,7 @@ Before setting up Sexybabeycord, make sure you have the following installed:
 
 - **Python 3.14**
 - **uv**
-- **FFmpeg** 
+- **FFmpeg**
 - **ImageMagick**
 
 ## Quick Setup
@@ -78,17 +78,17 @@ FATE_CHANNEL_ID=your_fate_channel_id_here
 
 #### Getting the required tokens:
 
-1. **Discord Bot Token**: 
+1. **Discord Bot Token**:
    - Go to [Discord Developer Portal](https://discord.com/developers/applications)
    - Create a new application
    - Go to the "Bot" section
    - Copy the token
 
-2. **Tenor Token**: 
+2. **Tenor Token**:
    - Follow the [Google Cloud Tenor Quickstart Guide](https://developers.google.com/tenor/guides/quickstart)
    - It's free and only requires a Google Cloud account
 
-3. **Guild and Channel IDs**: 
+3. **Guild and Channel IDs**:
    - Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
    - Right-click on your server and channels to copy their IDs
 
