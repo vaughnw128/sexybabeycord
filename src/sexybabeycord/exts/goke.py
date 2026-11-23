@@ -120,8 +120,8 @@ async def correct_gloke_message(message: discord.Message) -> None:
     try:
         await message.delete()
         log.info(f"Deleted gloke message from {message.author}")
-    except Exception as e:
-        log.error(f"Failed to delete gloke message from {message.author}: {e}")
+    except Exception:
+        log.exception(f"Failed to delete gloke message from {message.author}")
         return
 
     try:
@@ -130,8 +130,8 @@ async def correct_gloke_message(message: discord.Message) -> None:
     except discord.Forbidden:
         await message.channel.send(f"{message.author.mention} {correction_message}", delete_after=30)
         log.debug(f"Sent fallback goke correction to {message.author}")
-    except Exception as e:
-        log.error(f"Failed to send goke correction to {message.author}: {e}")
+    except Exception:
+        log.exception(f"Failed to send goke correction to {message.author}")
 
 
 async def react_to_goke_message(message: discord.Message) -> None:
@@ -142,8 +142,8 @@ async def react_to_goke_message(message: discord.Message) -> None:
         for reaction in goke_reactions:
             await message.add_reaction(reaction)
         log.debug(f"Added goke reactions to message from {message.author}")
-    except Exception as e:
-        log.error(f"Failed to add goke reactions: {e}")
+    except Exception:
+        log.exception("Failed to add goke reactions")
 
 
 def normalize_filter_text(content: str) -> str:

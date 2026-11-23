@@ -7,6 +7,7 @@ Made with love and care by Vaughn Woerpel
 
 # built-in
 import os
+from typing import ClassVar
 
 from dotenv import load_dotenv
 
@@ -78,7 +79,7 @@ Distort = _Distort()
 
 class _Caption:
     fontdir = "src/sexybabeycord/resources/fonts/"
-    fonts = {
+    fonts: ClassVar[dict[str, str]] = {
         "default": f"{fontdir}ifunny.ttf",
         "sans": f"{fontdir}sans.ttf",
         "papyrus": f"{fontdir}papyrus.ttf",
@@ -106,7 +107,7 @@ class _MoodMeter:
     )
     letter_emojis = ("🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇯")
 
-    location = {
+    location: ClassVar[dict[str, int]] = {
         "9": 224,
         "8": 311,
         "7": 398,

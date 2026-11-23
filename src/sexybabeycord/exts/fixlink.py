@@ -43,8 +43,8 @@ class FixLink(commands.Cog):
                 await message.delete()
                 await message.channel.send(new_message)
                 log.info(f"Successfully fixed and reposted link from {message.author}")
-            except Exception as e:
-                log.error(f"Failed to fix link from {message.author}: {e}")
+            except Exception:
+                log.exception(f"Failed to fix link from {message.author}")
 
 
 async def fixlink(message: discord.Message) -> str | None:

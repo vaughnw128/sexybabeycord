@@ -66,8 +66,8 @@ class MoodView(discord.ui.View):
             file = await drop_pin(self.letter + self.number, interaction.user)
             await interaction.channel.send(file=discord.File(fp=file, filename="moodmeter.png"))
             log.info(f"Successfully generated mood meter for user {interaction.user}")
-        except Exception as e:
-            log.error(f"Failed to generate mood meter for user {interaction.user}: {e}")
+        except Exception:
+            log.exception(f"Failed to generate mood meter for user {interaction.user}")
             await interaction.followup.send("Failed to generate mood meter", ephemeral=True)
 
     async def on_timeout(self, interaction: discord.Interaction) -> None:
@@ -113,8 +113,8 @@ class MoodMeter(commands.Cog):
                 file = await drop_pin(mood_match, message.author)
                 await message.channel.send(file=discord.File(fp=file, filename="moodmeter.png"))
                 log.info(f"Successfully processed mood regex for user {message.author}")
-            except Exception as e:
-                log.error(f"Failed to process mood regex for user {message.author}: {e}")
+            except Exception:
+                log.exception(f"Failed to process mood regex for user {message.author}")
                 await message.reply("Failed to generate mood meter")
 
 
@@ -126,7 +126,7 @@ async def drop_pin(mood: str, user: discord.User) -> BytesIO:
         x = constants.MoodMeter.location[mood[0]]
         y = constants.MoodMeter.location[mood[1]]
 
-        avatar, ext = await file_helper.grab_file_bytes(user.avatar.url)
+        avatar, _ext = await file_helper.grab_file_bytes(user.avatar.url)
         log.debug(f"Retrieved avatar for user {user}")
 
         with Image(filename=constants.MoodMeter.image) as image, Image(file=avatar) as avatar:

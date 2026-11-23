@@ -39,19 +39,19 @@ class Sexybabeycord(commands.Bot):
         await self.tree.sync()
         await self.tree.sync(guild=discord.Object(constants.Guild.id))
 
-        logging.info("Command tree synced")
+        log.info("Command tree synced")
 
     async def load_extensions(self, module: types.ModuleType) -> None:
         """Load all cogs by walking the packages in exts."""
 
-        logging.info("Loading extensions")
+        log.info("Loading extensions")
         for module_info in pkgutil.walk_packages(module.__path__, f"{module.__name__}."):
             if module_info.ispkg:
                 imported = importlib.import_module(module_info.name)
                 if not inspect.isfunction(getattr(imported, "setup", None)):
                     continue
             await self.load_extension(module_info.name)
-        logging.info("Extensions loaded")
+        log.info("Extensions loaded")
 
     async def setup_hook(self) -> None:
         """Replacing default setup_hook to run on startup"""

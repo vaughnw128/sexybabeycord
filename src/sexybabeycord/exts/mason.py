@@ -32,8 +32,8 @@ class Mason(commands.Cog):
                 try:
                     await message.add_reaction("<:mason:1440438650855755859>")
                     log.debug(f"Added mason reaction to message from {message.author}")
-                except Exception as e:
-                    log.error(f"Failed to add mason reactions: {e}")
+                except Exception:
+                    log.exception("Failed to add mason reactions")
                 return
 
 

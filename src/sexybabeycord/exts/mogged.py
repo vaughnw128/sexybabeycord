@@ -33,8 +33,8 @@ class Mogged(commands.Cog):
                     await message.add_reaction("🤫")
                     await message.add_reaction("🧏‍♂️")
                     log.debug(f"Added mogged reactions to message from {message.author}")
-                except Exception as e:
-                    log.error(f"Failed to add mogged reactions: {e}")
+                except Exception:
+                    log.exception("Failed to add mogged reactions")
                 return
 
 

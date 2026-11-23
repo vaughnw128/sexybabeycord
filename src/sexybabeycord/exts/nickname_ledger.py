@@ -50,8 +50,8 @@ class NicknameLedger(commands.Cog):
             )
             await channel.send(embed=embed)
             log.info(f"Logged nickname change for {after}")
-        except Exception as e:
-            log.error(f"Failed to log nickname change for {after}: {e}")
+        except Exception:
+            log.exception(f"Failed to log nickname change for {after}")
 
 
 async def setup(bot: commands.Bot) -> None:

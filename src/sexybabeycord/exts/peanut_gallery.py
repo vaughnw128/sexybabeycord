@@ -73,8 +73,8 @@ class PeanutGallery(commands.Cog):
             info = json.loads(output)
             return info.get("comments", [])
 
-        except Exception as e:
-            log.error(f"Failed to extract comments from {url}: {e}")
+        except Exception:
+            log.exception(f"Failed to extract comments from {url}")
             return None
 
     async def _extract_comments_async(self, url: str) -> list | None:
@@ -113,8 +113,8 @@ class PeanutGallery(commands.Cog):
         try:
             await message.reply(embed=embed)
             log.info(f"Successfully posted peanut gallery comment for {message.author}")
-        except Exception as e:
-            log.error(f"Failed to post peanut gallery comment for {message.author}: {e}")
+        except Exception:
+            log.exception(f"Failed to post peanut gallery comment for {message.author}")
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -41,7 +41,7 @@ class Caption(commands.Cog):
 
         text = message.content.lower()
 
-        if not (text.startswith("caption") or text.startswith("dcaption")) or message.author.id == self.bot.user.id:
+        if not text.startswith(("caption", "dcaption")) or message.author.id == self.bot.user.id:
             return
 
         log.debug(f"Caption command from {message.author} in {message.channel}")
@@ -100,11 +100,11 @@ class Caption(commands.Cog):
                     if original_message.author.id == message.author.id:
                         await original_message.delete()
                     await message.delete()
-                except Exception as e:
-                    log.error(f"Failed to delete original message for dcaption command from {message.author}: {e}")
+                except Exception:
+                    log.exception(f"Failed to delete original message for dcaption command from {message.author}")
 
-        except Exception as e:
-            log.error(f"Failed to process caption command for {message.author}: {e}")
+        except Exception:
+            log.exception(f"Failed to process caption command for {message.author}")
             await message.reply("Failed to process caption")
 
 

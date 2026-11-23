@@ -67,8 +67,8 @@ class Distort(commands.Cog):
             location = await file_helper.cdn_upload(distorted, ext)
             await message.reply(content=location)
             log.info(f"Successfully processed distort command for user {message.author}")
-        except Exception as e:
-            log.error(f"Distort command failed: {e}")
+        except Exception:
+            log.exception("Distort command failed")
             await message.reply("Failed to distort image")
 
 
